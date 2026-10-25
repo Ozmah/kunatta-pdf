@@ -1,5 +1,6 @@
 ---
 import Dropzone from "../../components/Dropzone.astro";
+import Settings from "../../components/Settings.astro";
 import { locales } from "../../i18n/locales.ts";
 import { routeLocale } from "../../i18n/translate.ts";
 import Base from "../../layouts/Base.astro";
@@ -14,4 +15,5 @@ const lang = routeLocale(Astro.params.lang);
 <Base lang={lang}>
 	<h1 class="sr-only">Kunatta</h1>
 	<Dropzone lang={lang} />
+	<Settings lang={lang} />
 </Base>
