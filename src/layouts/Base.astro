@@ -1,17 +1,18 @@
 ---
 import { Font } from "astro:assets";
 
+import Footer from "../components/Footer.astro";
 import Logo from "../components/Logo.astro";
+import { defaultLocale, locales, type Locale } from "../i18n/locales.ts";
+import { translate } from "../i18n/translate.ts";
 import "../styles/tokens.css";
 import "../styles/base.css";
 
 interface Props {
-	title: string;
-	description: string;
+	lang: Locale;
 }
 
-const { title, description } = Astro.props;
-const lang = Astro.currentLocale;
+const { lang } = Astro.props;
 ---
 
 <!doctype html>
@@ -21,28 +22,35 @@ const lang = Astro.currentLocale;
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="dark" />
 		<meta name="theme-color" content="#002233" />
-		<title>{title}</title>
-		<meta name="description" content={description} />
+		<title>{translate(lang, "meta.title")}</title>
+		<meta name="description" content={translate(lang, "meta.description")} />
+		{locales.map((code) => <link rel="alternate" hreflang={code} href={`/${code}/`} />)}
+		<link rel="alternate" hreflang="x-default" href={`/${defaultLocale}/`} />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<Font cssVariable="--font-inter" preload />
 		<Font cssVariable="--font-paper-mono" preload />
 	</head>
 	<body>
-		<header class="top">
+		<header>
 			<Logo href={`/${lang}/`} />
 		</header>
 		<main>
 			<slot />
 		</main>
-		<slot name="footer" />
+		<Footer lang={lang} />
 	</body>
 </html>
 
 <style>
-	.top {
-		position: absolute;
-		top: 28px;
-		left: 32px;
-		z-index: var(--z-gear);
+	body {
+		display: grid;
+		grid-template-rows: auto 1fr auto;
+		gap: 24px;
+		padding: 28px 32px 50px;
+	}
+
+	main {
+		display: grid;
+		place-items: center;
 	}
 </style>

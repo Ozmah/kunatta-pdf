@@ -1,0 +1,43 @@
+---
+import type { Locale } from "../i18n/locales.ts";
+import { translate } from "../i18n/translate.ts";
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+---
+
+<footer class="footer">
+	<span>{translate(lang, "footer.notice")}</span>
+	<a href="https://github.com/Ozmah" target="_blank" rel="noopener noreferrer"
+		>{translate(lang, "footer.author")}</a
+	>
+</footer>
+
+<style>
+	.footer {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 8px 24px;
+		font: 500 12px var(--font-mono);
+		color: var(--ink-muted);
+	}
+
+	a {
+		color: var(--ink);
+		text-decoration: underline;
+		text-decoration-color: var(--accent);
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 4px;
+		transition: color var(--duration-color) ease;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		a:hover {
+			color: var(--accent);
+		}
+	}
+</style>
