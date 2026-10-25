@@ -1,0 +1,52 @@
+/* Kunatta design tokens. Source of truth: doop canvas "Kunatta", guideline `brand-palette`. */
+:root {
+	/* Palette */
+	--color-cheviot: #f6f2e8;
+	--color-grape: #c5c0c9;
+	--color-pacific: #c0d6ea;
+	--color-lime: #ddff55;
+	--color-neptune: #11425d;
+	--color-midnight: #002233;
+
+	/* Dark theme roles */
+	--bg: var(--color-midnight);
+	--surface: var(--color-neptune);
+	--ink: var(--color-cheviot);
+	--ink-muted: var(--color-pacific);
+	--ink-quiet: var(--color-grape);
+	--accent: var(--color-lime);
+	--on-accent: var(--color-midnight);
+	--line: var(--color-pacific);
+	--focus: var(--color-lime);
+
+	/* Type */
+	--font-sans: var(--font-inter);
+	--font-mono: var(--font-paper-mono);
+	--tracking-display: -0.045em;
+	--tracking-label: 0.12em;
+
+	/* Riso: hard offset layers instead of soft shadows */
+	--border: 2px;
+	--border-strong: 2.5px;
+	--riso-shadow-x: -4px;
+	--riso-shadow-y: 4px;
+	--riso-layer: translate(-8px, 8px) rotate(-1deg);
+
+	/* Motion (see "Engrane · animación") */
+	--ease-press: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	--ease-spin: cubic-bezier(0.645, 0.045, 0.355, 1);
+	--ease-pop: cubic-bezier(0.19, 1, 0.22, 1);
+	--duration-press: 110ms;
+	--duration-color: 150ms;
+	--duration-spin-open: 260ms;
+	--duration-spin-close: 200ms;
+	--duration-pop-in: 260ms;
+	--duration-pop-out: 140ms;
+	--delay-riso: 40ms;
+
+	/* Layers */
+	--z-panel: 10;
+	--z-gear: 20;
+
+	color-scheme: dark;
+}

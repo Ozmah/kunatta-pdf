@@ -22,6 +22,8 @@ export default defineConfig({
 	jsPlugins: [{ name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" }],
 	rules: {
 		"oxc/no-accumulating-spread": "error",
+		// Global stylesheets are imported for their side effect; JS modules still must be assigned.
+		"import/no-unassigned-import": ["error", { allow: ["**/*.css"] }],
 		"anti-slop/no-array-filter-map": "error",
 		"anti-slop/no-reduce-accumulator-copy": "error",
 		"anti-slop/no-chained-type-assertions": "error",

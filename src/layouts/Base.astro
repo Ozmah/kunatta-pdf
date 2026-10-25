@@ -1,0 +1,48 @@
+---
+import { Font } from "astro:assets";
+
+import Logo from "../components/Logo.astro";
+import "../styles/tokens.css";
+import "../styles/base.css";
+
+interface Props {
+	title: string;
+	description: string;
+}
+
+const { title, description } = Astro.props;
+const lang = Astro.currentLocale;
+---
+
+<!doctype html>
+<html lang={lang}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="dark" />
+		<meta name="theme-color" content="#002233" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<Font cssVariable="--font-inter" preload />
+		<Font cssVariable="--font-paper-mono" preload />
+	</head>
+	<body>
+		<header class="top">
+			<Logo href={`/${lang}/`} />
+		</header>
+		<main>
+			<slot />
+		</main>
+		<slot name="footer" />
+	</body>
+</html>
+
+<style>
+	.top {
+		position: absolute;
+		top: 28px;
+		left: 32px;
+		z-index: var(--z-gear);
+	}
+</style>
