@@ -1,0 +1,25 @@
+{
+	"$schema": "./node_modules/oxfmt/configuration_schema.json",
+	"useTabs": true,
+	"printWidth": 100,
+	"semi": true,
+	"singleQuote": false,
+	"trailingComma": "all",
+	"ignorePatterns": [
+		".agent/**",
+		".agents/**",
+		".claude/**",
+		".codex/**",
+		".continue/**",
+		".cursor/**",
+		".gemini/**",
+		".opencode/**",
+		".pi/**",
+		".roo/**",
+		".windsurf/**",
+		"tools/oxlint/anti-slop/**",
+		"bun.lock",
+		"dist/**",
+		".astro/**"
+	]
+}

@@ -1,0 +1,43 @@
+name: Kunatta
+icon_initials: KU
+
+processes:
+  Dev:
+    command: bun run dev
+    auto_start: false
+    auto_restart: false
+
+  Preview (build):
+    command: bun run build && bun run preview
+    auto_start: false
+    auto_restart: false
+
+  Shodan (watch):
+    command: bun run shodan:watch
+    auto_start: false
+    auto_restart: false
+
+  Glados:
+    command: bun run glados
+    auto_start: false
+    auto_restart: false
+
+  Shodan:
+    command: bun run shodan
+    auto_start: false
+    auto_restart: false
+
+  Check (Glados + Shodan):
+    command: bun run check
+    auto_start: false
+    auto_restart: false
+
+  Format / fix:
+    command: bun run fix
+    auto_start: false
+    auto_restart: false
+
+  Typecheck:
+    command: bun run typecheck
+    auto_start: false
+    auto_restart: false

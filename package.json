@@ -1,0 +1,40 @@
+{
+	"name": "kunatta",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Browser-only tools. Drop anything, get a PDF. Nothing leaves your device.",
+	"license": "MIT",
+	"author": "Gabriel Alejandro Alegría Robles (Ozmah)",
+	"type": "module",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"test": "bun test",
+		"typecheck": "astro check",
+		"lint": "oxlint",
+		"lint:fix": "oxlint --fix",
+		"fmt": "oxfmt",
+		"fmt:check": "oxfmt --check",
+		"fix": "oxfmt && oxlint --fix",
+		"glados": "bun run fmt:check && bun run lint && bun run typecheck && bun run build",
+		"shodan": "bun run test",
+		"shodan:watch": "bun run test --watch",
+		"check": "bun run glados && bun run shodan",
+		"prepare": "husky || true"
+	},
+	"dependencies": {
+		"astro": "7.4.2",
+		"better-result": "3.0.1"
+	},
+	"devDependencies": {
+		"@astrojs/check": "0.9.12",
+		"@oxlint/plugins": "1.89.0",
+		"@types/bun": "1.4.4",
+		"husky": "9.1.7",
+		"oxfmt": "0.74.0",
+		"oxlint": "1.89.0",
+		"typescript": "6.0.3"
+	},
+	"packageManager": "bun@1.4.4"
+}

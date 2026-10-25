@@ -1,0 +1,15 @@
+---
+import { locales } from "../../i18n/locales.ts";
+
+export function getStaticPaths() {
+	return locales.map((lang) => ({ params: { lang } }));
+}
+---
+
+<html lang={Astro.currentLocale}>
+	<head>
+		<meta charset="utf-8" />
+		<title>Kunatta</title>
+	</head>
+	<body></body>
+</html>

@@ -1,0 +1,20 @@
+---
+import { defaultLocale } from "../i18n/locales.ts";
+
+// Static hosts cannot negotiate languages, so the root sends visitors to the default locale.
+const target = `/${defaultLocale}/`;
+---
+
+<!doctype html>
+<html lang={defaultLocale}>
+	<head>
+		<meta charset="utf-8" />
+		<title>Kunatta</title>
+		<meta name="robots" content="noindex" />
+		<meta http-equiv="refresh" content={`0; url=${target}`} />
+		<link rel="canonical" href={target} />
+	</head>
+	<body>
+		<a href={target}>Kunatta</a>
+	</body>
+</html>
