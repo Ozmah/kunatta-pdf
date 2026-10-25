@@ -5,8 +5,9 @@
 Documentation lives in doop, canvas `Kunatta` (id `-T11eyriIt`).
 
 - Guideline `kunatta-architecture`: architecture, stack, build plan and decisions.
-- Guideline `brand-palette`: visual system (palette, type, riso rules, gear motion).
-- Page `ES` holds the source frames; page `EN` holds the English copies.
+- Guideline `kunatta-tokens`: visual system, mirrors `src/styles/tokens.css` (palette, type, riso rules, motion).
+- Page `ES` holds the source frames (designs on the first row, numbered docs `01 · Arquitectura`, `02 · Logo`, `03 · Engrane` on the second); page `EN` holds the English copies.
+- Documentation panels follow `~/dev/doop-docs.md`. When code changes a documented fact, update the panel and its guideline in the same session.
   Read them before writing code. If the code and the documentation disagree, ask before choosing.
 
 ## Rules
