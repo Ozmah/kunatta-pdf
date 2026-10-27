@@ -2,11 +2,7 @@ import { Result, TaggedError, type Result as ResultType } from "better-result";
 import { Ream, WrongPasswordError, type LossReport } from "reamkit";
 
 import type { FontFetch } from "./office-fonts.ts";
-
-/** Office formats the PDF tool converts. reamkit also reads PDF, which goes through @libpdf/core instead. */
-export const officeFormats = ["docx", "xlsx", "pptx", "doc", "xls", "ppt"] as const;
-
-export type OfficeFormat = (typeof officeFormats)[number];
+import { officeFormats, type OfficeFormat } from "./office-sniff.ts";
 
 export class ConversionFailed extends TaggedError("ConversionFailed")<{
 	fileName: string;
@@ -34,6 +30,7 @@ export interface OfficeOptions {
 	readonly password?: string;
 }
 
+// reamkit also reads PDF, which goes through @libpdf/core instead.
 function isOfficeFormat(format: string): format is OfficeFormat {
 	return officeFormats.some((known) => known === format);
 }

@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
 import { bundledFontFetch } from "./office-fonts.ts";
-import { ConversionFailed, convertOffice, PasswordRequired, type OfficeFormat } from "./office.ts";
+import type { OfficeFormat } from "./office-sniff.ts";
+import { ConversionFailed, convertOffice, PasswordRequired } from "./office.ts";
 
 const fixtures = "tests/fixtures/office";
 const requested: Array<string> = [];

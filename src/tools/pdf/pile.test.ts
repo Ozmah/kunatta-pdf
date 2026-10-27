@@ -61,11 +61,11 @@ describe("pile edits", () => {
 	test("clamps targets and ignores unknown ids", async () => {
 		const { pile } = await admit(
 			[],
-			[fileFrom(signatures.png, "a.png"), fileFrom(signatures.gif, "b.gif")],
+			[fileFrom(signatures.png, "a.png"), fileFrom(signatures.webp, "b.webp")],
 			sequentialIds(),
 		);
 
-		expect(moveEntry(pile, "entry-1", 99).map((entry) => entry.name)).toEqual(["b.gif", "a.png"]);
+		expect(moveEntry(pile, "entry-1", 99).map((entry) => entry.name)).toEqual(["b.webp", "a.png"]);
 		expect(moveEntry(pile, "missing", 0)).toBe(pile);
 	});
 });

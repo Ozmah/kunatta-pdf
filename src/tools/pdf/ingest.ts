@@ -1,6 +1,20 @@
 import { Result, TaggedError, type Result as ResultType } from "better-result";
 
-import { looksLikeText, sniffBinary, type InputKind } from "./sniff.ts";
+import {
+	cfbEntryNames,
+	cfbFormat,
+	ooxmlFromEntries,
+	zipEntryNames,
+	type ByteReader,
+	type OfficeFormat,
+} from "./office-sniff.ts";
+import {
+	looksLikeText,
+	sniffBinary,
+	sniffContainer,
+	sniffLength,
+	type InputKind,
+} from "./sniff.ts";
 
 const mebibyte = 1024 * 1024;
 
@@ -11,12 +25,12 @@ export const limits = {
 	files: 100,
 } as const;
 
-/** What the browser tells us about a file plus the first bytes of its content. */
+/** What the browser tells us about a file plus a way to read parts of its content. */
 export interface Candidate {
 	readonly name: string;
 	readonly mimeType: string;
 	readonly size: number;
-	readonly head: Uint8Array;
+	readonly read: ByteReader;
 }
 
 export class EmptyFile extends TaggedError("EmptyFile")<{
@@ -42,8 +56,25 @@ function declaresText(candidate: Candidate): boolean {
 	return candidate.mimeType === "text/plain" || candidate.name.toLowerCase().endsWith(".txt");
 }
 
+async function officeFormat(
+	candidate: Candidate,
+	head: Uint8Array,
+): Promise<OfficeFormat | undefined> {
+	const container = sniffContainer(head);
+
+	if (container === "zip") {
+		const names = await zipEntryNames(candidate.read, candidate.size);
+
+		return names === undefined ? undefined : ooxmlFromEntries(names);
+	}
+
+	if (container === "cfb") return cfbFormat(await cfbEntryNames(candidate.read), candidate.name);
+
+	return undefined;
+}
+
 /** Decides whether one file can enter the pile, and as what. */
-export function classify(candidate: Candidate): ResultType<InputKind, RejectedFile> {
+export async function classify(candidate: Candidate): Promise<ResultType<InputKind, RejectedFile>> {
 	const fileName = candidate.name;
 
 	if (candidate.size === 0) {
@@ -61,11 +92,16 @@ export function classify(candidate: Candidate): ResultType<InputKind, RejectedFi
 		);
 	}
 
-	const binary = sniffBinary(candidate.head);
+	const head = await candidate.read(0, sniffLength);
+	const binary = sniffBinary(head);
 
 	if (binary !== undefined) return Result.ok(binary);
 
-	if (declaresText(candidate) && looksLikeText(candidate.head)) return Result.ok("text");
+	const office = await officeFormat(candidate, head);
+
+	if (office !== undefined) return Result.ok(office);
+
+	if (declaresText(candidate) && looksLikeText(head)) return Result.ok("text");
 
 	return Result.err(
 		new UnsupportedFile({ fileName, message: `${fileName} is not a supported format` }),

@@ -1,7 +1,8 @@
 import { TaggedError } from "better-result";
 
 import { classify, limits, type RejectedFile } from "./ingest.ts";
-import { sniffLength, type InputKind } from "./sniff.ts";
+import type { ByteReader } from "./office-sniff.ts";
+import type { InputKind } from "./sniff.ts";
 
 export interface PileEntry {
 	readonly id: string;
@@ -52,8 +53,10 @@ export async function admit(
 	const rejected: Array<Rejection> = [];
 
 	for (const file of files) {
-		const head = new Uint8Array(await file.slice(0, sniffLength).arrayBuffer());
-		const verdict = classify({ name: file.name, mimeType: file.type, size: file.size, head });
+		const read: ByteReader = async (start, end) =>
+			new Uint8Array(await file.slice(start, end).arrayBuffer());
+
+		const verdict = await classify({ name: file.name, mimeType: file.type, size: file.size, read });
 
 		if (verdict.isErr()) {
 			rejected.push(verdict.error);
