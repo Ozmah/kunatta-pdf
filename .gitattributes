@@ -1,2 +1,4 @@
 # Third-party license texts are kept verbatim.
 src/assets/fonts/*-OFL.txt -whitespace
+public/fonts/office/*-OFL.txt -whitespace
+tests/fixtures/office/POI-*.txt -whitespace
