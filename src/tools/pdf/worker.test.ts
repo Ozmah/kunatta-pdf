@@ -1,19 +1,26 @@
 import { describe, expect, test } from "bun:test";
 
+import { PDF } from "@libpdf/core";
 import * as v from "valibot";
 
-import { ConversionFailed, EngineUnavailable, PasswordRequired } from "./errors.ts";
-import { fixtureFontFetch, officeFixture, tinyJpeg } from "./fixtures.ts";
 import {
+	CompositionFailed,
+	ConversionFailed,
+	EngineUnavailable,
+	PasswordRequired,
+} from "./errors.ts";
+import { fixtureFontFetch, officeFixture, tinyJpeg } from "./fixtures.ts";
+import type { DecodeImage } from "./image.ts";
+import {
+	ComposeResponseSchema,
 	ConvertResponseSchema,
-	decodeResult,
+	decodeComposed,
+	decodeConverted,
 	FatalSchema,
+	type ComposeRequest,
 	type ConvertRequest,
 } from "./protocol.ts";
-import type { DecodeImage } from "./image.ts";
-import { engines, handleMessage, type Engines } from "./worker.ts";
-
-const fontFetch = fixtureFontFetch;
+import { engines, handleMessage, type Engines, type Reply } from "./worker.ts";
 
 const settings = { size: "letter", quality: "normal" } as const;
 
@@ -26,123 +33,130 @@ const decodeTiny: DecodeImage = () =>
 		close: () => undefined,
 	});
 
-async function request(name: string): Promise<ConvertRequest> {
-	const bytes = (await officeFixture(name)).buffer;
+const withTinyDecoder: Engines = {
+	...engines,
+	image: async () => {
+		const module = await engines.image();
 
-	return { type: "convert", jobId: "job-1", fileName: name, kind: "docx", bytes, settings };
-}
+		return {
+			...module,
+			convertImage: (bytes, options) =>
+				module.convertImage(bytes, { ...options, decode: decodeTiny }),
+		};
+	},
+};
 
 interface MalformedRequest {
 	readonly type: string;
 	readonly jobId: string;
-	readonly bytes: string;
+	readonly file: string;
 }
 
 function handle(
-	data: ConvertRequest | MalformedRequest,
-	available: Engines = engines,
-): ReturnType<typeof handleMessage> {
-	return handleMessage(new MessageEvent<unknown>("message", { data }), fontFetch, available);
+	data: ConvertRequest | ComposeRequest | MalformedRequest,
+	available: Engines = withTinyDecoder,
+): Promise<Reply> {
+	return handleMessage(new MessageEvent<unknown>("message", { data }), fixtureFontFetch, available);
 }
 
-function decoded(
-	reply: Awaited<ReturnType<typeof handleMessage>>,
-): ReturnType<typeof decodeResult> {
-	return decodeResult(v.parse(ConvertResponseSchema, reply.message));
+function request(fileName: string, kind: ConvertRequest["kind"], file: Blob): ConvertRequest {
+	return { type: "convert", jobId: fileName, fileName, kind, file, settings };
 }
 
-describe("handleMessage", () => {
-	test("answers a valid request with a PDF it can transfer", async () => {
-		const reply = await handle(await request("SampleDoc.docx"));
-		const response = v.parse(ConvertResponseSchema, reply.message);
-		const result = decodeResult(response);
+async function office(name: string): Promise<ConvertRequest> {
+	return request(name, "docx", new Blob([await officeFixture(name)]));
+}
 
-		expect(response.jobId).toBe("job-1");
-		expect(result.isOk()).toBe(true);
-		expect(reply.transfer).toEqual([result.unwrap().pdf]);
+const converted = (reply: Reply) => decodeConverted(v.parse(ConvertResponseSchema, reply));
+const composed = (reply: Reply) => decodeComposed(v.parse(ComposeResponseSchema, reply));
+
+describe("handleMessage: convert", () => {
+	test("answers with the PDF as a Blob, matched to the job", async () => {
+		const reply = await handle(await office("SampleDoc.docx"));
+		const result = converted(reply);
+
+		expect(v.parse(ConvertResponseSchema, reply).jobId).toBe("SampleDoc.docx");
+		expect(result.unwrap().pdf.type).toBe("application/pdf");
 	});
 
 	test("carries expected failures as typed errors", async () => {
-		const locked = await handle(await request("bug53475-password-is-pass.docx"));
+		const locked = converted(await handle(await office("bug53475-password-is-pass.docx")));
 
-		const broken = await handle({
-			...(await request("SampleDoc.docx")),
-			bytes: new ArrayBuffer(64),
-		});
+		const broken = converted(
+			await handle(request("roto.docx", "docx", new Blob([new Uint8Array(64)]))),
+		);
 
-		const lockedResult = decodeResult(v.parse(ConvertResponseSchema, locked.message));
-		const brokenResult = decodeResult(v.parse(ConvertResponseSchema, broken.message));
-
-		expect(lockedResult.isErr() && PasswordRequired.is(lockedResult.error)).toBe(true);
-		expect(brokenResult.isErr() && ConversionFailed.is(brokenResult.error)).toBe(true);
-		expect(locked.transfer).toEqual([]);
+		expect(locked.isErr() && PasswordRequired.is(locked.error)).toBe(true);
+		expect(broken.isErr() && ConversionFailed.is(broken.error)).toBe(true);
 	});
 
 	test("reports a converter that cannot be loaded", async () => {
-		const reply = await handle(await request("SampleDoc.docx"), {
+		const reply = await handle(await office("SampleDoc.docx"), {
 			...engines,
 			office: () => Promise.reject(new Error("chunk failed to load")),
 		});
 
-		const result = decodeResult(v.parse(ConvertResponseSchema, reply.message));
+		const result = converted(reply);
 
 		expect(result.isErr() && EngineUnavailable.is(result.error) && result.error.reason).toBe(
 			"chunk failed to load",
 		);
 	});
 
-	test("turns a malformed request into a fatal reply instead of hanging", async () => {
-		const reply = await handle({ type: "convert", jobId: "", bytes: "nope" });
-
-		expect(v.is(FatalSchema, reply.message)).toBe(true);
-	});
-
 	test("routes PDFs, plain text and images to their own converter", async () => {
-		const pdf = await handle({
-			type: "convert",
-			jobId: "pdf",
-			fileName: "garbage.pdf",
-			kind: "pdf",
-			bytes: new Uint8Array([1, 2, 3]).buffer,
-			settings,
-		});
-
-		const text = await handle({
-			type: "convert",
-			jobId: "txt",
-			fileName: "notas.txt",
-			kind: "text",
-			bytes: new TextEncoder().encode("Apuntes").buffer,
-			settings,
-		});
-
-		const image = await handle(
-			{
-				type: "convert",
-				jobId: "img",
-				fileName: "a.jpg",
-				kind: "jpeg",
-				bytes: tinyJpeg.buffer,
-				settings,
-			},
-			{
-				...engines,
-				image: async () => {
-					const module = await engines.image();
-
-					return {
-						...module,
-						convertImage: (bytes, options) =>
-							module.convertImage(bytes, { ...options, decode: decodeTiny }),
-					};
-				},
-			},
+		const pdf = converted(
+			await handle(request("roto.pdf", "pdf", new Blob([new Uint8Array([1, 2, 3])]))),
 		);
 
-		const pdfResult = decoded(pdf);
+		const text = converted(await handle(request("notas.txt", "text", new Blob(["Apuntes"]))));
+		const image = converted(await handle(request("a.jpg", "jpeg", new Blob([tinyJpeg]))));
 
-		expect(pdfResult.isErr() && ConversionFailed.is(pdfResult.error)).toBe(true);
-		expect(decoded(text).isOk()).toBe(true);
-		expect(decoded(image).isOk()).toBe(true);
+		expect(pdf.isErr() && ConversionFailed.is(pdf.error)).toBe(true);
+		expect(text.isOk()).toBe(true);
+		expect(image.isOk()).toBe(true);
+	});
+
+	test("turns a malformed request into a fatal reply instead of hanging", async () => {
+		expect(v.is(FatalSchema, await handle({ type: "convert", jobId: "", file: "nope" }))).toBe(
+			true,
+		);
+	});
+});
+
+describe("handleMessage: compose", () => {
+	test("joins converted parts in order", async () => {
+		const parts = await Promise.all(
+			["SampleDoc.docx", "SampleShow.pptx"].map(
+				async (name) => converted(await handle(await office(name))).unwrap().pdf,
+			),
+		);
+
+		const reply = await handle({
+			type: "compose",
+			jobId: "final",
+			fileName: "tarea.pdf",
+			parts,
+			size: "a4",
+		});
+
+		const result = composed(reply).unwrap();
+		const document = await PDF.load(new Uint8Array(await result.pdf.arrayBuffer()));
+
+		expect(result.pages).toBe(document.getPages().length);
+		expect(result.pages).toBeGreaterThan(2);
+	});
+
+	test("a part that is not a PDF fails the composition", async () => {
+		const reply = await handle({
+			type: "compose",
+			jobId: "final",
+			fileName: "tarea.pdf",
+			parts: [new Blob(["no soy un pdf"])],
+			size: "letter",
+		});
+
+		const result = composed(reply);
+
+		expect(result.isErr() && CompositionFailed.is(result.error)).toBe(true);
 	});
 });

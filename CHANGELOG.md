@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Converted files are joined in list order into one PDF: Letter and A4 fit every page on a sheet that follows its orientation, Original keeps pages as they are, and an optional password encrypts the result with AES-256.
 - Photos, screenshots and scans (JPEG, PNG, WebP) become PDF pages turned upright by their orientation and reduced by the chosen quality; every image is re-encoded, so its metadata, including GPS location, never reaches the PDF.
 - Plain text files are laid out on Letter or A4 pages with 2 cm margins, and protected PDFs open with their password and come out without it.
 - Conversions run in a background worker so the page stays responsive; if the worker crashes only that file is reported and the next one starts on a fresh worker, and cancelling stops the running and queued files.

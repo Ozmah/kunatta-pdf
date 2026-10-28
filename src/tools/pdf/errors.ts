@@ -20,6 +20,13 @@ export class EngineUnavailable extends TaggedError("EngineUnavailable")<{
 	message: string;
 }> {}
 
+/** The converted files could not be joined into one document. */
+export class CompositionFailed extends TaggedError("CompositionFailed")<{
+	fileName: string;
+	reason: string;
+	message: string;
+}> {}
+
 export class WorkerCrashed extends TaggedError("WorkerCrashed")<{
 	fileName: string;
 	message: string;
@@ -33,8 +40,13 @@ export class ConversionCancelled extends TaggedError("ConversionCancelled")<{
 /** What the worker itself can answer with. */
 export type ConvertError = ConversionFailed | PasswordRequired | EngineUnavailable;
 
-/** What the main thread can get back for one file. */
+/** What composing can answer with. */
+export type ComposeError = CompositionFailed | EngineUnavailable;
+
+/** What the main thread can get back for one job. */
 export type JobError = ConvertError | WorkerCrashed | ConversionCancelled;
+
+export type ComposeJobError = ComposeError | WorkerCrashed | ConversionCancelled;
 
 /** One file converted to a standalone PDF inside the worker. */
 export interface Converted {

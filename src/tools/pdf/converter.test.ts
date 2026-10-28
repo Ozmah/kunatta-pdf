@@ -5,10 +5,12 @@ import { isPanic } from "better-result";
 import { ConversionCancelled, WorkerCrashed } from "./errors.ts";
 import { createConverter, type ConvertJob, type WorkerPort } from "./converter.ts";
 import {
-	encodeResponse,
-	type ConvertRequest,
+	encodeComposed,
+	encodeConverted,
+	type ComposeResponse,
 	type ConvertResponse,
 	type Fatal,
+	type WorkerRequest,
 } from "./protocol.ts";
 import { Result } from "better-result";
 
@@ -16,9 +18,9 @@ interface InvalidReply {
 	readonly nonsense: true;
 }
 
-type WorkerReply = ConvertResponse | Fatal | InvalidReply;
+type WorkerReply = ConvertResponse | ComposeResponse | Fatal | InvalidReply;
 
-type Behavior = (request: ConvertRequest, port: FakeWorker) => void;
+type Behavior = (request: WorkerRequest, port: FakeWorker) => void;
 
 /** A worker stand-in that answers on the next tick, like a real thread would. */
 class FakeWorker implements WorkerPort {
@@ -28,7 +30,7 @@ class FakeWorker implements WorkerPort {
 
 	constructor(private readonly behavior: Behavior) {}
 
-	postMessage(message: ConvertRequest): void {
+	postMessage(message: WorkerRequest): void {
 		this.received.push(message.fileName);
 		queueMicrotask(() => this.behavior(message, this));
 	}
@@ -49,16 +51,21 @@ class FakeWorker implements WorkerPort {
 }
 
 const answer: Behavior = (request, port) => {
-	const pdf = new TextEncoder().encode(`%PDF-${request.fileName}`).buffer;
+	const pdf = new Blob([`%PDF-${request.fileName}`]);
 
-	port.emit("message", encodeResponse(request.jobId, Result.ok({ pdf, degraded: false })));
+	port.emit(
+		"message",
+		request.type === "convert"
+			? encodeConverted(request.jobId, Result.ok({ pdf, degraded: false }))
+			: encodeComposed(request.jobId, Result.ok({ pdf, pages: 3 })),
+	);
 };
 
 function job(fileName: string): ConvertJob {
 	return {
 		fileName,
 		kind: "docx",
-		bytes: new ArrayBuffer(8),
+		file: new Blob(["x"]),
 		settings: { size: "letter", quality: "normal" },
 	};
 }
@@ -147,5 +154,23 @@ describe("createConverter", () => {
 		expect(second.isErr() && ConversionCancelled.is(second.error)).toBe(true);
 		expect(spawned[0]?.terminated).toBe(true);
 		expect(after.isOk()).toBe(true);
+	});
+
+	test("compose shares the queue and a crash during it is reported for the output file", async () => {
+		const { converter } = harness(answer, answer);
+		const parts = [new Blob(["a"])];
+
+		const converted = converter.convert(job("a.docx"));
+		const final = converter.compose({ fileName: "tarea.pdf", parts, size: "letter" });
+
+		expect((await converted).isOk()).toBe(true);
+		expect((await final).unwrap().pages).toBe(3);
+
+		const crashing = harness((_, port) => port.emit("error"));
+		const crashed = await crashing.converter.compose({ fileName: "tarea.pdf", parts, size: "a4" });
+
+		expect(crashed.isErr() && WorkerCrashed.is(crashed.error) && crashed.error.fileName).toBe(
+			"tarea.pdf",
+		);
 	});
 });

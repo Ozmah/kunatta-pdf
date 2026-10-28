@@ -1,23 +1,30 @@
 import { Result, type Result as ResultType } from "better-result";
 import * as v from "valibot";
 
-import { EngineUnavailable, type Converted, type ConvertError } from "./errors.ts";
+import {
+	EngineUnavailable,
+	type ComposeError,
+	type Converted,
+	type ConvertError,
+} from "./errors.ts";
 import type { FontFetch } from "./office-fonts.ts";
 import { officeFormats } from "./office-sniff.ts";
 import {
-	ConvertRequestSchema,
-	encodeResponse,
-	ownBuffer,
+	encodeComposed,
+	encodeConverted,
+	pdfBlob,
+	WorkerRequestSchema,
+	type ComposedPdf,
+	type ComposeRequest,
+	type ComposeResponse,
 	type ConvertRequest,
 	type ConvertResponse,
 	type Fatal,
+	type FilePdf,
 } from "./protocol.ts";
 import { imageKinds } from "./sniff.ts";
 
-export interface Reply {
-	readonly message: ConvertResponse | Fatal;
-	readonly transfer: ReadonlyArray<ArrayBuffer>;
-}
+export type Reply = ConvertResponse | ComposeResponse | Fatal;
 
 /** Each converter is its own chunk: reamkit or @libpdf/core only reach memory when a file needs them. */
 export interface Engines {
@@ -25,6 +32,7 @@ export interface Engines {
 	readonly image: () => Promise<typeof import("./image.ts")>;
 	readonly pdf: () => Promise<typeof import("./pdf-input.ts")>;
 	readonly text: () => Promise<typeof import("./text.ts")>;
+	readonly compose: () => Promise<typeof import("./compose.ts")>;
 }
 
 export const engines: Engines = {
@@ -32,6 +40,7 @@ export const engines: Engines = {
 	image: () => import("./image.ts"),
 	pdf: () => import("./pdf-input.ts"),
 	text: () => import("./text.ts"),
+	compose: () => import("./compose.ts"),
 };
 
 const textFont = "Cousine_400Regular.ttf";
@@ -60,7 +69,7 @@ async function convert(
 	available: Engines,
 ): Promise<ResultType<Converted, ConvertError>> {
 	const { fileName, kind, password, settings } = request;
-	const bytes = new Uint8Array(request.bytes);
+	const bytes = new Uint8Array(await request.file.arrayBuffer());
 	const image = imageKinds.find((known) => known === kind);
 	const office = officeFormats.find((known) => known === kind);
 
@@ -109,8 +118,23 @@ async function convert(
 	});
 }
 
-function fatal(reason: string): Reply {
-	return { message: { type: "fatal", reason }, transfer: [] };
+async function compose(
+	request: ComposeRequest,
+	available: Engines,
+): Promise<ResultType<ComposedPdf, ComposeError>> {
+	const { fileName, parts, size, password } = request;
+	const module = await load(fileName, available.compose);
+
+	if (module.isErr()) return module;
+
+	const options = password === undefined ? { fileName, size } : { fileName, size, password };
+	const composed = await module.value.composePdf(parts, options);
+
+	return composed.map(({ pdf, pages }) => ({ pdf: pdfBlob(pdf), pages }));
+}
+
+function fatal(reason: string): Fatal {
+	return { type: "fatal", reason };
 }
 
 /** Handles one message inside the worker. Anything unexpected becomes a `fatal` reply instead of a silent hang. */
@@ -119,18 +143,21 @@ export async function handleMessage(
 	fontFetch: FontFetch,
 	available: Engines = engines,
 ): Promise<Reply> {
-	const parsed = v.safeParse(ConvertRequestSchema, event.data);
+	const parsed = v.safeParse(WorkerRequestSchema, event.data);
 
 	if (!parsed.success) return fatal(`invalid request: ${v.summarize(parsed.issues)}`);
 
-	try {
-		const converted = await convert(parsed.output, fontFetch, available);
-		const result = converted.map(({ pdf, degraded }) => ({ pdf: ownBuffer(pdf), degraded }));
+	const request = parsed.output;
 
-		return {
-			message: encodeResponse(parsed.output.jobId, result),
-			transfer: result.isOk() ? [result.value.pdf] : [],
-		};
+	try {
+		if (request.type === "compose") {
+			return encodeComposed(request.jobId, await compose(request, available));
+		}
+
+		const converted = await convert(request, fontFetch, available);
+		const result = converted.map(({ pdf, degraded }): FilePdf => ({ pdf: pdfBlob(pdf), degraded }));
+
+		return encodeConverted(request.jobId, result);
 	} catch (error) {
 		// Converters return expected failures as values; reaching this is a bug in the worker.
 		return fatal(error instanceof Error ? error.message : String(error));

@@ -6,7 +6,9 @@ import { handleMessage } from "./worker.ts";
 const fontFetch = bundledFontFetch(self.location.origin);
 
 self.addEventListener("message", (event) => {
-	void handleMessage(event, fontFetch).then(({ message, transfer }) => {
-		self.postMessage(message, { transfer: [...transfer] });
+	void handleMessage(event, fontFetch).then((reply) => {
+		// Blobs are passed by reference, so the transfer list is empty. In a worker the second
+		// argument is that list, not the targetOrigin that window.postMessage takes.
+		self.postMessage(reply, { transfer: [] });
 	});
 });
