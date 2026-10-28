@@ -1,18 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
-import { bundledFontFetch } from "./office-fonts.ts";
 import type { OfficeFormat } from "./office-sniff.ts";
-import { ConversionFailed, convertOffice, PasswordRequired } from "./office.ts";
+import { ConversionFailed, PasswordRequired } from "./errors.ts";
+import { fixtureFontFetch, requestedFontPaths } from "./fixtures.ts";
+import { convertOffice } from "./office.ts";
 
 const fixtures = "tests/fixtures/office";
-const requested: Array<string> = [];
-
-// Serves the bundled faces from disk and records every path reamkit asks for.
-const fontFetch = bundledFontFetch("https://kunatta.test", (url) => {
-	requested.push(url.pathname);
-
-	return Promise.resolve(new Response(Bun.file(`public${url.pathname}`)));
-});
+const fontFetch = fixtureFontFetch;
 
 async function fixture(name: string): Promise<Uint8Array> {
 	return new Uint8Array(await Bun.file(`${fixtures}/${name}`).arrayBuffer());
@@ -42,8 +36,8 @@ describe("convertOffice", () => {
 	});
 
 	test("only requests bundled faces", () => {
-		expect(requested.length).toBeGreaterThan(0);
-		expect(requested.every((path) => path.startsWith("/fonts/office/"))).toBe(true);
+		expect(requestedFontPaths.length).toBeGreaterThan(0);
+		expect(requestedFontPaths.every((path) => path.startsWith("/fonts/office/"))).toBe(true);
 	});
 
 	test("reports legacy Word as degraded and OOXML Word as faithful", async () => {

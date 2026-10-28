@@ -1,0 +1,37 @@
+import { TaggedError } from "better-result";
+
+/** Errors a conversion can end in. They live apart from the converters so the main thread can use them without loading reamkit or @libpdf/core. */
+
+export class ConversionFailed extends TaggedError("ConversionFailed")<{
+	fileName: string;
+	reason: string;
+	message: string;
+}> {}
+
+export class PasswordRequired extends TaggedError("PasswordRequired")<{
+	fileName: string;
+	message: string;
+}> {}
+
+/** The converter for a format could not be loaded (for example, the chunk failed to download). */
+export class EngineUnavailable extends TaggedError("EngineUnavailable")<{
+	fileName: string;
+	reason: string;
+	message: string;
+}> {}
+
+export class WorkerCrashed extends TaggedError("WorkerCrashed")<{
+	fileName: string;
+	message: string;
+}> {}
+
+export class ConversionCancelled extends TaggedError("ConversionCancelled")<{
+	fileName: string;
+	message: string;
+}> {}
+
+/** What the worker itself can answer with. */
+export type ConvertError = ConversionFailed | PasswordRequired | EngineUnavailable;
+
+/** What the main thread can get back for one file. */
+export type JobError = ConvertError | WorkerCrashed | ConversionCancelled;

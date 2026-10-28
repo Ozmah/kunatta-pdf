@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Conversions run in a background worker so the page stays responsive; if the worker crashes only that file is reported and the next one starts on a fresh worker, and cancelling stops the running and queued files.
 - Word, Excel and PowerPoint files (DOC, DOCX, XLS, XLSX, PPT, PPTX) are accepted in the drop zone and the file picker, recognized by their content even when renamed; GIF, AVIF and OpenDocument files are rejected.
 - Word, Excel and PowerPoint files, including the 97–2003 formats, convert to PDF inside the browser; missing fonts are replaced by metric-compatible open fonts served from the site itself.
 - A floating gear opens the PDF settings (page size and quality) with a press-and-spin animation; keyboard toggles and Escape are instant, reduced motion keeps only color and opacity changes.

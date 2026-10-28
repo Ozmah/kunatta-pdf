@@ -1,21 +1,9 @@
-import { Result, TaggedError, type Result as ResultType } from "better-result";
+import { Result, type Result as ResultType } from "better-result";
 import { Ream, WrongPasswordError, type LossReport } from "reamkit";
 
+import { ConversionFailed, PasswordRequired, type ConvertError } from "./errors.ts";
 import type { FontFetch } from "./office-fonts.ts";
 import { officeFormats, type OfficeFormat } from "./office-sniff.ts";
-
-export class ConversionFailed extends TaggedError("ConversionFailed")<{
-	fileName: string;
-	reason: string;
-	message: string;
-}> {}
-
-export class PasswordRequired extends TaggedError("PasswordRequired")<{
-	fileName: string;
-	message: string;
-}> {}
-
-export type OfficeError = ConversionFailed | PasswordRequired;
 
 export interface OfficePdf {
 	readonly format: OfficeFormat;
@@ -40,7 +28,7 @@ export function isDegraded(losses: LossReport): boolean {
 	return losses.some((loss) => loss.severity !== "substituted");
 }
 
-function failure(fileName: string, cause: unknown): OfficeError {
+function failure(fileName: string, cause: unknown): ConvertError {
 	if (cause instanceof WrongPasswordError) {
 		return new PasswordRequired({ fileName, message: `${fileName} needs a password` });
 	}
@@ -54,7 +42,7 @@ function failure(fileName: string, cause: unknown): OfficeError {
 export async function convertOffice(
 	bytes: Uint8Array,
 	options: OfficeOptions,
-): Promise<ResultType<OfficePdf, OfficeError>> {
+): Promise<ResultType<OfficePdf, ConvertError>> {
 	const { fileName, fontFetch, password } = options;
 
 	return Result.tryPromise({

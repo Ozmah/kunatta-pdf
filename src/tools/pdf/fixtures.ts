@@ -1,3 +1,4 @@
+import { bundledFontFetch } from "./office-fonts.ts";
 import type { ByteReader } from "./office-sniff.ts";
 
 // Minimal byte prefixes for each supported format. Only the signatures matter to the sniffer.
@@ -76,3 +77,16 @@ export async function officeFixture(name: string): Promise<Uint8Array<ArrayBuffe
 export function fileFrom(content: Uint8Array<ArrayBuffer>, name: string, mimeType = ""): File {
 	return new File([content], name, { type: mimeType });
 }
+
+/**
+ * Every font path reamkit asked for during the test run. reamkit caches fonts per URL for the
+ * whole process, so all tests share one recorder instead of each expecting its own requests.
+ */
+export const requestedFontPaths: Array<string> = [];
+
+/** Serves the bundled faces from disk, as the site would from /fonts/office/. */
+export const fixtureFontFetch = bundledFontFetch("https://kunatta.test", (url) => {
+	requestedFontPaths.push(url.pathname);
+
+	return Promise.resolve(new Response(Bun.file(`public${url.pathname}`)));
+});
