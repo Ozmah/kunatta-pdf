@@ -7,7 +7,8 @@ import {
 	PasswordRequired,
 	type ConvertError,
 } from "./errors.ts";
-import { officeFormats } from "./office-sniff.ts";
+import { pageSizes, qualities } from "./settings.ts";
+import { inputKinds } from "./sniff.ts";
 
 /**
  * Messages between the main thread and the conversion worker. Both sides validate
@@ -18,9 +19,13 @@ export const ConvertRequestSchema = v.strictObject({
 	type: v.literal("convert"),
 	jobId: v.pipe(v.string(), v.minLength(1)),
 	fileName: v.string(),
-	kind: v.picklist(officeFormats),
+	kind: v.picklist(inputKinds),
 	bytes: v.instance(ArrayBuffer),
 	password: v.optional(v.string()),
+	settings: v.strictObject({
+		size: v.picklist(pageSizes),
+		quality: v.picklist(qualities),
+	}),
 });
 
 export type ConvertRequest = v.InferOutput<typeof ConvertRequestSchema>;

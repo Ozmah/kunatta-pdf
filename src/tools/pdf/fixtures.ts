@@ -90,3 +90,16 @@ export const fixtureFontFetch = bundledFontFetch("https://kunatta.test", (url) =
 
 	return Promise.resolve(new Response(Bun.file(`public${url.pathname}`)));
 });
+
+function fromBase64(encoded: string): Uint8Array<ArrayBuffer> {
+	return Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));
+}
+
+/** Smallest valid images (1×1): enough for libpdf to read their dimensions and embed them. */
+export const tinyPng = fromBase64(
+	"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+);
+
+export const tinyJpeg = fromBase64(
+	"/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=",
+);

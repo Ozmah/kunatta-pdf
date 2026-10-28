@@ -35,3 +35,17 @@ export type ConvertError = ConversionFailed | PasswordRequired | EngineUnavailab
 
 /** What the main thread can get back for one file. */
 export type JobError = ConvertError | WorkerCrashed | ConversionCancelled;
+
+/** One file converted to a standalone PDF inside the worker. */
+export interface Converted {
+	readonly pdf: Uint8Array;
+	/** True when content was dropped or simplified; font substitution alone does not count. */
+	readonly degraded: boolean;
+}
+
+/** A library refused the file: the bytes are damaged or use features it cannot read. */
+export function conversionFailed(fileName: string, cause: Error | string): ConversionFailed {
+	const reason = cause instanceof Error ? cause.message : cause;
+
+	return new ConversionFailed({ fileName, reason, message: `${fileName} could not be converted` });
+}

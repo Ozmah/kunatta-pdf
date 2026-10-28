@@ -1,7 +1,13 @@
-import type { OfficeFormat } from "./office-sniff.ts";
+import { officeFormats, type OfficeFormat } from "./office-sniff.ts";
+
+export const imageKinds = ["jpeg", "png", "webp"] as const;
+
+export type ImageKind = (typeof imageKinds)[number];
 
 /** File kinds the PDF tool can turn into pages. */
-export type InputKind = "jpeg" | "png" | "webp" | "pdf" | "text" | OfficeFormat;
+export const inputKinds = [...imageKinds, "pdf", "text", ...officeFormats] as const;
+
+export type InputKind = (typeof inputKinds)[number];
 
 /** Archives that may hold an Office document; their entries decide the exact format. */
 export type Container = "zip" | "cfb";

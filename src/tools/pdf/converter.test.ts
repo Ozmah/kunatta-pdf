@@ -55,7 +55,12 @@ const answer: Behavior = (request, port) => {
 };
 
 function job(fileName: string): ConvertJob {
-	return { fileName, kind: "docx", bytes: new ArrayBuffer(8) };
+	return {
+		fileName,
+		kind: "docx",
+		bytes: new ArrayBuffer(8),
+		settings: { size: "letter", quality: "normal" },
+	};
 }
 
 function harness(...behaviors: Array<Behavior>) {

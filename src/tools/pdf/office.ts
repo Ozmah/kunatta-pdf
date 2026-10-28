@@ -1,15 +1,12 @@
 import { Result, type Result as ResultType } from "better-result";
 import { Ream, WrongPasswordError, type LossReport } from "reamkit";
 
-import { ConversionFailed, PasswordRequired, type ConvertError } from "./errors.ts";
+import { conversionFailed, PasswordRequired, type Converted, type ConvertError } from "./errors.ts";
 import type { FontFetch } from "./office-fonts.ts";
 import { officeFormats, type OfficeFormat } from "./office-sniff.ts";
 
-export interface OfficePdf {
+export interface OfficePdf extends Converted {
 	readonly format: OfficeFormat;
-	readonly pdf: Uint8Array;
-	/** True when content was dropped or simplified; font substitution alone does not count. */
-	readonly degraded: boolean;
 }
 
 export interface OfficeOptions {
@@ -33,9 +30,7 @@ function failure(fileName: string, cause: unknown): ConvertError {
 		return new PasswordRequired({ fileName, message: `${fileName} needs a password` });
 	}
 
-	const reason = cause instanceof Error ? cause.message : String(cause);
-
-	return new ConversionFailed({ fileName, reason, message: `${fileName} could not be converted` });
+	return conversionFailed(fileName, cause instanceof Error ? cause : String(cause));
 }
 
 /** Converts one Word, Excel or PowerPoint file into PDF bytes, entirely in memory. */
