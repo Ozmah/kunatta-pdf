@@ -17,3 +17,9 @@ const lang = routeLocale(Astro.params.lang);
 	<Dropzone lang={lang} />
 	<Settings lang={lang} />
 </Base>
+
+<script>
+	import { startPdfTool } from "../../tools/pdf/tool.ts";
+
+	startPdfTool(document);
+</script>

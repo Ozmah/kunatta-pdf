@@ -1,0 +1,88 @@
+/* Buttons shared by every tool. Riso: hard offset shadow, press sinks into it (110 ms). */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	height: 52px;
+	padding: 0 24px;
+	border: var(--border) solid;
+	font-size: 17px;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	transition:
+		transform var(--duration-press) var(--ease-press),
+		box-shadow var(--duration-press) var(--ease-press);
+}
+
+.btn:active {
+	transform: translate(-3px, 3px);
+	box-shadow: -1px 1px 0 var(--btn-shadow);
+}
+
+.btn svg {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.4;
+	stroke-linecap: square;
+}
+
+.btn-primary {
+	--btn-shadow: var(--color-grape);
+
+	border-color: var(--color-midnight);
+	background: var(--accent);
+	box-shadow: -4px 4px 0 var(--btn-shadow);
+	color: var(--on-accent);
+}
+
+.btn-secondary {
+	--btn-shadow: var(--color-neptune);
+
+	border-color: var(--line);
+	background: var(--bg);
+	box-shadow: -4px 4px 0 var(--btn-shadow);
+	color: var(--ink);
+}
+
+.btn-ghost {
+	height: 44px;
+	padding: 0 6px;
+	font: 600 13px var(--font-mono);
+	color: var(--ink-muted);
+	text-decoration: underline;
+	text-decoration-color: var(--color-neptune);
+	text-underline-offset: 4px;
+}
+
+.notice {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	width: 100%;
+	padding: 12px 14px;
+	border: var(--border) dashed var(--ink-quiet);
+	background: var(--bg);
+	font-size: 14px;
+	line-height: 1.45;
+}
+
+.notice svg {
+	flex: none;
+	fill: none;
+	stroke: var(--ink-quiet);
+	stroke-width: 2.2;
+	stroke-linecap: square;
+}
+
+.notice code {
+	font: 12px var(--font-mono);
+	color: var(--ink-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.btn {
+		transition: none;
+	}
+}

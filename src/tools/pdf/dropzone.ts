@@ -1,9 +1,7 @@
-import { admit, type Admission, type Pile } from "./pile.ts";
+import type { Origin } from "./paths.ts";
 
-/** Fired on the document after every admission; the pile view listens to it. */
-export const pileEvent = "kunatta:pile";
-
-export type PileEventDetail = Admission;
+/** Receives files in the order they arrived, with how they arrived. */
+export type ReceiveFiles = (files: ReadonlyArray<File>, origin: Origin) => void;
 
 /** True when a drag carries files (as opposed to text or links). */
 export function carriesFiles(types: ReadonlyArray<string>): boolean {
@@ -15,26 +13,21 @@ export function isApplePlatform(platform: string): boolean {
 	return /mac|iphone|ipad|ipod/i.test(platform);
 }
 
-export function connectDropzone(root: Document): void {
+export interface DropzoneControl {
+	/** Opens the system file picker. */
+	pick(): void;
+}
+
+export function connectDropzone(root: Document, receive: ReceiveFiles): DropzoneControl {
 	const zone = root.querySelector<HTMLLabelElement>("[data-dropzone]");
 	const picker = root.querySelector<HTMLInputElement>("[data-picker]");
 
 	if (zone === null || picker === null) throw new Error("Dropzone markup is missing");
 
-	let pile: Pile = [];
-	let queue = Promise.resolve();
 	let depth = 0;
 
-	// Admissions run one after another so files keep the order in which they arrived.
-	const receive = (files: ReadonlyArray<File>): void => {
-		if (files.length === 0) return;
-
-		queue = queue.then(async () => {
-			const admission = await admit(pile, files);
-
-			pile = admission.pile;
-			root.dispatchEvent(new CustomEvent<PileEventDetail>(pileEvent, { detail: admission }));
-		});
+	const deliver = (files: ReadonlyArray<File>, origin: Origin): void => {
+		if (files.length > 0) receive(files, origin);
 	};
 
 	const setDragging = (dragging: boolean): void => {
@@ -61,11 +54,11 @@ export function connectDropzone(root: Document): void {
 	zone.addEventListener("drop", (event) => {
 		depth = 0;
 		setDragging(false);
-		receive(Array.from(event.dataTransfer?.files ?? []));
+		deliver(Array.from(event.dataTransfer?.files ?? []), "drop");
 	});
 
 	picker.addEventListener("change", () => {
-		receive(Array.from(picker.files ?? []));
+		deliver(Array.from(picker.files ?? []), "pick");
 		// Clearing the value lets the same file be picked again later.
 		picker.value = "";
 	});
@@ -76,7 +69,7 @@ export function connectDropzone(root: Document): void {
 		if (files.length === 0) return;
 
 		event.preventDefault();
-		receive(files);
+		deliver(files, "paste");
 	});
 
 	const platform =
@@ -87,4 +80,6 @@ export function connectDropzone(root: Document): void {
 
 		if (modifier !== null) modifier.textContent = "⌘";
 	}
+
+	return { pick: () => picker.click() };
 }

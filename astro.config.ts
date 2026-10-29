@@ -9,6 +9,10 @@ const latin =
 
 export default defineConfig({
 	output: "static",
+	vite: {
+		// ES module workers can split: reamkit and @libpdf/core load only when a file needs them.
+		worker: { format: "es" },
+	},
 	trailingSlash: "always",
 	i18n: {
 		locales: [...locales],
