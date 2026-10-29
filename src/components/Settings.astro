@@ -1,7 +1,7 @@
 ---
 import type { Locale } from "../i18n/locales.ts";
 import { translate } from "../i18n/translate.ts";
-import { defaultSettings, pageSizes, qualities } from "../tools/pdf/settings.ts";
+import { defaultSettings, pageSizes, passwordModes, qualities } from "../tools/pdf/settings.ts";
 
 interface Props {
 	lang: Locale;
@@ -52,6 +52,25 @@ const { lang } = Astro.props;
 					))
 				}
 			</div>
+		</fieldset>
+		<fieldset>
+			<legend>{translate(lang, "settings.password")}</legend>
+			<div class="segments">
+				{
+					passwordModes.map((mode) => (
+						<label>
+							<input
+								type="radio"
+								name="password"
+								value={mode}
+								checked={mode === defaultSettings.password}
+							/>
+							<span>{translate(lang, `settings.password.${mode}`)}</span>
+						</label>
+					))
+				}
+			</div>
+			<p class="note">{translate(lang, "settings.password.note")}</p>
 		</fieldset>
 	</form>
 
@@ -272,6 +291,12 @@ const { lang } = Astro.props;
 	.segments input:focus-visible + span {
 		outline: 2.5px solid var(--focus);
 		outline-offset: -6px;
+	}
+
+	.note {
+		margin-top: 8px;
+		font: 500 11px var(--font-mono);
+		color: var(--ink-muted);
 	}
 
 	/* Reduced motion keeps color and opacity, drops rotation, scale and offsets. */

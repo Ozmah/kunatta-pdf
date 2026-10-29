@@ -155,9 +155,14 @@ export async function handleMessage(
 		}
 
 		const converted = await convert(request, fontFetch, available);
-		const result = converted.map(({ pdf, degraded }): FilePdf => ({ pdf: pdfBlob(pdf), degraded }));
 
-		return encodeConverted(request.jobId, result);
+		if (converted.isErr()) return encodeConverted(request.jobId, converted);
+
+		const { pdf, degraded, pages } = converted.value;
+		const counted = pages ?? (await (await available.pdf()).countPages(pdf));
+		const file: FilePdf = { pdf: pdfBlob(pdf), degraded, pages: counted };
+
+		return encodeConverted(request.jobId, Result.ok(file));
 	} catch (error) {
 		// Converters return expected failures as values; reaching this is a bug in the worker.
 		return fatal(error instanceof Error ? error.message : String(error));

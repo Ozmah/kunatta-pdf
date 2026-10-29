@@ -3,7 +3,15 @@ import { translate } from "../../i18n/translate.ts";
 import { createConverter, spawnPdfWorker } from "./converter.ts";
 import { createDownloader } from "./download.ts";
 import { connectDropzone } from "./dropzone.ts";
-import { degradedNotice, failureReason, runFast } from "./fast.ts";
+import { connectDialogs } from "./dialogs.ts";
+import {
+	backedOut,
+	degradedNotice,
+	failureReason,
+	runFast,
+	runSinglePdf,
+	type Outcome,
+} from "./fast.ts";
 import { connectFastView, rejectionMessage } from "./fast-view.ts";
 import { connectSettings } from "./gear.ts";
 import { choosePath } from "./paths.ts";
@@ -25,15 +33,25 @@ export function startPdfTool(root: Document): void {
 	let busy = false;
 	let last: PileEntry | undefined;
 
-	const convertFast = async (entry: PileEntry): Promise<void> => {
+	const prompts = connectDialogs(root, locale, () => settings.read());
+
+	type Run = typeof runFast;
+
+	const convertOne = async (entry: PileEntry, run: Run): Promise<void> => {
 		busy = true;
 		last = entry;
 		downloads.release();
 		view.converting(entry.name, entry.kind);
 
-		const result = await runFast(entry, converter, settings.read());
+		const result: Outcome = await run(entry, converter, settings.read(), prompts);
 
 		busy = false;
+
+		if (result === backedOut) {
+			view.show("idle");
+
+			return;
+		}
 
 		if (result.isErr()) {
 			view.failed(entry.name, entry.kind, failureReason(result.error));
@@ -61,8 +79,10 @@ export function startPdfTool(root: Document): void {
 
 			const path = choosePath(pile, origin);
 
-			// The single-PDF dialog (9b) and assembly (9c) are not wired yet.
-			if (path.kind === "fast") await convertFast(path.entry);
+			// Assembly (9c) is not wired yet.
+			if (path.kind === "fast") await convertOne(path.entry, runFast);
+
+			if (path.kind === "single-pdf") await convertOne(path.entry, runSinglePdf);
 		});
 	});
 
@@ -74,7 +94,7 @@ export function startPdfTool(root: Document): void {
 	});
 
 	root.querySelector("[data-retry]")?.addEventListener("click", () => {
-		if (last !== undefined) void convertFast(last);
+		if (last !== undefined) void convertOne(last, last.kind === "pdf" ? runSinglePdf : runFast);
 	});
 
 	root.querySelector("[data-pick-another]")?.addEventListener("click", () => {

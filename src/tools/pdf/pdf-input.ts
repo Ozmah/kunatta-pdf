@@ -28,7 +28,9 @@ export async function openPdf(
 
 	const pdf = loaded.value;
 
-	if (!pdf.isEncrypted) return Result.ok({ pdf: bytes, degraded: false });
+	const pages = pdf.getPages().length;
+
+	if (!pdf.isEncrypted) return Result.ok({ pdf: bytes, degraded: false, pages });
 
 	// libpdf opens protected files without throwing; a missing or wrong password leaves them unauthenticated.
 	if (!pdf.isAuthenticated) {
@@ -38,7 +40,12 @@ export async function openPdf(
 	pdf.removeProtection({ ignorePermissions: true });
 
 	return Result.tryPromise({
-		try: async () => ({ pdf: await pdf.save(), degraded: false }),
+		try: async () => ({ pdf: await pdf.save(), degraded: false, pages }),
 		catch: (cause) => conversionFailed(fileName, cause instanceof Error ? cause : String(cause)),
 	});
+}
+
+/** Counts the pages of a PDF this tool produced; used for Office, whose converter does not say. */
+export async function countPages(bytes: Uint8Array): Promise<number> {
+	return (await PDF.load(bytes)).getPages().length;
 }

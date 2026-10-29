@@ -4,11 +4,11 @@ import { defaultSettings, readSettings } from "./settings.ts";
 
 describe("readSettings", () => {
 	test("keeps valid choices", () => {
-		expect(readSettings("a4", "max")).toEqual({ size: "a4", quality: "max" });
+		expect(readSettings("a4", "max", "on")).toEqual({ size: "a4", quality: "max", password: "on" });
 	});
 
 	test("falls back to the defaults for missing or tampered values", () => {
-		expect(readSettings(null, null)).toEqual(defaultSettings);
-		expect(readSettings("legal", "<img>")).toEqual(defaultSettings);
+		expect(readSettings(null, null, null)).toEqual(defaultSettings);
+		expect(readSettings("legal", "<img>", "yes")).toEqual(defaultSettings);
 	});
 });

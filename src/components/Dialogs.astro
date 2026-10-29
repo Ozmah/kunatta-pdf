@@ -1,0 +1,334 @@
+---
+import type { Locale } from "../i18n/locales.ts";
+import { translate } from "../i18n/translate.ts";
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key);
+const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z";
+---
+
+<dialog class="dlg" aria-labelledby="single-title" data-dialog="single">
+	<form method="dialog">
+		<h2 id="single-title">{t("single.title")}</h2>
+		<div class="file">
+			<span class="tile" aria-hidden="true">PDF</span>
+			<span><b data-name></b><span class="meta" data-meta></span></span>
+		</div>
+		<dl>
+			<dt>{t("settings.size")}</dt>
+			<dd><span data-size></span> <small data-fit></small></dd>
+			<dt>{t("settings.quality")}</dt>
+			<dd data-quality></dd>
+			<dt>{t("settings.password")}</dt>
+			<dd data-password></dd>
+			<dt>{t("single.result")}</dt>
+			<dd data-result></dd>
+		</dl>
+		<p class="question">{t("single.question")}</p>
+		<div class="actions">
+			<button class="btn-ghost" type="button" data-back>{t("single.back")}</button>
+			<button class="btn btn-primary" value="confirm" autofocus>{t("single.confirm")}</button>
+		</div>
+	</form>
+</dialog>
+
+<dialog class="dlg" aria-labelledby="incoming-title" data-dialog="incoming">
+	<form method="dialog">
+		<h2 id="incoming-title" data-title></h2>
+		<div class="file">
+			<span class="tile" aria-hidden="true" data-kind></span>
+			<span><b data-name></b><span class="meta">{t("incoming.protected")}</span></span>
+		</div>
+		<label class="field-group">
+			<span class="label">{t("incoming.label")}</span>
+			<span class="field">
+				<input type="password" name="password" autocomplete="off" spellcheck="false" autofocus />
+			</span>
+			<span class="error" role="alert" data-error></span>
+		</label>
+		<p class="warn">
+			<span>{t("incoming.warn.start")} <b>{t("incoming.warn.strong")}</b>{t("incoming.warn.end")}</span>
+		</p>
+		<div class="actions">
+			<button class="btn-ghost" type="button" data-back>{t("incoming.cancel")}</button>
+			<button class="btn btn-primary" value="confirm">{t("incoming.open")}</button>
+		</div>
+	</form>
+</dialog>
+
+<dialog class="dlg" aria-labelledby="result-title" data-dialog="result">
+	<form method="dialog">
+		<h2 id="result-title">{t("result.title")}</h2>
+		<div class="file">
+			<span class="tile pdf" aria-hidden="true">PDF</span>
+			<span><b data-name></b><span class="meta" data-meta></span></span>
+		</div>
+		{
+			(["password", "repeat"] as const).map((name) => (
+				<label class="field-group">
+					<span class="label">{t(name === "password" ? "result.label" : "result.repeat")}</span>
+					<span class="field">
+						<input
+							type="password"
+							name={name}
+							autocomplete="new-password"
+							spellcheck="false"
+							autofocus={name === "password"}
+						/>
+						<button
+							class="eye"
+							type="button"
+							aria-label={t("password.show")}
+							aria-pressed="false"
+							data-reveal
+						>
+							<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+								<path d={eye}></path>
+							</svg>
+						</button>
+					</span>
+				</label>
+			))
+		}
+		<span class="error" role="alert" data-error></span>
+		<p class="warn">
+			<span>{t("result.warn.start")} <b>{t("result.warn.strong")}</b></span>
+		</p>
+		<div class="actions">
+			<button class="btn-ghost" type="button" data-back>{t("result.back")}</button>
+			<button class="btn btn-primary" value="confirm">{t("result.confirm")}</button>
+		</div>
+	</form>
+</dialog>
+
+<style>
+	.dlg {
+		width: min(540px, calc(100% - 32px));
+		max-height: calc(100dvh - 32px);
+		margin: auto;
+		padding: 0;
+		border: var(--border-strong) solid var(--line);
+		background: var(--surface);
+		box-shadow: -10px 10px 0 var(--color-grape);
+		color: var(--ink);
+		overflow: auto;
+	}
+
+	.dlg::backdrop {
+		background: rgb(0 34 51 / 86%);
+	}
+
+	.dlg[open] {
+		animation: pop var(--duration-pop-in) var(--ease-pop);
+	}
+
+	@keyframes pop {
+		from {
+			opacity: 0;
+			transform: translateY(12px) scale(0.97);
+		}
+	}
+
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+		padding: 28px;
+	}
+
+	h2 {
+		font-size: 26px;
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		line-height: 1.1;
+	}
+
+	.file {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		overflow-wrap: anywhere;
+	}
+
+	.meta {
+		display: block;
+		font: 500 12px var(--font-mono);
+		color: var(--ink-muted);
+	}
+
+	.tile {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 40px;
+		height: 52px;
+		border: var(--border) solid var(--line);
+		background: var(--bg);
+		font: 700 10px var(--font-mono);
+	}
+
+	.tile.pdf {
+		border-color: var(--color-midnight);
+		background: var(--accent);
+		color: var(--on-accent);
+	}
+
+	dl {
+		display: grid;
+		grid-template-columns: 112px 1fr;
+		gap: 10px 16px;
+		padding: 14px 0;
+		border-block: var(--border) solid var(--bg);
+		font-size: 15px;
+	}
+
+	dt {
+		padding-top: 3px;
+		font: 600 11px var(--font-mono);
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ink-muted);
+	}
+
+	dd {
+		margin: 0;
+		overflow-wrap: anywhere;
+	}
+
+	small {
+		font-size: 13px;
+		color: var(--ink-muted);
+	}
+
+	.question {
+		font-size: 15px;
+	}
+
+	.field-group {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.label {
+		font: 600 11px var(--font-mono);
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ink-muted);
+	}
+
+	.field {
+		display: flex;
+		height: 48px;
+		border: var(--border) solid var(--line);
+		background: var(--bg);
+	}
+
+	.field:focus-within {
+		outline: 3px solid var(--focus);
+		outline-offset: 2px;
+	}
+
+	[data-invalid] .field {
+		border-color: var(--ink);
+		outline: 3px solid var(--ink);
+		outline-offset: 2px;
+	}
+
+	input {
+		flex: 1;
+		min-width: 0;
+		padding: 0 14px;
+		border: 0;
+		background: none;
+		font: 500 16px var(--font-mono);
+	}
+
+	input:focus {
+		outline: none;
+	}
+
+	.eye {
+		display: grid;
+		place-items: center;
+		width: 48px;
+		border-left: var(--border) solid var(--surface);
+		color: var(--ink-muted);
+	}
+
+	.eye svg {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+	}
+
+	.eye[aria-pressed="true"] {
+		color: var(--accent);
+	}
+
+	.error {
+		font: 500 12px var(--font-mono);
+		color: var(--ink);
+	}
+
+	.error:empty {
+		display: none;
+	}
+
+	.warn {
+		padding: 12px 14px;
+		border: var(--border) solid var(--accent);
+		background: var(--bg);
+		font-size: 14px;
+		line-height: 1.45;
+	}
+
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px 16px;
+		align-items: center;
+		justify-content: flex-end;
+	}
+
+	/* Phones: a sheet on the bottom edge, actions stacked with the primary on top. */
+	@media (max-width: 520px) {
+		.dlg {
+			width: 100%;
+			max-width: none;
+			margin: auto 0 0;
+			border-width: var(--border-strong) 0 0;
+			box-shadow: 0 -6px 0 var(--color-grape);
+		}
+
+		form {
+			padding: 26px 20px 30px;
+		}
+
+		dl {
+			grid-template-columns: 96px 1fr;
+			font-size: 14px;
+		}
+
+		.actions {
+			flex-direction: column-reverse;
+			align-items: stretch;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.dlg[open] {
+			animation-name: fade;
+		}
+
+		@keyframes fade {
+			from {
+				opacity: 0;
+			}
+		}
+	}
+</style>

@@ -56,7 +56,7 @@ const answer: Behavior = (request, port) => {
 	port.emit(
 		"message",
 		request.type === "convert"
-			? encodeConverted(request.jobId, Result.ok({ pdf, degraded: false }))
+			? encodeConverted(request.jobId, Result.ok({ pdf, degraded: false, pages: 1 }))
 			: encodeComposed(request.jobId, Result.ok({ pdf, pages: 3 })),
 	);
 };

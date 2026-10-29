@@ -126,7 +126,7 @@ export async function convertImage(
 
 				pdf.addPage({ width, height }).drawImage(image, { x: 0, y: 0, width, height });
 
-				return { pdf: await pdf.save(), degraded: false };
+				return { pdf: await pdf.save(), degraded: false, pages: 1 };
 			} finally {
 				raster.close();
 			}

@@ -54,6 +54,7 @@ export interface FilePdf {
 	readonly pdf: Blob;
 	/** True when the converter simplified or dropped content. */
 	readonly degraded: boolean;
+	readonly pages: number;
 }
 
 /** The final document. */
@@ -97,7 +98,11 @@ function envelope<Value extends v.GenericSchema, Failure extends v.GenericSchema
 }
 
 export const ConvertResponseSchema = envelope(
-	v.strictObject({ pdf: v.instance(Blob), degraded: v.boolean() }),
+	v.strictObject({
+		pdf: v.instance(Blob),
+		degraded: v.boolean(),
+		pages: v.pipe(v.number(), v.integer(), v.minValue(1)),
+	}),
 	v.variant("tag", [failed, locked, unavailable]),
 );
 

@@ -1,11 +1,24 @@
 import type { Locale } from "./locales.ts";
 import { translate } from "./translate.ts";
 
+type Plural = "one" | "other";
+
+function plural(locale: Locale, count: number): Plural {
+	return new Intl.PluralRules(locale).select(count) === "one" ? "one" : "other";
+}
+
 /** "1 página", "14 páginas": plural rules come from the locale. */
 export function pageCount(locale: Locale, count: number): string {
-	const form = new Intl.PluralRules(locale).select(count) === "one" ? "one" : "other";
+	return withCount(translate(locale, `count.pages.${plural(locale, count)}`), count);
+}
 
-	return translate(locale, `count.pages.${form}`).replace("{count}", String(count));
+export function fileCount(locale: Locale, count: number): string {
+	return withCount(translate(locale, `count.files.${plural(locale, count)}`), count);
+}
+
+/** "· las 6 páginas se ajustan" under the size in the single-PDF dialog. */
+export function fitNote(locale: Locale, count: number): string {
+	return withCount(translate(locale, `single.fit.${plural(locale, count)}`), count);
 }
 
 /** Sizes as people read them on their phones: 380 KB, 9.8 MB (decimal units, locale separators). */

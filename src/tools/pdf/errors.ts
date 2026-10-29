@@ -53,6 +53,8 @@ export interface Converted {
 	readonly pdf: Uint8Array;
 	/** True when content was dropped or simplified; font substitution alone does not count. */
 	readonly degraded: boolean;
+	/** Pages in `pdf`; undefined only for Office, whose converter does not report it. */
+	readonly pages?: number;
 }
 
 /** A library refused the file: the bytes are damaged or use features it cannot read. */

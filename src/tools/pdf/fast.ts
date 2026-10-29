@@ -12,6 +12,7 @@ import {
 } from "./errors.ts";
 import { pdfName } from "./file-name.ts";
 import type { PileEntry } from "./pile.ts";
+import type { FilePdf } from "./protocol.ts";
 import type { Settings } from "./settings.ts";
 import type { InputKind } from "./sniff.ts";
 
@@ -24,35 +25,117 @@ export interface FastPdf {
 
 export type FastError = JobError | ComposeJobError;
 
-/** One file, straight to a download: convert it, then compose it so Letter, A4 and the password apply. */
+/** What the user can be asked along the way. Each prompt resolves to undefined when they back out. */
+export interface Prompts {
+	/** A protected file needs its password; `retry` is true after a wrong one. */
+	incomingPassword(entry: PileEntry, retry: boolean): Promise<string | undefined>;
+	/** The password for the result, typed twice; only asked when the setting is on. */
+	resultPassword(name: string, pages: number | undefined): Promise<string | undefined>;
+	/** The single-PDF dialog: true to make the PDF, false to go back. */
+	confirmSinglePdf(entry: PileEntry, name: string, pages: number): Promise<boolean>;
+}
+
+/** The user backed out of a dialog; nothing failed. */
+export const backedOut = "backed-out";
+
+export type Outcome = ResultType<FastPdf, FastError> | typeof backedOut;
+
+/** Converts one file, asking for its password as many times as needed. */
+async function convertEntry(
+	entry: PileEntry,
+	converter: Converter,
+	settings: Settings,
+	prompts: Prompts,
+): Promise<ResultType<FilePdf, JobError> | typeof backedOut> {
+	let password: string | undefined;
+	let retry = false;
+
+	for (;;) {
+		// The worker only needs what shapes the conversion; the password setting stays here.
+		const job = {
+			fileName: entry.name,
+			kind: entry.kind,
+			file: entry.source,
+			settings: { size: settings.size, quality: settings.quality },
+		};
+
+		const converted = await converter.convert(password === undefined ? job : { ...job, password });
+
+		if (converted.isOk() || !PasswordRequired.is(converted.error)) return converted;
+
+		password = await prompts.incomingPassword(entry, retry);
+
+		if (password === undefined) return backedOut;
+
+		retry = true;
+	}
+}
+
+async function compose(
+	converter: Converter,
+	file: FilePdf,
+	name: string,
+	settings: Settings,
+	password: string | undefined,
+): Promise<ResultType<FastPdf, FastError>> {
+	const job = { fileName: name, parts: [file.pdf], size: settings.size };
+	const composed = await converter.compose(password === undefined ? job : { ...job, password });
+
+	return composed.map(({ pdf, pages }) => ({ name, pdf, pages, degraded: file.degraded }));
+}
+
+/**
+ * One file that is not a PDF, straight to a download. The result password, when the setting is
+ * on, is asked before converting; a protected Office file asks for its own password on the way.
+ */
 export async function runFast(
 	entry: PileEntry,
 	converter: Converter,
 	settings: Settings,
-): Promise<ResultType<FastPdf, FastError>> {
+	prompts: Prompts,
+): Promise<Outcome> {
 	const name = pdfName(entry.name);
+	let password: string | undefined;
 
-	const converted = await converter.convert({
-		fileName: entry.name,
-		kind: entry.kind,
-		file: entry.source,
-		settings,
-	});
+	if (settings.password === "on") {
+		password = await prompts.resultPassword(name, undefined);
 
-	if (converted.isErr()) return converted;
+		if (password === undefined) return backedOut;
+	}
 
-	const composed = await converter.compose({
-		fileName: name,
-		parts: [converted.value.pdf],
-		size: settings.size,
-	});
+	const converted = await convertEntry(entry, converter, settings, prompts);
 
-	return composed.map(({ pdf, pages }) => ({
-		name,
-		pdf,
-		pages,
-		degraded: converted.value.degraded,
-	}));
+	if (converted === backedOut || converted.isErr()) return converted;
+
+	return compose(converter, converted.value, name, settings, password);
+}
+
+/**
+ * One PDF: open it first (asking for its password if needed) so the dialog can show its pages,
+ * confirm, then ask for the result password and compose.
+ */
+export async function runSinglePdf(
+	entry: PileEntry,
+	converter: Converter,
+	settings: Settings,
+	prompts: Prompts,
+): Promise<Outcome> {
+	const name = pdfName(entry.name);
+	const opened = await convertEntry(entry, converter, settings, prompts);
+
+	if (opened === backedOut || opened.isErr()) return opened;
+
+	if (!(await prompts.confirmSinglePdf(entry, name, opened.value.pages))) return backedOut;
+
+	let password: string | undefined;
+
+	if (settings.password === "on") {
+		password = await prompts.resultPassword(name, opened.value.pages);
+
+		if (password === undefined) return backedOut;
+	}
+
+	return compose(converter, opened.value, name, settings, password);
 }
 
 /** The notice shown after a degraded conversion, chosen by what usually goes wrong for that kind. */

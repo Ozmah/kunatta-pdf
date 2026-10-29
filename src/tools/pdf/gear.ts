@@ -55,13 +55,14 @@ export function connectSettings(root: Document): SettingsControl {
 	return {
 		read: () => {
 			const values = new FormData(panel);
-			const size = values.get("size");
-			const quality = values.get("quality");
 
-			return readSettings(
-				size instanceof File ? null : size,
-				quality instanceof File ? null : quality,
-			);
+			const text = (name: string): string | null => {
+				const value = values.get(name);
+
+				return value instanceof File ? null : value;
+			};
+
+			return readSettings(text("size"), text("quality"), text("password"));
 		},
 	};
 }
