@@ -9,8 +9,11 @@ import {
 	degradedNotice,
 	failureReason,
 	runFast,
+	isMoreFiles,
 	runSinglePdf,
+	type Outcome,
 	type Prompts,
+	type SingleChoice,
 } from "./fast.ts";
 import type { PileEntry } from "./pile.ts";
 import type { Settings } from "./settings.ts";
@@ -69,7 +72,7 @@ function converter(): Converter & { calls: Array<string> } {
 interface Answers {
 	readonly incomingPassword?: Array<string | undefined>;
 	readonly resultPassword?: Array<string | undefined>;
-	readonly confirmSinglePdf?: Array<boolean>;
+	readonly confirmSinglePdf?: Array<SingleChoice>;
 }
 
 /** Scripted answers, taken in order; an exhausted list answers like backing out. */
@@ -94,9 +97,16 @@ function prompts(answers: Answers): Prompts & { asked: Array<string> } {
 		confirmSinglePdf: (entry, name, pages) => {
 			asked.push(`confirm ${entry.name} as ${name}, ${pages} pages`);
 
-			return Promise.resolve(confirms.shift() ?? false);
+			return Promise.resolve(confirms.shift() ?? "back");
 		},
 	};
+}
+
+/** The outcome as a Result; backing out or "add more files" fail the test. */
+function settled(outcome: Outcome) {
+	if (outcome === backedOut || isMoreFiles(outcome)) throw new Error("expected a result");
+
+	return outcome;
 }
 
 describe("runFast", () => {
@@ -105,7 +115,7 @@ describe("runFast", () => {
 		const result = await runFast(word, fake, settings, prompts({}));
 
 		expect(fake.calls).toEqual(["convert tarea: historia.doc", "compose tarea historia.pdf a4"]);
-		expect(result !== backedOut && result.unwrap()).toMatchObject({
+		expect(settled(result).unwrap()).toMatchObject({
 			name: "tarea historia.pdf",
 			degraded: true,
 		});
@@ -128,14 +138,16 @@ describe("runFast", () => {
 		const fake = { ...converter(), convert: () => Promise.resolve(Result.err(failure)) };
 		const result = await runFast(word, fake, settings, prompts({}));
 
-		expect(result !== backedOut && result.isErr() && result.error).toBe(failure);
+		const settledResult = settled(result);
+
+		expect(settledResult.isErr() && settledResult.error).toBe(failure);
 	});
 });
 
 describe("runSinglePdf", () => {
 	test("asks for the incoming password until it opens, then confirms and composes without it", async () => {
 		const fake = converter();
-		const asked = prompts({ incomingPassword: ["wrong", "secret"], confirmSinglePdf: [true] });
+		const asked = prompts({ incomingPassword: ["wrong", "secret"], confirmSinglePdf: ["make"] });
 		const result = await runSinglePdf(pdf, fake, settings, asked);
 
 		expect(asked.asked).toEqual([
@@ -144,7 +156,7 @@ describe("runSinglePdf", () => {
 			"confirm constancia.pdf as constancia.pdf, 6 pages",
 		]);
 		expect(fake.calls.at(-1)).toBe("compose constancia.pdf a4");
-		expect(result !== backedOut && result.isOk()).toBe(true);
+		expect(settled(result).isOk()).toBe(true);
 	});
 
 	test("going back from the dialog composes nothing; the result password comes after confirming", async () => {
@@ -152,12 +164,12 @@ describe("runSinglePdf", () => {
 			pdf,
 			converter(),
 			settings,
-			prompts({ incomingPassword: ["secret"], confirmSinglePdf: [false] }),
+			prompts({ incomingPassword: ["secret"], confirmSinglePdf: ["back"] }),
 		);
 
 		const asked = prompts({
 			incomingPassword: ["secret"],
-			confirmSinglePdf: [true],
+			confirmSinglePdf: ["make"],
 			resultPassword: ["nueva"],
 		});
 
@@ -168,6 +180,22 @@ describe("runSinglePdf", () => {
 		expect(back).toBe(backedOut);
 		expect(asked.asked.at(-1)).toBe("result constancia.pdf 6");
 		expect(fake.calls.at(-1)).toBe("compose constancia.pdf a4 locked nueva");
+	});
+});
+
+describe("add more files", () => {
+	test("hands the opened PDF over to an assembly without composing", async () => {
+		const fake = converter();
+
+		const outcome = await runSinglePdf(
+			pdf,
+			fake,
+			settings,
+			prompts({ incomingPassword: ["secret"], confirmSinglePdf: ["more"] }),
+		);
+
+		expect(isMoreFiles(outcome) && outcome.entry).toBe(pdf);
+		expect(fake.calls.some((call) => call.startsWith("compose"))).toBe(false);
 	});
 });
 

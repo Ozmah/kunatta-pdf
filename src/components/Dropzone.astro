@@ -1,5 +1,6 @@
 ---
 import type { Locale } from "../i18n/locales.ts";
+import Assembly from "./Assembly.astro";
 import FastPath from "./FastPath.astro";
 import { translate } from "../i18n/translate.ts";
 
@@ -51,7 +52,7 @@ const cards = [
 		<span data-notice-text></span>
 	</div>
 
-	<label class="drop" data-dropzone>
+	<label class="drop" data-dropzone data-empty-drop>
 		<input class="sr-only" type="file" multiple accept={accept} data-picker />
 		<span class="fan" aria-hidden="true">
 			{
@@ -72,6 +73,7 @@ const cards = [
 	</label>
 
 	<FastPath lang={lang} />
+	<Assembly lang={lang} />
 </section>
 
 <style>
@@ -81,6 +83,10 @@ const cards = [
 		align-items: center;
 		gap: 34px;
 		width: min(640px, 100%);
+	}
+
+	.tool:has([data-assembly]:not([hidden])) {
+		width: min(760px, 100%);
 	}
 
 	.flow[hidden],

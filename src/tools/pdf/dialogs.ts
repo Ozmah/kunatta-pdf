@@ -1,7 +1,9 @@
-import { fileCount, fileSize, fitNote, pageCount } from "../../i18n/format.ts";
+import { fileCount, fileSize, fitNote, pageCount, withCount } from "../../i18n/format.ts";
 import type { Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
-import type { Prompts } from "./fast.ts";
+import type { AssemblyPrompts } from "./assembly-run.ts";
+import type { Items } from "./assembly.ts";
+import { failureReason, type Prompts } from "./fast.ts";
 import { kindLabel } from "./fast-view.ts";
 import type { Settings } from "./settings.ts";
 
@@ -94,13 +96,34 @@ function connectReveal(dialog: HTMLDialogElement, locale: Locale): void {
 }
 
 /** The dialogs of panel 04, bound to the page. Every user string goes through textContent. */
-export function connectDialogs(root: Document, locale: Locale, settings: () => Settings): Prompts {
+export function connectDialogs(
+	root: Document,
+	locale: Locale,
+	settings: () => Settings,
+): Prompts & AssemblyPrompts {
 	const single = required<HTMLDialogElement>(root, '[data-dialog="single"]');
+	const summary = required<HTMLDialogElement>(root, '[data-dialog="summary"]');
+	const failTemplate = required<HTMLTemplateElement>(root, "[data-fail-template]");
 	const incoming = required<HTMLDialogElement>(root, '[data-dialog="incoming"]');
 	const result = required<HTMLDialogElement>(root, '[data-dialog="result"]');
 	const t = (key: Parameters<typeof translate>[1]): string => translate(locale, key);
 
-	for (const dialog of [single, incoming, result]) connectBack(dialog);
+	for (const dialog of [single, summary, incoming, result]) connectBack(dialog);
+
+	const failRow = (problems: Items[number]): Node => {
+		const row = failTemplate.content.cloneNode(true);
+
+		if (!(row instanceof DocumentFragment)) throw new Error("Fail template is not a fragment");
+
+		const { entry, state } = problems;
+		const reason = state.kind === "failed" ? t(failureReason(state.error)) : t("reason.password");
+
+		required(row, ".tile").textContent = kindLabel(entry.kind);
+		required(row, "b").textContent = entry.name;
+		required(row, ".meta").textContent = reason;
+
+		return row;
+	};
 
 	connectReveal(result, locale);
 
@@ -153,7 +176,25 @@ export function connectDialogs(root: Document, locale: Locale, settings: () => S
 			required(single, "[data-password]").textContent = t(`settings.password.${current.password}`);
 			required(single, "[data-result]").textContent = name;
 
-			return (await ask(single)).choice === "confirm";
+			const { choice } = await ask(single);
+
+			if (choice === "confirm") return "make";
+
+			return choice === "more" ? "more" : "back";
+		},
+
+		async summary(problems, total) {
+			required(summary, "[data-title]").textContent = withCount(
+				t("summary.title"),
+				problems.length,
+			).replace("{total}", String(total));
+			required(summary, "[data-fails]").replaceChildren(...problems.map(failRow));
+			required(summary, "[data-body]").textContent = withCount(
+				t("summary.body"),
+				total - problems.length,
+			);
+
+			return (await ask(summary)).choice === "confirm" ? "without" : "back";
 		},
 	};
 }

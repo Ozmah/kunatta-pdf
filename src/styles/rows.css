@@ -1,0 +1,229 @@
+/*
+ * Assembly rows. Global because the rows are cloned from a <template> at runtime and Astro's
+ * scoped styles only reach markup it rendered.
+ */
+.row {
+	position: relative;
+	display: grid;
+	grid-template-columns: 34px 40px 1fr auto;
+	gap: 0 14px;
+	align-items: center;
+	min-height: 64px;
+	padding: 8px 12px;
+	border: var(--border) solid var(--surface);
+	background: var(--bg);
+}
+
+.row[data-pinned] {
+	border-color: var(--accent);
+}
+
+.row[data-state="failed"] {
+	border-color: var(--ink);
+}
+
+.row[data-state="locked"] {
+	border-color: var(--accent);
+}
+
+.row .ix {
+	font: 600 12px var(--font-mono);
+	color: var(--ink-muted);
+}
+
+.row[data-pinned] .ix {
+	color: var(--accent);
+}
+
+.row .pinmark {
+	position: absolute;
+	top: -9px;
+	left: 10px;
+	padding: 0 6px;
+	background: var(--accent);
+	color: var(--on-accent);
+	font: 700 10px var(--font-mono);
+	letter-spacing: 0.08em;
+}
+
+.row .pinmark[hidden],
+.row .st[hidden],
+.row .unlock[hidden] {
+	display: none;
+}
+
+.row .tile {
+	display: grid;
+	place-items: center;
+	width: 36px;
+	height: 48px;
+	border: var(--border) solid var(--color-midnight);
+	background: var(--color-cheviot);
+	color: var(--color-midnight);
+	font: 700 9px var(--font-mono);
+}
+
+.row[data-state="checking"] .tile {
+	opacity: 0.45;
+}
+
+.row .nm {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.row .title {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 8px;
+	align-items: center;
+}
+
+.row b {
+	font-size: 15px;
+	overflow-wrap: anywhere;
+}
+
+.row .meta {
+	font: 500 12px var(--font-mono);
+	color: var(--ink-muted);
+}
+
+.row[data-state="failed"] .meta,
+.row .meta[data-error] {
+	color: var(--ink);
+}
+
+.row .st {
+	padding: 1px 6px;
+	font: 700 10px var(--font-mono);
+	font-style: normal;
+	letter-spacing: 0.04em;
+	white-space: nowrap;
+}
+
+.row[data-state="checking"] .st {
+	border: 1.5px solid var(--line);
+	color: var(--ink-muted);
+}
+
+.row[data-state="failed"] .st {
+	background: var(--ink);
+	color: var(--bg);
+}
+
+.row[data-state="locked"] .st {
+	border: 1.5px solid var(--accent);
+	color: var(--accent);
+}
+
+.row .acts {
+	display: flex;
+	gap: 6px;
+}
+
+.row .ib {
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	border: var(--border) solid transparent;
+	color: var(--ink-muted);
+}
+
+.row .ib svg {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.4;
+	stroke-linecap: square;
+}
+
+.row .ib:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+
+.row .ib[aria-pressed="true"] {
+	background: var(--accent);
+	color: var(--on-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.row .ib:not(:disabled):hover {
+		border-color: var(--surface);
+		color: var(--ink);
+	}
+}
+
+.row .unlock {
+	display: flex;
+	grid-column: 3 / -1;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.row .unlock .field {
+	display: flex;
+	flex: 1;
+	max-width: 340px;
+	height: 44px;
+	border: var(--border) solid var(--line);
+	background: var(--bg);
+}
+
+.row .unlock input {
+	flex: 1;
+	min-width: 0;
+	padding: 0 12px;
+	border: 0;
+	background: none;
+	font: 500 15px var(--font-mono);
+}
+
+.row .unlock .field:focus-within {
+	outline: 3px solid var(--focus);
+	outline-offset: 2px;
+}
+
+.row .unlock input:focus {
+	outline: none;
+}
+
+.btn-sm {
+	height: 44px;
+	padding: 0 18px;
+	font-size: 15px;
+}
+
+/* Phones: name and tag on one column, actions on their own line below. */
+@media (max-width: 520px) {
+	.row {
+		grid-template-columns: 40px 1fr;
+		gap: 10px 12px;
+		padding: 12px;
+	}
+
+	.row .ix {
+		display: none;
+	}
+
+	.row .acts {
+		grid-column: 2;
+	}
+
+	.row .ib {
+		width: 44px;
+		height: 44px;
+		border-color: var(--surface);
+	}
+
+	.row .unlock {
+		grid-column: 1 / -1;
+	}
+
+	.row .unlock .field {
+		max-width: none;
+	}
+}

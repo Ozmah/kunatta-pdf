@@ -1,20 +1,24 @@
 import { isLocale, defaultLocale, type Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
+import { withCount } from "../../i18n/format.ts";
+import { createAssembly } from "./assembly-run.ts";
+import { connectAssemblyView } from "./assembly-view.ts";
 import { createConverter, spawnPdfWorker } from "./converter.ts";
+import { connectDialogs } from "./dialogs.ts";
 import { createDownloader } from "./download.ts";
 import { connectDropzone } from "./dropzone.ts";
-import { connectDialogs } from "./dialogs.ts";
 import {
 	backedOut,
 	degradedNotice,
 	failureReason,
+	isMoreFiles,
 	runFast,
 	runSinglePdf,
 	type Outcome,
 } from "./fast.ts";
 import { connectFastView, rejectionMessage } from "./fast-view.ts";
 import { connectSettings } from "./gear.ts";
-import { choosePath } from "./paths.ts";
+import { choosePath, type Origin } from "./paths.ts";
 import { admit, type PileEntry } from "./pile.ts";
 
 function pageLocale(root: Document): Locale {
@@ -23,6 +27,8 @@ function pageLocale(root: Document): Locale {
 	return isLocale(lang) ? lang : defaultLocale;
 }
 
+type Run = typeof runFast;
+
 /** Wires the PDF tool: drop zone → path → worker → download. */
 export function startPdfTool(root: Document): void {
 	const locale = pageLocale(root);
@@ -30,12 +36,73 @@ export function startPdfTool(root: Document): void {
 	const converter = createConverter(spawnPdfWorker);
 	const view = connectFastView(root, locale);
 	const downloads = createDownloader(root);
+	const prompts = connectDialogs(root, locale, () => settings.read());
+	const assembly = createAssembly({ converter, settings: () => settings.read(), prompts, locale });
 	let busy = false;
+	let assembling = false;
 	let last: PileEntry | undefined;
 
-	const prompts = connectDialogs(root, locale, () => settings.read());
+	const enterAssembly = (): void => {
+		assembling = true;
+		view.show("assembly");
+		list.show(true);
+	};
 
-	type Run = typeof runFast;
+	const leaveAssembly = (): void => {
+		assembling = false;
+		list.show(false);
+		view.show("idle");
+	};
+
+	const makeAssembly = async (): Promise<void> => {
+		busy = true;
+		downloads.release();
+		list.working(true);
+
+		const name = list.name();
+		const result = await assembly.generate(name);
+
+		list.working(false);
+		busy = false;
+
+		if (result === backedOut) return;
+
+		if (result.isErr()) {
+			view.notice([name], translate(locale, failureReason(result.error)));
+
+			return;
+		}
+
+		const { pdf, pages, degraded } = result.value;
+
+		const degradedNames = assembly
+			.items()
+			.filter((item) => item.state.kind === "ready" && item.state.file.degraded)
+			.map((item) => item.entry.name);
+
+		downloads.save(pdf, name);
+		list.done(name, pages, pdf.size);
+		view.notice(
+			degraded ? degradedNames : [],
+			degraded ? withCount(translate(locale, "degraded.many"), degradedNames.length) : undefined,
+		);
+	};
+
+	const list = connectAssemblyView(root, locale, {
+		pin: (id) => assembly.pin(id),
+		move: (id, delta) => assembly.moveBy(id, delta),
+		remove: (id) => {
+			assembly.remove(id);
+
+			if (assembly.items().length === 0) leaveAssembly();
+		},
+		unlock: (id, password) => assembly.unlock(id, password),
+		make: () => void makeAssembly(),
+		cancel: () => assembly.cancel(),
+		again: () => downloads.again(),
+	});
+
+	assembly.subscribe((items) => list.render(items));
 
 	const convertOne = async (entry: PileEntry, run: Run): Promise<void> => {
 		busy = true;
@@ -49,6 +116,14 @@ export function startPdfTool(root: Document): void {
 
 		if (result === backedOut) {
 			view.show("idle");
+
+			return;
+		}
+
+		if (isMoreFiles(result)) {
+			assembly.adopt(result.entry, result.file);
+			enterAssembly();
+			dropzone.pick();
 
 			return;
 		}
@@ -69,22 +144,37 @@ export function startPdfTool(root: Document): void {
 		view.done(name, pages, pdf.size);
 	};
 
+	const receive = async (files: ReadonlyArray<File>, origin: Origin): Promise<void> => {
+		const current = assembly.items().map((item) => item.entry);
+		const { pile, rejected } = await admit(assembling ? current : [], files);
+		const accepted = assembling ? pile.slice(current.length) : pile;
+		const names = rejected.map((rejection) => rejection.fileName);
+
+		view.notice(names, names.length > 0 ? rejectionMessage(locale, names.length) : undefined);
+
+		if (assembling) {
+			assembly.add(accepted);
+
+			return;
+		}
+
+		const path = choosePath(accepted, origin);
+
+		if (path.kind === "assembly") {
+			assembly.add(accepted);
+			enterAssembly();
+		} else if (path.kind === "fast") {
+			await convertOne(path.entry, runFast);
+		} else if (path.kind === "single-pdf") {
+			await convertOne(path.entry, runSinglePdf);
+		}
+	};
+
 	const dropzone = connectDropzone(root, (files, origin) => {
-		if (busy) return;
-
-		void admit([], files).then(async ({ pile, rejected }) => {
-			const names = rejected.map((rejection) => rejection.fileName);
-
-			view.notice(names, names.length > 0 ? rejectionMessage(locale, names.length) : undefined);
-
-			const path = choosePath(pile, origin);
-
-			// Assembly (9c) is not wired yet.
-			if (path.kind === "fast") await convertOne(path.entry, runFast);
-
-			if (path.kind === "single-pdf") await convertOne(path.entry, runSinglePdf);
-		});
+		if (!busy) void receive(files, origin);
 	});
+
+	root.querySelector("[data-add]")?.addEventListener("click", () => dropzone.pick());
 
 	root.querySelector("[data-download-again]")?.addEventListener("click", () => downloads.again());
 

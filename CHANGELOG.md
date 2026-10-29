@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Several files, or anything pasted, open an ordered list: each row shows its state (checking, has a problem, needs password with the field in the row), can be pinned, moved with ↑ ↓ or removed, and more files can be added by dropping or picking.
+- Make my PDF waits for the checks, lists the files that failed with Back to the list or Make PDF without them, shows progress with Cancel, and downloads the PDF under the name typed next to the button (the first file's name by default); the list stays.
+- Add more files in the single-PDF dialog moves that PDF into a list as the first file.
 - Files in an assembly start in natural name order (foto 2 before foto 10), pinned files keep their place when others move and shift up only when a file above leaves, and every file is converted in the background as soon as it enters the list.
 - A single PDF opens a dialog with its pages and the chosen options before the PDF is made; Back or Escape returns without doing anything.
 - Protected PDFs and Office files ask for their password in a dialog, say when it is wrong, and come out without it.

@@ -15,6 +15,7 @@ import type { Converter } from "./converter.ts";
 import { ConversionCancelled, PasswordRequired, type ComposeJobError } from "./errors.ts";
 import { backedOut, type FastPdf } from "./fast.ts";
 import type { PileEntry } from "./pile.ts";
+import type { FilePdf } from "./protocol.ts";
 import type { Settings } from "./settings.ts";
 
 export interface AssemblyPrompts {
@@ -29,6 +30,8 @@ export interface Assembly {
 	items(): Items;
 	subscribe(listener: (items: Items) => void): void;
 	add(entries: ReadonlyArray<PileEntry>): void;
+	/** Takes a file that was already converted, such as the PDF from the single-PDF dialog. */
+	adopt(entry: PileEntry, file: FilePdf): void;
 	remove(id: string): void;
 	pin(id: string): void;
 	moveTo(id: string, position: number): void;
@@ -145,6 +148,13 @@ export function createAssembly(options: AssemblyOptions): Assembly {
 		add(entries) {
 			set(addEntries(items, entries, locale));
 			void checkNext();
+		},
+
+		adopt(entry, file) {
+			const added = addEntries(items, [entry], locale);
+			const used = convertSettings(options.settings());
+
+			set(updateState(added, entry.id, { kind: "ready", file, usedSettings: used }));
 		},
 
 		remove(id) {

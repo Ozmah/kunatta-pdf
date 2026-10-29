@@ -1,0 +1,298 @@
+---
+import type { Locale } from "../i18n/locales.ts";
+import { translate } from "../i18n/translate.ts";
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key);
+---
+
+<section class="assembly" hidden data-assembly aria-labelledby="assembly-title">
+	<header class="head">
+		<h2 id="assembly-title" tabindex="-1">
+			{t("assembly.title")} <span class="count" data-count></span>
+		</h2>
+		<span class="hint">{t("assembly.hint")}</span>
+	</header>
+
+	<ol class="list" data-list></ol>
+
+	<button class="add" type="button" data-dropzone data-add>
+		<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"></path></svg>
+		{t("assembly.add")}
+	</button>
+
+	<div class="done" role="status" hidden data-assembly-done>
+		<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg>
+		<span data-done-text></span>
+		<button class="btn-ghost" type="button" data-assembly-again>{t("fast.again")}</button>
+	</div>
+
+	<div class="progress" hidden data-progress>
+		<div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-progress-bar>
+			<span data-progress-fill></span>
+		</div>
+		<div class="progress-text"><span data-progress-label></span><span data-progress-percent></span></div>
+	</div>
+
+	<div class="bar">
+		<label class="name">
+			<span class="label">{t("assembly.name")}</span>
+			<span class="field">
+				<input type="text" maxlength="200" spellcheck="false" autocomplete="off" data-name />
+				<span class="suffix" aria-hidden="true">.pdf</span>
+			</span>
+		</label>
+		<button class="btn btn-primary" type="button" data-make>{t("assembly.make")}</button>
+		<button class="btn-ghost" type="button" hidden data-cancel>{t("assembly.cancel")}</button>
+	</div>
+</section>
+
+<template data-row-template>
+	<li class="row">
+		<span class="pinmark" hidden></span>
+		<span class="ix"></span>
+		<span class="tile" aria-hidden="true"></span>
+		<span class="nm">
+			<span class="title"><b data-row-name></b><em class="st" hidden></em></span>
+			<span class="meta"></span>
+		</span>
+		<span class="acts">
+			<button class="ib" type="button" aria-pressed="false" aria-label={t("row.pin")} data-action="pin">
+				<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l-1 6 4 4H6l4-4-1-6zM12 13v8"></path></svg>
+			</button>
+			<button class="ib" type="button" aria-label={t("row.up")} data-action="up">
+				<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
+			</button>
+			<button class="ib" type="button" aria-label={t("row.down")} data-action="down">
+				<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"></path></svg>
+			</button>
+			<button class="ib" type="button" aria-label={t("row.remove")} data-action="remove">
+				<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"></path></svg>
+			</button>
+		</span>
+		<form class="unlock" hidden>
+			<span class="field">
+				<input type="password" name="password" autocomplete="off" spellcheck="false" aria-label={t("incoming.label")} />
+			</span>
+			<button class="btn btn-secondary btn-sm" type="submit">{t("incoming.open")}</button>
+		</form>
+	</li>
+</template>
+
+<style>
+	.assembly {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		width: 100%;
+	}
+
+	.assembly[hidden] {
+		display: none;
+	}
+
+	.head {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 16px;
+		align-items: baseline;
+		justify-content: space-between;
+	}
+
+	h2 {
+		font-size: 34px;
+		font-weight: 800;
+		letter-spacing: var(--tracking-display);
+	}
+
+	h2:focus {
+		outline: none;
+	}
+
+	.count {
+		display: inline-grid;
+		place-items: center;
+		min-width: 28px;
+		height: 28px;
+		padding: 0 6px;
+		background: var(--accent);
+		color: var(--on-accent);
+		font: 700 14px var(--font-mono);
+		letter-spacing: 0;
+		vertical-align: 6px;
+	}
+
+	.hint,
+	.label,
+	.progress-text {
+		font: 600 12px var(--font-mono);
+		color: var(--ink-muted);
+	}
+
+	.label {
+		font-size: 11px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.list {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.add {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		justify-content: center;
+		height: 52px;
+		border: var(--border) dashed var(--line);
+		font: 600 13px var(--font-mono);
+		color: var(--ink-muted);
+	}
+
+	.add[data-dragging] {
+		border-style: solid;
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+
+	svg {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2.4;
+		stroke-linecap: square;
+	}
+
+	.done {
+		display: flex;
+		gap: 12px;
+		align-items: center;
+		padding: 10px 14px;
+		border: var(--border) solid var(--accent);
+		background: var(--bg);
+		font-size: 14px;
+	}
+
+	.done[hidden],
+	.progress[hidden] {
+		display: none;
+	}
+
+	.done svg {
+		flex: none;
+		stroke: var(--accent);
+	}
+
+	.done span {
+		flex: 1;
+		overflow-wrap: anywhere;
+	}
+
+	.track {
+		position: relative;
+		height: 14px;
+		border: var(--border) solid var(--line);
+		background: var(--bg);
+	}
+
+	.track span {
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: var(--done, 0%);
+		background: var(--accent);
+		transition: width 200ms var(--ease-pop);
+	}
+
+	.progress-text {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 6px;
+	}
+
+	.bar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px 14px;
+		align-items: flex-end;
+		margin-top: 8px;
+	}
+
+	.name {
+		display: flex;
+		flex: 1 1 260px;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.field {
+		display: flex;
+		height: 48px;
+		border: var(--border) solid var(--line);
+		background: var(--bg);
+	}
+
+	.field:focus-within {
+		outline: 3px solid var(--focus);
+		outline-offset: 2px;
+	}
+
+	.field input {
+		flex: 1;
+		min-width: 0;
+		padding: 0 14px;
+		border: 0;
+		background: none;
+		font-size: 16px;
+	}
+
+	.field input:focus {
+		outline: none;
+	}
+
+	.suffix {
+		display: grid;
+		place-items: center;
+		padding: 0 12px;
+		border-left: var(--border) solid var(--surface);
+		font: 500 13px var(--font-mono);
+		color: var(--ink-muted);
+	}
+
+	[data-make][aria-disabled="true"] {
+		border-color: var(--line);
+		background: var(--surface);
+		box-shadow: -4px 4px 0 var(--bg);
+		color: var(--ink-muted);
+		cursor: progress;
+	}
+
+	@media (max-width: 520px) {
+		h2 {
+			font-size: 28px;
+		}
+
+		.bar .btn {
+			flex: 1;
+		}
+
+		/* The fixed gear sits at the bottom-right corner; the button must not end under it. */
+		.bar {
+			padding-right: calc(52px + 16px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.track span {
+			transition: none;
+		}
+	}
+</style>

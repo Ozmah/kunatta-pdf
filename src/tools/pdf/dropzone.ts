@@ -19,43 +19,46 @@ export interface DropzoneControl {
 }
 
 export function connectDropzone(root: Document, receive: ReceiveFiles): DropzoneControl {
-	const zone = root.querySelector<HTMLLabelElement>("[data-dropzone]");
+	const zones = Array.from(root.querySelectorAll<HTMLElement>("[data-dropzone]"));
 	const picker = root.querySelector<HTMLInputElement>("[data-picker]");
 
-	if (zone === null || picker === null) throw new Error("Dropzone markup is missing");
-
-	let depth = 0;
+	if (zones.length === 0 || picker === null) throw new Error("Dropzone markup is missing");
 
 	const deliver = (files: ReadonlyArray<File>, origin: Origin): void => {
 		if (files.length > 0) receive(files, origin);
-	};
-
-	const setDragging = (dragging: boolean): void => {
-		zone.toggleAttribute("data-dragging", dragging);
 	};
 
 	// A file dropped anywhere else would make the browser navigate away from the page.
 	root.defaultView?.addEventListener("dragover", (event) => event.preventDefault());
 	root.defaultView?.addEventListener("drop", (event) => event.preventDefault());
 
-	zone.addEventListener("dragenter", (event) => {
-		if (!carriesFiles(event.dataTransfer?.types ?? [])) return;
+	// The empty drop zone and the assembly's "add files" strip accept drops the same way.
+	for (const zone of zones) {
+		let depth = 0;
 
-		depth += 1;
-		setDragging(true);
-	});
+		const setDragging = (dragging: boolean): void => {
+			zone.toggleAttribute("data-dragging", dragging);
+		};
 
-	zone.addEventListener("dragleave", () => {
-		depth = Math.max(0, depth - 1);
+		zone.addEventListener("dragenter", (event) => {
+			if (!carriesFiles(event.dataTransfer?.types ?? [])) return;
 
-		if (depth === 0) setDragging(false);
-	});
+			depth += 1;
+			setDragging(true);
+		});
 
-	zone.addEventListener("drop", (event) => {
-		depth = 0;
-		setDragging(false);
-		deliver(Array.from(event.dataTransfer?.files ?? []), "drop");
-	});
+		zone.addEventListener("dragleave", () => {
+			depth = Math.max(0, depth - 1);
+
+			if (depth === 0) setDragging(false);
+		});
+
+		zone.addEventListener("drop", (event) => {
+			depth = 0;
+			setDragging(false);
+			deliver(Array.from(event.dataTransfer?.files ?? []), "drop");
+		});
+	}
 
 	picker.addEventListener("change", () => {
 		deliver(Array.from(picker.files ?? []), "pick");

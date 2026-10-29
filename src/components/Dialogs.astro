@@ -31,10 +31,27 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 		<p class="question">{t("single.question")}</p>
 		<div class="actions">
 			<button class="btn-ghost" type="button" data-back>{t("single.back")}</button>
+			<button class="btn btn-secondary" value="more">{t("single.more")}</button>
 			<button class="btn btn-primary" value="confirm" autofocus>{t("single.confirm")}</button>
 		</div>
 	</form>
 </dialog>
+
+<dialog class="dlg" role="alertdialog" aria-labelledby="summary-title" data-dialog="summary">
+	<form method="dialog">
+		<h2 id="summary-title" data-title></h2>
+		<ul class="fails" data-fails></ul>
+		<p class="question" data-body></p>
+		<div class="actions">
+			<button class="btn btn-secondary" type="button" data-back autofocus>{t("summary.back")}</button>
+			<button class="btn btn-primary" value="confirm">{t("summary.without")}</button>
+		</div>
+	</form>
+</dialog>
+
+<template data-fail-template>
+	<li><span class="tile" aria-hidden="true"></span><span><b></b><span class="meta"></span></span></li>
+</template>
 
 <dialog class="dlg" aria-labelledby="incoming-title" data-dialog="incoming">
 	<form method="dialog">
@@ -206,6 +223,33 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 
 	.question {
 		font-size: 15px;
+	}
+
+	.fails {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.fails :global(li) {
+		display: flex;
+		gap: 14px;
+		align-items: center;
+		padding: 10px 14px;
+		border: var(--border) solid var(--ink);
+		background: var(--bg);
+		overflow-wrap: anywhere;
+	}
+
+	.fails :global(.tile) {
+		width: 36px;
+		height: 48px;
+		border-color: var(--color-midnight);
+		background: var(--color-cheviot);
+		color: var(--color-midnight);
 	}
 
 	.field-group {

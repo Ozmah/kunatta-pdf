@@ -4,7 +4,8 @@ import type { Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
 import type { InputKind } from "./sniff.ts";
 
-type View = "idle" | "converting" | "done" | "failed";
+/** "assembly" hides every fast-path view: the list takes the space. */
+type View = "idle" | "converting" | "done" | "failed" | "assembly";
 
 export interface FastView {
 	show(view: View): void;
@@ -35,7 +36,7 @@ function required<Element extends HTMLElement>(root: ParentNode, selector: strin
 /** Every user-provided string goes through textContent; nothing here builds HTML. */
 export function connectFastView(root: Document, locale: Locale): FastView {
 	const flow = required(root, "[data-flow]");
-	const drop = required(root, "[data-dropzone]");
+	const drop = required(root, "[data-empty-drop]");
 
 	const views = {
 		converting: required(root, '[data-view="converting"]'),
@@ -52,7 +53,8 @@ export function connectFastView(root: Document, locale: Locale): FastView {
 
 		for (const [name, element] of Object.entries(views)) element.hidden = name !== view;
 
-		if (view !== "idle") required<HTMLHeadingElement>(views[view], "h2").focus();
+		if (view !== "idle" && view !== "assembly")
+			required<HTMLHeadingElement>(views[view], "h2").focus();
 	};
 
 	return {
@@ -81,7 +83,8 @@ export function connectFastView(root: Document, locale: Locale): FastView {
 		notice(entries, message) {
 			noticeText.replaceChildren();
 			notice.hidden = message === undefined;
-			flow.hidden = !notice.hidden || !drop.hidden;
+			// The file → PDF flow belongs to the empty drop zone only.
+			flow.hidden = !notice.hidden || drop.hidden;
 
 			if (message === undefined) return;
 

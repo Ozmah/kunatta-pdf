@@ -31,14 +31,26 @@ export interface Prompts {
 	incomingPassword(entry: PileEntry, retry: boolean): Promise<string | undefined>;
 	/** The password for the result, typed twice; only asked when the setting is on. */
 	resultPassword(name: string, pages: number | undefined): Promise<string | undefined>;
-	/** The single-PDF dialog: true to make the PDF, false to go back. */
-	confirmSinglePdf(entry: PileEntry, name: string, pages: number): Promise<boolean>;
+	/** The single-PDF dialog: make the PDF, go back, or add more files around it. */
+	confirmSinglePdf(entry: PileEntry, name: string, pages: number): Promise<SingleChoice>;
 }
+
+export type SingleChoice = "make" | "back" | "more";
 
 /** The user backed out of a dialog; nothing failed. */
 export const backedOut = "backed-out";
 
-export type Outcome = ResultType<FastPdf, FastError> | typeof backedOut;
+/** "Add more files" from the single-PDF dialog: the opened PDF moves to an assembly. */
+export interface MoreFiles {
+	readonly entry: PileEntry;
+	readonly file: FilePdf;
+}
+
+export type Outcome = ResultType<FastPdf, FastError> | typeof backedOut | MoreFiles;
+
+export function isMoreFiles(outcome: Outcome): outcome is MoreFiles {
+	return outcome !== backedOut && "file" in outcome;
+}
 
 /** Converts one file, asking for its password as many times as needed. */
 async function convertEntry(
@@ -125,7 +137,11 @@ export async function runSinglePdf(
 
 	if (opened === backedOut || opened.isErr()) return opened;
 
-	if (!(await prompts.confirmSinglePdf(entry, name, opened.value.pages))) return backedOut;
+	const choice = await prompts.confirmSinglePdf(entry, name, opened.value.pages);
+
+	if (choice === "back") return backedOut;
+
+	if (choice === "more") return { entry, file: opened.value };
 
 	let password: string | undefined;
 
