@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Files in an assembly start in natural name order (foto 2 before foto 10), pinned files keep their place when others move and shift up only when a file above leaves, and every file is converted in the background as soon as it enters the list.
 - A single PDF opens a dialog with its pages and the chosen options before the PDF is made; Back or Escape returns without doing anything.
 - Protected PDFs and Office files ask for their password in a dialog, say when it is wrong, and come out without it.
 - The new Password setting asks for a password for the result, typed twice, right before generating; the PDF is encrypted with AES-256 and the password is never stored.
