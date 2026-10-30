@@ -20,9 +20,15 @@ function isOfficeFormat(format: string): format is OfficeFormat {
 	return officeFormats.some((known) => known === format);
 }
 
-/** Open substitutes are expected for every document; only real content changes matter to the user. */
-export function isDegraded(losses: LossReport): boolean {
-	return losses.some((loss) => loss.severity !== "substituted");
+/** The binary formats from before 2007. reamkit reads them only in part, so they always warn the user. */
+const legacyFormats: ReadonlySet<OfficeFormat> = new Set(["doc", "xls", "ppt"]);
+
+/**
+ * Legacy formats are always degraded, whatever reamkit reports. For the rest, open substitutes are
+ * expected for every document; only real content changes matter to the user.
+ */
+export function isDegraded(format: OfficeFormat, losses: LossReport): boolean {
+	return legacyFormats.has(format) || losses.some((loss) => loss.severity !== "substituted");
 }
 
 function failure(fileName: string, cause: unknown): ConvertError {
@@ -54,7 +60,7 @@ export async function convertOffice(
 				fontFetch,
 			});
 
-			return { format, pdf, degraded: isDegraded(losses) };
+			return { format, pdf, degraded: isDegraded(format, losses) };
 		},
 		catch: (cause) => failure(fileName, cause),
 	});

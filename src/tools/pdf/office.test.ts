@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test";
 import type { OfficeFormat } from "./office-sniff.ts";
 import { ConversionFailed, PasswordRequired } from "./errors.ts";
 import { fixtureFontFetch, requestedFontPaths } from "./fixtures.ts";
-import { convertOffice } from "./office.ts";
+import { convertOffice, isDegraded } from "./office.ts";
 
 const fixtures = "tests/fixtures/office";
 const fontFetch = fixtureFontFetch;
@@ -40,19 +40,28 @@ describe("convertOffice", () => {
 		expect(requestedFontPaths.every((path) => path.startsWith("/fonts/office/"))).toBe(true);
 	});
 
-	test("reports legacy Word as degraded and OOXML Word as faithful", async () => {
-		const legacy = await convertOffice(await fixture("SampleDoc.doc"), {
-			fileName: "a.doc",
-			fontFetch,
-		});
+	test("reports every legacy format as degraded and every OOXML one as faithful", async () => {
+		for (const [legacy, modern] of [
+			["SampleDoc.doc", "SampleDoc.docx"],
+			["SampleSS.xls", "SampleSS.xlsx"],
+			["SampleShow.ppt", "SampleShow.pptx"],
+		] as const) {
+			const old = await convertOffice(await fixture(legacy), { fileName: legacy, fontFetch });
+			const current = await convertOffice(await fixture(modern), { fileName: modern, fontFetch });
 
-		const modern = await convertOffice(await fixture("SampleDoc.docx"), {
-			fileName: "a.docx",
-			fontFetch,
-		});
+			expect(old.unwrap().degraded).toBe(true);
+			expect(current.unwrap().degraded).toBe(false);
+		}
+	});
 
-		expect(legacy.unwrap().degraded).toBe(true);
-		expect(modern.unwrap().degraded).toBe(false);
+	test("a legacy format is degraded even when reamkit reports no loss", () => {
+		const substituted = [
+			{ severity: "substituted", feature: "font", detail: "Calibri → Carlito" },
+		] as const;
+
+		expect(isDegraded("xls", [])).toBe(true);
+		expect(isDegraded("xlsx", [])).toBe(false);
+		expect(isDegraded("docx", substituted)).toBe(false);
 	});
 
 	test("asks for a password when an encrypted document arrives without one", async () => {
