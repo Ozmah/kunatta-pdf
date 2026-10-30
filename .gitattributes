@@ -2,3 +2,6 @@
 src/assets/fonts/*-OFL.txt -whitespace
 public/fonts/office/*-OFL.txt -whitespace
 tests/fixtures/office/POI-*.txt -whitespace
+
+# Screenshot baselines are compared pixel for pixel.
+e2e/__screenshots__/**/*.png binary

@@ -21,6 +21,8 @@
 		"shodan": "bun run test",
 		"shodan:watch": "bun run test --watch",
 		"e2e": "bun run build && playwright test",
+		"visual": "bun run build && sh e2e/visual.sh",
+		"visual:update": "bun run build && sh e2e/visual.sh --update-snapshots",
 		"check": "bun run glados && bun run shodan",
 		"prepare": "husky || true"
 	},
