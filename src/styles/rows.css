@@ -221,6 +221,12 @@
 		border-color: var(--surface);
 		color: var(--ink);
 	}
+
+	/* Pressed pin: stays lime with dark ink; the hover only outlines it. */
+	.row .ib[aria-pressed="true"]:not(:disabled):hover {
+		border-color: var(--color-midnight);
+		color: var(--on-accent);
+	}
 }
 
 .row .unlock {

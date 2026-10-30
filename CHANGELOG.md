@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: hovering a pinned row's pin button no longer turns its icon light on the lime background.
 - Rows can be reordered by dragging the grip (the type tile on phones): the row follows the pointer, pinned rows stay put, the list scrolls near the screen edges, and Esc or dropping outside the list puts it back.
 - Rows can be reordered with the keyboard: Space on the grip takes the row, ↑ ↓ move it, Space drops it and Esc cancels; each step is announced to screen readers.
 - Fixed: on phones the page no longer scrolls sideways.
