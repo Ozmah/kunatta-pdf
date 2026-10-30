@@ -24,6 +24,8 @@ export default defineConfig({
 		"oxc/no-accumulating-spread": "error",
 		// Global stylesheets are imported for their side effect; JS modules still must be assigned.
 		"import/no-unassigned-import": ["error", { allow: ["**/*.css"] }],
+		// Imports read as the module's header: nothing runs or is declared before them.
+		"import/first": "error",
 		"anti-slop/no-array-filter-map": "error",
 		"anti-slop/no-reduce-accumulator-copy": "error",
 		"anti-slop/no-chained-type-assertions": "error",

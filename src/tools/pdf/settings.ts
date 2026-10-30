@@ -1,3 +1,5 @@
+import { typedName } from "./file-name.ts";
+
 export const pageSizes = ["letter", "a4", "original"] as const;
 export const qualities = ["light", "normal", "max"] as const;
 export const passwordModes = ["off", "on"] as const;
@@ -7,8 +9,6 @@ export type PageSize = (typeof pageSizes)[number];
 export type Quality = (typeof qualities)[number];
 
 export type PasswordMode = (typeof passwordModes)[number];
-
-import { typedName } from "./file-name.ts";
 
 export interface Settings {
 	readonly size: PageSize;
