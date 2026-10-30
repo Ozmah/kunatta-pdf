@@ -186,7 +186,14 @@ export function connectAssemblyView(
 			return row;
 		});
 
-		list.replaceChildren(...ordered);
+		// Only touch the DOM when the order changed: moving a row detaches it, which drops focus
+		// and cancels the slide of every row in flight.
+		const unchanged =
+			list.children.length === ordered.length &&
+			ordered.every((row, index) => list.children[index] === row);
+
+		if (!unchanged) list.replaceChildren(...ordered);
+
 		required(section, "[data-count]").textContent = String(items.length);
 
 		// Reordering detaches rows; keep the keyboard where it was.

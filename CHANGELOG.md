@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: rows no longer jump mid-slide or lose keyboard focus when a background check finishes while the list is being reordered.
 - Fixed: Cancel stops Make my PDF at once even while files are still being checked; before, the button stayed busy until the checks ended.
 - Fixed: a file turned away next to a single file that converts stays named in the notice, alongside any note about the conversion, instead of vanishing when the PDF downloads.
 - An ES · EN switch at the top right opens the page in the other language; with files in the list or a conversion running, it first warns that the page reloads and that work is lost.

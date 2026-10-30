@@ -282,11 +282,14 @@ export function connectReorder(host: ReorderHost, locale: Locale): Reorder {
 		});
 	}
 
-	stack.addEventListener("transitionend", (event) => {
-		if (event.target instanceof HTMLElement && event.propertyName === "translate") {
-			event.target.classList.remove("shifting");
-		}
-	});
+	// A slide ends or is cut short (a row moved again, or left the list); either way it is over.
+	for (const type of ["transitionend", "transitioncancel"] as const) {
+		stack.addEventListener(type, (event) => {
+			if (event.target instanceof HTMLElement && event.propertyName === "translate") {
+				event.target.classList.remove("shifting");
+			}
+		});
+	}
 
 	stack.addEventListener("keydown", (event) => {
 		const grip =
