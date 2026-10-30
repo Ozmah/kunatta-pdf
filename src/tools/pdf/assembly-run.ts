@@ -181,11 +181,16 @@ export function createAssembly(options: AssemblyOptions): Assembly {
 			requeueStale();
 
 			// Cancel must not wait for the checks: a check restarts after the worker is stopped.
-			const stopped = new Promise<void>((resolve) => {
-				stopWaiting = resolve;
-			});
+			const stopped = Promise.withResolvers<void>();
 
-			await Promise.race([settled(), stopped]);
+			stopWaiting = stopped.resolve;
+
+			try {
+				await Promise.race([settled(), stopped.promise]);
+			} finally {
+				// Only this wait may be ended from outside; a later cancel must not reach it.
+				stopWaiting = undefined;
+			}
 
 			if (cancelled()) return backedOut;
 
