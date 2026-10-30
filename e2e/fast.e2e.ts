@@ -177,6 +177,16 @@ test.describe("offline", () => {
 		await expect(page.locator('[data-view="failed"] h2')).toHaveText(es["fast.failed"]);
 		await expect(page.locator("[data-failure]")).toContainText(es["reason.engine"]);
 	});
+
+	test("an Office file whose fonts cannot download blames the connection, not the file", async ({
+		page,
+	}) => {
+		await page.route("**/fonts/office/**", (route) => route.abort("internetdisconnected"));
+		await drop(page, [await office(officeSamples.docx)]);
+
+		await expect(page.locator('[data-view="failed"] h2')).toHaveText(es["fast.failed"]);
+		await expect(page.locator("[data-failure]")).toContainText(es["reason.engine"]);
+	});
 });
 
 test.describe("settings", () => {

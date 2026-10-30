@@ -1,8 +1,15 @@
 import { Result, type Result as ResultType } from "better-result";
 import { Ream, WrongPasswordError, type LossReport } from "reamkit";
 
-import { conversionFailed, passwordRequired, type Converted, type ConvertError } from "./errors.ts";
-import type { FontFetch } from "./office-fonts.ts";
+import {
+	causeMessage,
+	conversionFailed,
+	engineUnavailable,
+	passwordRequired,
+	type Converted,
+	type ConvertError,
+} from "./errors.ts";
+import { bundledFontPath, type FontFetch } from "./office-fonts.ts";
 import { officeFormats, type OfficeFormat } from "./office-sniff.ts";
 
 export interface OfficePdf extends Converted {
@@ -31,10 +38,47 @@ export function isDegraded(format: OfficeFormat, losses: LossReport): boolean {
 	return legacyFormats.has(format) || losses.some((loss) => loss.severity !== "substituted");
 }
 
-function failure(fileName: string, cause: unknown): ConvertError {
-	if (cause instanceof WrongPasswordError) {
-		return passwordRequired(fileName);
-	}
+export interface WatchedFonts {
+	readonly fetch: FontFetch;
+	/** Why a bundled face could not be loaded, when one could not. */
+	readonly failure: () => string | undefined;
+}
+
+/**
+ * reamkit throws a generic error when a face it needs does not load, so the fetch is watched to tell
+ * a network problem from a damaged file. Faces we do not bundle answer "missing" on purpose and
+ * never count.
+ */
+export function watchFonts(fontFetch: FontFetch): WatchedFonts {
+	let failure: string | undefined;
+
+	return {
+		fetch: async (url) => {
+			try {
+				const font = await fontFetch(url);
+
+				if (!font.ok && bundledFontPath(url) !== undefined) failure ??= `${url} did not load`;
+
+				return font;
+			} catch (cause) {
+				failure ??= causeMessage(cause);
+				// reamkit's fetch contract: a rejection is how it learns the face is unavailable.
+				throw cause;
+			}
+		},
+		failure: () => failure,
+	};
+}
+
+export function officeFailure(
+	fileName: string,
+	cause: unknown,
+	fontFailure: string | undefined,
+): ConvertError {
+	if (cause instanceof WrongPasswordError) return passwordRequired(fileName);
+
+	// Offline or a missing deploy file: the converter could not run, the document is not at fault.
+	if (fontFailure !== undefined) return engineUnavailable(fileName, fontFailure);
 
 	return conversionFailed(fileName, cause);
 }
@@ -44,7 +88,8 @@ export async function convertOffice(
 	bytes: Uint8Array,
 	options: OfficeOptions,
 ): Promise<ResultType<OfficePdf, ConvertError>> {
-	const { fileName, fontFetch, password } = options;
+	const { fileName, password } = options;
+	const fonts = watchFonts(options.fontFetch);
 
 	return Result.tryPromise({
 		try: async () => {
@@ -57,11 +102,11 @@ export async function convertOffice(
 
 			const { bytes: pdf, losses } = await document.convertWithReport("pdf", {
 				fileName,
-				fontFetch,
+				fontFetch: fonts.fetch,
 			});
 
 			return { format, pdf, degraded: isDegraded(format, losses) };
 		},
-		catch: (cause) => failure(fileName, cause),
+		catch: (cause) => officeFailure(fileName, cause, fonts.failure()),
 	});
 }

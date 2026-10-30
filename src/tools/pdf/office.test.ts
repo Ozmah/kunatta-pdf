@@ -1,9 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
 import type { OfficeFormat } from "./office-sniff.ts";
-import { ConversionFailed, PasswordRequired } from "./errors.ts";
 import { fixtureFontFetch, requestedFontPaths } from "./fixtures.ts";
-import { convertOffice, isDegraded } from "./office.ts";
+import { WrongPasswordError } from "reamkit";
+
+import { ConversionFailed, EngineUnavailable, PasswordRequired } from "./errors.ts";
+import { bundledFontFetch } from "./office-fonts.ts";
+import { convertOffice, isDegraded, officeFailure, watchFonts } from "./office.ts";
 
 const fixtures = "tests/fixtures/office";
 const fontFetch = fixtureFontFetch;
@@ -93,5 +96,50 @@ describe("convertOffice", () => {
 		const result = await convertOffice(pdf, { fileName: "a.pdf", fontFetch });
 
 		expect(result.isErr() && ConversionFailed.is(result.error)).toBe(true);
+	});
+});
+
+// reamkit caches faces for the whole process, so "offline" cannot be staged through convertOffice
+// here; the e2e suite covers it on a fresh worker.
+describe("fonts that do not load", () => {
+	const cdn = "https://cdn.example/arimo/Arimo_400Regular.ttf";
+	const cjk = "https://cdn.example/noto/NotoSansJP_400Regular.ttf";
+
+	test("a bundled face that fails or answers 404 is remembered; one we do not bundle is not", async () => {
+		const offline = watchFonts(
+			bundledFontFetch("https://kunatta.test", () =>
+				Promise.reject(new TypeError("Failed to fetch")),
+			),
+		);
+
+		const missingFile = watchFonts(
+			bundledFontFetch("https://kunatta.test", () =>
+				Promise.resolve(new Response("", { status: 404 })),
+			),
+		);
+
+		await expect(offline.fetch(cdn)).rejects.toThrow("Failed to fetch");
+		await missingFile.fetch(cdn);
+		await missingFile.fetch(cjk);
+
+		expect(offline.failure()).toBe("Failed to fetch");
+		expect(missingFile.failure()).toBe(`${cdn} did not load`);
+
+		const unbundledOnly = watchFonts(bundledFontFetch("https://kunatta.test"));
+
+		await unbundledOnly.fetch(cjk);
+		expect(unbundledOnly.failure()).toBeUndefined();
+	});
+
+	test("a font failure reports the converter as unavailable, unless the password was wrong", () => {
+		const generic = new Error("Failed to download font");
+
+		expect(EngineUnavailable.is(officeFailure("a.docx", generic, "Failed to fetch"))).toBe(true);
+		expect(ConversionFailed.is(officeFailure("a.docx", generic, undefined))).toBe(true);
+		expect(
+			PasswordRequired.is(
+				officeFailure("a.docx", new WrongPasswordError("wrong"), "Failed to fetch"),
+			),
+		).toBe(true);
 	});
 });

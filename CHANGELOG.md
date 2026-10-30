@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: an Office file whose fonts cannot download now says to check the connection instead of calling the file damaged.
 - Photos in the list show a small upright thumbnail, so similar names like IMG_4021 and IMG_4022 can be told apart; it is made from the same decoding as the page and freed when the row leaves.
 - On phones, tapping the dark veil above a dialog closes it like Back; on wide screens the dialog still closes only with Back or Escape.
 - Ajustes remembers the page size, the quality and whether to protect the PDF on this device, across visits and languages; the name and passwords are never stored.
