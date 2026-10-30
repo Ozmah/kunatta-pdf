@@ -32,6 +32,7 @@ const decodeTiny: DecodeImage = () =>
 		width: 4,
 		height: 4,
 		encode: () => Promise.resolve(tinyJpeg),
+		thumbnail: () => Promise.resolve(tinyJpeg),
 		close: () => undefined,
 	});
 
@@ -119,6 +120,8 @@ describe("handleMessage: convert", () => {
 		expect(pdf.isErr() && ConversionFailed.is(pdf.error)).toBe(true);
 		expect(text.isOk()).toBe(true);
 		expect(image.isOk()).toBe(true);
+		expect(image.unwrap().thumbnail?.type).toBe("image/jpeg");
+		expect(text.unwrap().thumbnail).toBeUndefined();
 	});
 
 	test("a file that can no longer be read fails as that file, not as a crash", async () => {

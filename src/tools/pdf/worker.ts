@@ -16,6 +16,7 @@ import { officeFormats } from "./office-sniff.ts";
 import {
 	encodeComposed,
 	encodeConverted,
+	jpegBlob,
 	pdfBlob,
 	WorkerRequestSchema,
 	type ComposedPdf,
@@ -197,8 +198,9 @@ export async function handleMessage(
 
 		if (pages.isErr()) return encodeConverted(request.jobId, pages);
 
-		const { pdf, degraded } = converted.value;
-		const file: FilePdf = { pdf: pdfBlob(pdf), degraded, pages: pages.value };
+		const { pdf, degraded, thumbnail } = converted.value;
+		const base: FilePdf = { pdf: pdfBlob(pdf), degraded, pages: pages.value };
+		const file = thumbnail === undefined ? base : { ...base, thumbnail: jpegBlob(thumbnail) };
 
 		return encodeConverted(request.jobId, Result.ok(file));
 	} catch (error) {

@@ -42,7 +42,8 @@ test("file names are shown as text, never run as markup", async ({ page }) => {
 	await paste(page, [text(hostile, "hola")]);
 	await expect(rows(page)).toHaveCount(1);
 	await expect(page.locator("[data-row-name]")).toHaveText(hostile);
-	await expect(page.locator("[data-list] img")).toHaveCount(0);
+	// The only images in a row are its own thumbnails.
+	await expect(page.locator("[data-list] img:not(.thumb)")).toHaveCount(0);
 	await checked(page);
 
 	const result = await downloadOf(page, () => page.locator("[data-make]").click());

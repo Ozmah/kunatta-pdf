@@ -13,6 +13,8 @@ export interface Raster {
 	readonly height: number;
 	/** JPEG is drawn over white, so transparent areas do not turn black. */
 	encode(type: Encoding, quality: number): Promise<Uint8Array>;
+	/** A JPEG whose longest side is at most `maxSide`, from the same decoded pixels. */
+	thumbnail(maxSide: number): Promise<Uint8Array>;
 	close(): void;
 }
 
@@ -35,6 +37,9 @@ export const imageProfiles: Readonly<Record<Quality, Profile>> = {
 	max: { maxSide: undefined, jpegQuality: 0.92, keepPng: true },
 };
 
+/** Longest side of a row thumbnail: the 36 × 48 tile at three device pixels per CSS pixel. */
+export const thumbnailSide = 160;
+
 /** Pages for images are sized at 96 DPI: one CSS pixel is three quarters of a point. */
 export const pointsPerPixel = 72 / 96;
 
@@ -54,6 +59,27 @@ export function fitWithin(width: number, height: number, maxSide: number | undef
 		width: Math.max(1, Math.round(width * scale)),
 		height: Math.max(1, Math.round(height * scale)),
 	};
+}
+
+async function encodeBitmap(
+	bitmap: ImageBitmap,
+	type: Encoding,
+	quality: number,
+): Promise<Uint8Array> {
+	const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+	const context = canvas.getContext("2d");
+
+	if (context === null) throw new Error("2D canvas is not available in this worker");
+
+	if (type === "image/jpeg") {
+		context.fillStyle = "#fff";
+		context.fillRect(0, 0, bitmap.width, bitmap.height);
+	}
+
+	context.drawImage(bitmap, 0, 0);
+	const blob = await canvas.convertToBlob({ type, quality });
+
+	return new Uint8Array(await blob.arrayBuffer());
 }
 
 /** Decodes with the browser: createImageBitmap applies EXIF orientation, OffscreenCanvas re-encodes. */
@@ -77,21 +103,21 @@ export const decodeInBrowser: DecodeImage = async (bytes, kind, maxSide) => {
 	return {
 		width: bitmap.width,
 		height: bitmap.height,
-		async encode(type, quality) {
-			const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-			const context = canvas.getContext("2d");
+		encode: (type, quality) => encodeBitmap(bitmap, type, quality),
+		async thumbnail(side) {
+			const thumb = fitWithin(bitmap.width, bitmap.height, side);
 
-			if (context === null) throw new Error("2D canvas is not available in this worker");
+			const small = await createImageBitmap(bitmap, {
+				resizeWidth: thumb.width,
+				resizeHeight: thumb.height,
+				resizeQuality: "high",
+			});
 
-			if (type === "image/jpeg") {
-				context.fillStyle = "#fff";
-				context.fillRect(0, 0, bitmap.width, bitmap.height);
+			try {
+				return await encodeBitmap(small, "image/jpeg", 0.7);
+			} finally {
+				small.close();
 			}
-
-			context.drawImage(bitmap, 0, 0);
-			const blob = await canvas.convertToBlob({ type, quality });
-
-			return new Uint8Array(await blob.arrayBuffer());
 		},
 		close: () => bitmap.close(),
 	};
@@ -119,6 +145,7 @@ export async function convertImage(
 
 			try {
 				const encoded = await raster.encode(encoding, profile.jpegQuality);
+				const thumbnail = await raster.thumbnail(thumbnailSide);
 				const pdf = PDF.create();
 				const image = encoding === "image/png" ? pdf.embedPng(encoded) : pdf.embedJpeg(encoded);
 				const width = raster.width * pointsPerPixel;
@@ -126,7 +153,7 @@ export async function convertImage(
 
 				pdf.addPage({ width, height }).drawImage(image, { x: 0, y: 0, width, height });
 
-				return { pdf: await pdf.save(), degraded: false, pages: 1 };
+				return { pdf: await pdf.save(), degraded: false, pages: 1, thumbnail };
 			} finally {
 				raster.close();
 			}

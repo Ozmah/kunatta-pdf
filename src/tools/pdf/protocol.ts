@@ -57,6 +57,8 @@ export interface FilePdf {
 	/** True when the converter simplified or dropped content. */
 	readonly degraded: boolean;
 	readonly pages: number;
+	/** Images only: a small JPEG for the list. */
+	readonly thumbnail?: Blob;
 }
 
 /** The final document. */
@@ -104,6 +106,7 @@ export const ConvertResponseSchema = envelope(
 		pdf: v.instance(Blob),
 		degraded: v.boolean(),
 		pages: v.pipe(v.number(), v.integer(), v.minValue(1)),
+		thumbnail: v.exactOptional(v.instance(Blob)),
 	}),
 	v.variant("tag", [failed, locked, unavailable]),
 );
@@ -198,12 +201,20 @@ export function decodeComposed(response: ComposeResponse): ResultType<ComposedPd
 	return result.status === "ok" ? Result.ok(result.value) : Result.err(fromWire(result.error));
 }
 
-/** Wraps PDF bytes in a Blob; the Blob keeps its own copy, so the buffer can be released afterwards. */
-export function pdfBlob(bytes: Uint8Array): Blob {
+/** Wraps bytes in a Blob; the Blob keeps its own copy, so the buffer can be released afterwards. */
+function blobOf(bytes: Uint8Array, type: string): Blob {
 	const view =
 		bytes.buffer instanceof ArrayBuffer
 			? new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength)
 			: bytes.slice();
 
-	return new Blob([view], { type: "application/pdf" });
+	return new Blob([view], { type });
+}
+
+export function pdfBlob(bytes: Uint8Array): Blob {
+	return blobOf(bytes, "application/pdf");
+}
+
+export function jpegBlob(bytes: Uint8Array): Blob {
+	return blobOf(bytes, "image/jpeg");
 }

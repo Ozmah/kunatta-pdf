@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { es } from "../src/i18n/es.ts";
+import { image } from "./support/images.ts";
 import { brokenJpeg, bytes, office, officeSamples, pdf, text } from "./support/samples.ts";
 import { checked, dialog, drop, holdOfficeEngine, row, setting } from "./support/tool.ts";
 
@@ -105,6 +106,18 @@ test("list with every row state", async ({ page }) => {
 	await expect(row(page, "d informe.docx")).toHaveAttribute("data-state", "checking");
 	await row(page, "a portada.pdf").getByRole("button", { name: es["row.pin"] }).click();
 	await shot(page, "list");
+});
+
+test("list with photo thumbnails", async ({ page }) => {
+	const photos = await Promise.all([
+		image(page, "IMG_4021.jpg", { width: 400, height: 300, type: "image/jpeg" }),
+		image(page, "IMG_4022.png", { width: 300, height: 400, type: "image/png" }),
+		image(page, "IMG_4023.webp", { width: 300, height: 300, type: "image/webp" }),
+	]);
+
+	await drop(page, [...photos, text("notas.txt", "hola")]);
+	await checked(page);
+	await shot(page, "list-photos");
 });
 
 test("list while making the PDF", async ({ page }) => {

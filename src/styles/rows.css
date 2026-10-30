@@ -77,6 +77,16 @@
 	touch-action: auto;
 }
 
+/* An image shows itself; the tile keeps its border and, on phones, the grip badge above it. */
+.row .thumb {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	pointer-events: none;
+}
+
 /* Lifted by the pointer: follows it 1:1 through `translate`; the riso tilt lives in `transform`. */
 .row.lift {
 	z-index: 2;

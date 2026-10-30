@@ -55,6 +55,8 @@ export interface Converted {
 	readonly degraded: boolean;
 	/** Pages in `pdf`; undefined only for Office, whose converter does not report it. */
 	readonly pages?: number;
+	/** A small JPEG of an image, so the list can show which photo is which. */
+	readonly thumbnail?: Uint8Array;
 }
 
 /** The text of whatever was thrown: an error's message, or the value itself (a wire reason is already text). */

@@ -8,6 +8,7 @@ import { canMove, type Item, type Items } from "./assembly.ts";
 import { failureReason } from "./fast.ts";
 import { kindLabel } from "./fast-view.ts";
 import { required } from "./markup.ts";
+import { browserUrls, createThumbnails } from "./thumbnails.ts";
 import { pdfName, typedName } from "./file-name.ts";
 import { connectReorder } from "./reorder.ts";
 
@@ -65,6 +66,8 @@ export function connectAssemblyView(
 	const progress = required(section, "[data-progress]");
 	const doneBanner = required(section, "[data-assembly-done]");
 	const rows = new Map<string, HTMLLIElement>();
+	const thumbnails = createThumbnails(browserUrls);
+	let thumbnailUrls: ReadonlyMap<string, string> = new Map();
 	const t = translator(locale);
 	let generating = false;
 	let latest: Items = [];
@@ -102,7 +105,16 @@ export function connectAssemblyView(
 		row.dataset["state"] = state.kind;
 		row.toggleAttribute("data-pinned", pinned);
 		required(row, ".ix").textContent = twoDigits(index + 1);
-		required(row, ".tile").textContent = kindLabel(entry.kind);
+		required(row, "[data-kind]").textContent = kindLabel(entry.kind);
+
+		const thumb = required<HTMLImageElement>(row, ".thumb");
+		const url = thumbnailUrls.get(id);
+
+		thumb.hidden = url === undefined;
+
+		if (url !== undefined && thumb.getAttribute("src") !== url) thumb.src = url;
+
+		if (url === undefined) thumb.removeAttribute("src");
 		required(row, "[data-row-name]").textContent = entry.name;
 		pinmark.hidden = !pinned;
 		pinmark.textContent = interpolate(t("row.pinned"), { position: twoDigits(index + 1) });
@@ -170,6 +182,7 @@ export function connectAssemblyView(
 		}
 
 		nameInput.placeholder = defaultName(items);
+		thumbnailUrls = thumbnails.sync(items);
 
 		const ordered = items.map((item, index) => {
 			const row = rows.get(item.entry.id) ?? createRow(item.entry.id);

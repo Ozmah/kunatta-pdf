@@ -4,12 +4,15 @@ import { PDF } from "@libpdf/core";
 
 import { ConversionFailed } from "./errors.ts";
 import { tinyJpeg, tinyPng } from "./fixtures.ts";
-import { convertImage, fitWithin, type DecodeImage } from "./image.ts";
+import { convertImage, fitWithin, thumbnailSide, type DecodeImage } from "./image.ts";
 
 interface Decoded {
 	readonly maxSide: number | undefined;
 	readonly encodedAs: string;
 }
+
+/** Stands in for the thumbnail JPEG; only its identity matters here. */
+const smallJpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
 
 /** A decoder that reports what it was asked for and hands back a real tiny image. */
 function fakeDecoder(width: number, height: number, seen: Array<Decoded>): DecodeImage {
@@ -22,6 +25,11 @@ function fakeDecoder(width: number, height: number, seen: Array<Decoded>): Decod
 				seen.push({ maxSide, encodedAs: type });
 
 				return Promise.resolve(type === "image/png" ? tinyPng : tinyJpeg);
+			},
+			thumbnail(side) {
+				seen.push({ maxSide: side, encodedAs: "thumbnail" });
+
+				return Promise.resolve(smallJpeg);
 			},
 			close: () => undefined,
 		});
@@ -57,7 +65,11 @@ describe("convertImage", () => {
 			decode: fakeDecoder(4000, 3000, seen),
 		});
 
-		expect(seen).toEqual([{ maxSide: 2400, encodedAs: "image/jpeg" }]);
+		expect(seen).toEqual([
+			{ maxSide: 2400, encodedAs: "image/jpeg" },
+			{ maxSide: thumbnailSide, encodedAs: "thumbnail" },
+		]);
+		expect(result.unwrap().thumbnail).toBe(smallJpeg);
 		expect(await firstPageSize(result.unwrap().pdf)).toEqual([1800, 1350]);
 	});
 
@@ -84,7 +96,13 @@ describe("convertImage", () => {
 			decode,
 		});
 
-		expect(seen.map((entry) => entry.encodedAs)).toEqual(["image/png", "image/jpeg", "image/jpeg"]);
+		const pages = seen.filter((entry) => entry.encodedAs !== "thumbnail");
+
+		expect(pages.map((entry) => entry.encodedAs)).toEqual([
+			"image/png",
+			"image/jpeg",
+			"image/jpeg",
+		]);
 	});
 
 	test("an image the browser cannot decode fails with ConversionFailed", async () => {
