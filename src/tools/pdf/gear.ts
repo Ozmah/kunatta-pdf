@@ -1,3 +1,4 @@
+import { required } from "./markup.ts";
 import { readSettings, type Settings } from "./settings.ts";
 
 /** Keyboard activation reports no pointer clicks; those toggles skip the animation. */
@@ -10,13 +11,9 @@ export interface SettingsControl {
 }
 
 export function connectSettings(root: Document): SettingsControl {
-	const container = root.querySelector<HTMLElement>("[data-settings]");
-	const gear = root.querySelector<HTMLButtonElement>("[data-gear]");
-	const panel = root.querySelector<HTMLFormElement>("[data-settings-panel]");
-
-	if (container === null || gear === null || panel === null) {
-		throw new Error("Settings markup is missing");
-	}
+	const container = required(root, "[data-settings]");
+	const gear = required<HTMLButtonElement>(root, "[data-gear]");
+	const panel = required<HTMLFormElement>(root, "[data-settings-panel]");
 
 	const isOpen = (): boolean => container.hasAttribute("data-open");
 

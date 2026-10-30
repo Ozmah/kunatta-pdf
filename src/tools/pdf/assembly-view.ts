@@ -1,9 +1,13 @@
+import { Panic } from "better-result";
+
 import { fileSize, interpolate, pageCount } from "../../i18n/format.ts";
 import type { Locale } from "../../i18n/locales.ts";
-import { translate } from "../../i18n/translate.ts";
+import type { MessageKey } from "../../i18n/es.ts";
+import { translator } from "../../i18n/translate.ts";
 import { canMove, type Item, type Items } from "./assembly.ts";
 import { failureReason } from "./fast.ts";
 import { kindLabel } from "./fast-view.ts";
+import { required } from "./markup.ts";
 import { pdfName, typedName } from "./file-name.ts";
 import { connectReorder } from "./reorder.ts";
 
@@ -28,16 +32,6 @@ export interface AssemblyView {
 	done(name: string, pages: number, bytes: number): void;
 }
 
-type Messages = Parameters<typeof translate>[1];
-
-function required<Element extends HTMLElement>(root: ParentNode, selector: string): Element {
-	const element = root.querySelector<Element>(selector);
-
-	if (element === null) throw new Error(`Assembly markup is missing ${selector}`);
-
-	return element;
-}
-
 /** By default the first file's name, shown as the field's placeholder. */
 function defaultName(items: Items): string {
 	const first = items[0];
@@ -49,7 +43,7 @@ function twoDigits(position: number): string {
 	return String(position).padStart(2, "0");
 }
 
-const statusKey: Readonly<Record<Item["state"]["kind"], Messages | undefined>> = {
+const statusKey: Readonly<Record<Item["state"]["kind"], MessageKey | undefined>> = {
 	checking: "row.checking",
 	ready: undefined,
 	failed: "row.failed",
@@ -71,7 +65,7 @@ export function connectAssemblyView(
 	const progress = required(section, "[data-progress]");
 	const doneBanner = required(section, "[data-assembly-done]");
 	const rows = new Map<string, HTMLLIElement>();
-	const t = (key: Messages): string => translate(locale, key);
+	const t = translator(locale);
 	let generating = false;
 	let latest: Items = [];
 
@@ -79,7 +73,7 @@ export function connectAssemblyView(
 		const fragment = template.content.cloneNode(true);
 		const row = fragment instanceof DocumentFragment ? fragment.querySelector("li") : null;
 
-		if (row === null) throw new Error("Row template is missing its <li>");
+		if (row === null) throw new Panic({ message: "The row template has no <li>" });
 
 		row.dataset["id"] = id;
 		row.querySelector("form")?.addEventListener("submit", (event) => {

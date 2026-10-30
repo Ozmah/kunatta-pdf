@@ -1,19 +1,14 @@
+import { Panic } from "better-result";
+
 import { fileCount, fileSize, fitNote, interpolate, pageCount } from "../../i18n/format.ts";
 import { localeNames, type Locale } from "../../i18n/locales.ts";
-import { translate } from "../../i18n/translate.ts";
+import { translate, translator } from "../../i18n/translate.ts";
 import type { AssemblyPrompts } from "./assembly-run.ts";
 import type { Items } from "./assembly.ts";
 import { failureReason, type Prompts } from "./fast.ts";
 import { kindLabel } from "./fast-view.ts";
+import { required } from "./markup.ts";
 import type { Settings } from "./settings.ts";
-
-function required<Element extends HTMLElement>(root: ParentNode, selector: string): Element {
-	const element = root.querySelector<Element>(selector);
-
-	if (element === null) throw new Error(`Dialog markup is missing ${selector}`);
-
-	return element;
-}
 
 function inputs(dialog: HTMLDialogElement): ReadonlyArray<HTMLInputElement> {
 	return Array.from(dialog.querySelectorAll("input"));
@@ -112,14 +107,16 @@ export function connectDialogs(
 	const incoming = required<HTMLDialogElement>(root, '[data-dialog="incoming"]');
 	const result = required<HTMLDialogElement>(root, '[data-dialog="result"]');
 	const language = required<HTMLDialogElement>(root, '[data-dialog="language"]');
-	const t = (key: Parameters<typeof translate>[1]): string => translate(locale, key);
+	const t = translator(locale);
 
 	for (const dialog of [single, summary, incoming, result, language]) connectBack(dialog);
 
 	const failRow = (problems: Items[number]): Node => {
 		const row = failTemplate.content.cloneNode(true);
 
-		if (!(row instanceof DocumentFragment)) throw new Error("Fail template is not a fragment");
+		if (!(row instanceof DocumentFragment)) {
+			throw new Panic({ message: "The failure template did not clone into a fragment" });
+		}
 
 		const { entry, state } = problems;
 		const reason = state.kind === "failed" ? t(failureReason(state.error)) : t("reason.password");

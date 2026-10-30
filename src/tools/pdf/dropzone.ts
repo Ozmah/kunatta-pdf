@@ -1,3 +1,6 @@
+import { Panic } from "better-result";
+
+import { required } from "./markup.ts";
 import type { Origin } from "./paths.ts";
 
 /** Receives files in the order they arrived, with how they arrived. */
@@ -20,9 +23,9 @@ export interface DropzoneControl {
 
 export function connectDropzone(root: Document, receive: ReceiveFiles): DropzoneControl {
 	const zones = Array.from(root.querySelectorAll<HTMLElement>("[data-dropzone]"));
-	const picker = root.querySelector<HTMLInputElement>("[data-picker]");
+	const picker = required<HTMLInputElement>(root, "[data-picker]");
 
-	if (zones.length === 0 || picker === null) throw new Error("Dropzone markup is missing");
+	if (zones.length === 0) throw new Panic({ message: "The page has no [data-dropzone]" });
 
 	const deliver = (files: ReadonlyArray<File>, origin: Origin): void => {
 		if (files.length > 0) receive(files, origin);

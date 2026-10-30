@@ -1,6 +1,7 @@
 import { interpolate } from "../../i18n/format.ts";
 import type { Locale } from "../../i18n/locales.ts";
-import { translate } from "../../i18n/translate.ts";
+import type { MessageKey } from "../../i18n/es.ts";
+import { translator } from "../../i18n/translate.ts";
 import { canMove, freePosition, moveTo, type Items } from "./assembly.ts";
 import { dragThreshold, edgeSpeed, slide, targetPosition } from "./reorder-motion.ts";
 
@@ -46,8 +47,6 @@ interface KeyboardHold extends Held {
 
 type Hold = PointerHold | KeyboardHold;
 
-type Messages = Parameters<typeof translate>[1];
-
 function reducedMotion(): boolean {
 	return matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -55,7 +54,7 @@ function reducedMotion(): boolean {
 /** Pointer (1:1 tracking, 200 ms settle) and keyboard (Space, ↑ ↓, Esc) reordering of the assembly list. */
 export function connectReorder(host: ReorderHost, locale: Locale): Reorder {
 	const { stack, slot } = host;
-	const t = (key: Messages): string => translate(locale, key);
+	const t = translator(locale);
 	let hold: Hold | undefined;
 	let frame = 0;
 
@@ -79,7 +78,7 @@ export function connectReorder(host: ReorderHost, locale: Locale): Reorder {
 		return moveTo(items, id, hold.position);
 	};
 
-	const label = (id: string, key: Messages): string => {
+	const label = (id: string, key: MessageKey): string => {
 		const items = adjust(host.committed());
 		const index = items.findIndex((item) => item.entry.id === id);
 		const name = items[index]?.entry.name ?? "";

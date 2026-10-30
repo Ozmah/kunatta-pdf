@@ -1,4 +1,5 @@
 import { isLocale, type Locale } from "../../i18n/locales.ts";
+import { required } from "./markup.ts";
 
 /** The parts of a click that decide whether the browser opens a new tab or window. */
 export interface ClickModifiers {
@@ -40,9 +41,7 @@ export interface LanguageGuardOptions {
 
 /** The language switch is a pair of plain links; this only steps in when work would be lost. */
 export function connectLanguageGuard(root: Document, options: LanguageGuardOptions): void {
-	const nav = root.querySelector<HTMLElement>("[data-lang-switch]");
-
-	if (nav === null) throw new Error("Language switch markup is missing");
+	const nav = required(root, "[data-lang-switch]");
 
 	nav.addEventListener("click", (event) => {
 		const link = event.target instanceof Element ? event.target.closest("a") : null;

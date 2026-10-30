@@ -1,13 +1,13 @@
 ---
 import type { Locale } from "../i18n/locales.ts";
-import { translate } from "../i18n/translate.ts";
+import { translator } from "../i18n/translate.ts";
 
 interface Props {
 	lang: Locale;
 }
 
 const { lang } = Astro.props;
-const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key);
+const t = translator(lang);
 ---
 
 <section class="assembly" hidden data-assembly aria-labelledby="assembly-title">

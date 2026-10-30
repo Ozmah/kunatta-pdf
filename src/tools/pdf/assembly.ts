@@ -1,3 +1,5 @@
+import { Panic } from "better-result";
+
 import type { JobError } from "./errors.ts";
 import type { PileEntry } from "./pile.ts";
 import type { FilePdf } from "./protocol.ts";
@@ -74,7 +76,7 @@ function refill(items: Items, order: Items): Items {
 
 		next += 1;
 
-		if (placed === undefined) throw new Error("Refill ran out of unpinned items");
+		if (placed === undefined) throw new Panic({ message: "Refill ran out of unpinned items" });
 
 		return placed;
 	});

@@ -2,6 +2,7 @@ import { fileSize, interpolate, pageCount } from "../../i18n/format.ts";
 import type { MessageKey } from "../../i18n/es.ts";
 import type { Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
+import { required } from "./markup.ts";
 import type { InputKind } from "./sniff.ts";
 
 /** "assembly" hides every fast-path view: the list takes the space. */
@@ -29,14 +30,6 @@ export function kindLabel(kind: InputKind): string {
 	if (kind === "text") return "TXT";
 
 	return kind.toUpperCase();
-}
-
-function required<Element extends HTMLElement>(root: ParentNode, selector: string): Element {
-	const element = root.querySelector<Element>(selector);
-
-	if (element === null) throw new Error(`Fast path markup is missing ${selector}`);
-
-	return element;
 }
 
 /** Every user-provided string goes through textContent; nothing here builds HTML. */
