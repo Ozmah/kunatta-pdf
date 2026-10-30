@@ -1,4 +1,4 @@
-import { fileSize, pageCount, withCount } from "../../i18n/format.ts";
+import { fileSize, interpolate, pageCount } from "../../i18n/format.ts";
 import type { MessageKey } from "../../i18n/es.ts";
 import type { Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
@@ -115,5 +115,5 @@ export function connectFastView(root: Document, locale: Locale): FastView {
 export function rejectionMessage(locale: Locale, count: number): string {
 	return count === 1
 		? translate(locale, "rejected.one")
-		: withCount(translate(locale, "rejected.many"), count);
+		: interpolate(translate(locale, "rejected.many"), { count });
 }

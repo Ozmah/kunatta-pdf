@@ -138,6 +138,29 @@ test.describe("keyboard", () => {
 		);
 	});
 
+	test("file names reach labels and announcements exactly as they are", async ({ page }) => {
+		// "$'" is a replacement pattern and "{total}" is a slot of the same message.
+		const tricky = ["a$'b.pdf", "{total}.pdf"];
+
+		await drop(
+			page,
+			await Promise.all(tricky.map((name, index) => pdf(name, [square(101 + index)]))),
+		);
+		await checked(page);
+		await expect(row(page, "a$'b.pdf").locator("[data-grip]")).toHaveAttribute(
+			"aria-label",
+			"Mover a$'b.pdf",
+		);
+
+		const position = (await order(page)).indexOf("{total}.pdf") + 1;
+
+		await row(page, "{total}.pdf").locator("[data-grip]").focus();
+		await page.keyboard.press("Space");
+		await expect(announcement(page)).toContainText(
+			`{total}.pdf tomado, posición ${position} de 2.`,
+		);
+	});
+
 	test("leaving the grip while holding a row puts it back", async ({ page }) => {
 		await fourRows(page);
 		await row(page, "1.pdf").locator("[data-grip]").focus();

@@ -1,4 +1,4 @@
-import { fileSize, pageCount } from "../../i18n/format.ts";
+import { fileSize, interpolate, pageCount } from "../../i18n/format.ts";
 import type { Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
 import { canMove, type Item, type Items } from "./assembly.ts";
@@ -111,7 +111,7 @@ export function connectAssemblyView(
 		required(row, ".tile").textContent = kindLabel(entry.kind);
 		required(row, "[data-row-name]").textContent = entry.name;
 		pinmark.hidden = !pinned;
-		pinmark.textContent = t("row.pinned").replace("{position}", twoDigits(index + 1));
+		pinmark.textContent = interpolate(t("row.pinned"), { position: twoDigits(index + 1) });
 		tag.hidden = status === undefined;
 		tag.textContent = status === undefined ? "" : t(status);
 		unlock.hidden = state.kind !== "locked";
@@ -129,7 +129,7 @@ export function connectAssemblyView(
 
 		const grip = required<HTMLButtonElement>(row, "[data-grip]");
 
-		grip.setAttribute("aria-label", t("row.grab").replace("{name}", entry.name));
+		grip.setAttribute("aria-label", interpolate(t("row.grab"), { name: entry.name }));
 		grip.disabled = generating || pinned;
 
 		const buttons = {
@@ -215,10 +215,11 @@ export function connectAssemblyView(
 		required(progress, "[data-progress-label]").textContent =
 			current === undefined
 				? t("assembly.composing")
-				: t("assembly.progress")
-						.replace("{done}", String(ready))
-						.replace("{total}", String(items.length))
-						.replace("{name}", current.entry.name);
+				: interpolate(t("assembly.progress"), {
+						done: ready,
+						total: items.length,
+						name: current.entry.name,
+					});
 	};
 
 	list.addEventListener("click", (event) => {

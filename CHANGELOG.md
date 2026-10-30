@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: file names with `$` or `{…}` in them now show as they are in row labels, screen reader announcements and progress.
 - Fixed: on phones, the password field of a locked row no longer pushes Open out of the row.
 - Fixed: rows no longer jump mid-slide or lose keyboard focus when a background check finishes while the list is being reordered.
 - Fixed: Cancel stops Make my PDF at once even while files are still being checked; before, the button stayed busy until the checks ended.

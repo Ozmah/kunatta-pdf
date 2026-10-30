@@ -1,4 +1,4 @@
-import { fileCount, fileSize, fitNote, pageCount, withCount } from "../../i18n/format.ts";
+import { fileCount, fileSize, fitNote, interpolate, pageCount } from "../../i18n/format.ts";
 import { localeNames, type Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
 import type { AssemblyPrompts } from "./assembly-run.ts";
@@ -192,28 +192,25 @@ export function connectDialogs(
 		async confirmLanguage(target) {
 			const name = localeNames[target];
 
-			required(language, "[data-title]").textContent = t("language.title").replace(
-				"{language}",
-				name,
-			);
-			required(language, "[data-switch]").textContent = t("language.switch").replace(
-				"{language}",
-				name,
-			);
+			required(language, "[data-title]").textContent = interpolate(t("language.title"), {
+				language: name,
+			});
+			required(language, "[data-switch]").textContent = interpolate(t("language.switch"), {
+				language: name,
+			});
 
 			return (await ask(language)).choice === "confirm";
 		},
 
 		async summary(problems, total) {
-			required(summary, "[data-title]").textContent = withCount(
-				t("summary.title"),
-				problems.length,
-			).replace("{total}", String(total));
+			required(summary, "[data-title]").textContent = interpolate(t("summary.title"), {
+				count: problems.length,
+				total,
+			});
 			required(summary, "[data-fails]").replaceChildren(...problems.map(failRow));
-			required(summary, "[data-body]").textContent = withCount(
-				t("summary.body"),
-				total - problems.length,
-			);
+			required(summary, "[data-body]").textContent = interpolate(t("summary.body"), {
+				count: total - problems.length,
+			});
 
 			return (await ask(summary)).choice === "confirm" ? "without" : "back";
 		},

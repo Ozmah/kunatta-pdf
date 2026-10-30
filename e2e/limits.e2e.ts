@@ -3,7 +3,7 @@ import { open } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 
 import { es } from "../src/i18n/es.ts";
-import { withCount } from "../src/i18n/format.ts";
+import { interpolate } from "../src/i18n/format.ts";
 import { bytes, office, officeSamples, text } from "./support/samples.ts";
 import { downloadOf, drop, notice, pickPaths, rows } from "./support/tool.ts";
 
@@ -36,7 +36,7 @@ test("files that cannot become a PDF are named in a notice, and the rest carry o
 		text("b.txt", "b"),
 	]);
 	await expect(rows(page)).toHaveCount(2);
-	await expect(notice(page)).toContainText(withCount(es["rejected.many"], 4));
+	await expect(notice(page)).toContainText(interpolate(es["rejected.many"], { count: 4 }));
 
 	for (const name of ["video.mp4", "animacion.gif", "foto.heic", "vacio.txt"]) {
 		await expect(notice(page)).toContainText(name);

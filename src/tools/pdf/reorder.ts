@@ -1,3 +1,4 @@
+import { interpolate } from "../../i18n/format.ts";
 import type { Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
 import { canMove, freePosition, moveTo, type Items } from "./assembly.ts";
@@ -83,10 +84,7 @@ export function connectReorder(host: ReorderHost, locale: Locale): Reorder {
 		const index = items.findIndex((item) => item.entry.id === id);
 		const name = items[index]?.entry.name ?? "";
 
-		return t(key)
-			.replace("{name}", name)
-			.replace("{position}", String(index + 1))
-			.replace("{total}", String(items.length));
+		return interpolate(t(key), { name, position: index + 1, total: items.length });
 	};
 
 	const placeSlot = (row: HTMLElement): void => {

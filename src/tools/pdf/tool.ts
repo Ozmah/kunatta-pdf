@@ -1,6 +1,6 @@
 import { isLocale, defaultLocale, type Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
-import { withCount } from "../../i18n/format.ts";
+import { interpolate } from "../../i18n/format.ts";
 import { createAssembly } from "./assembly-run.ts";
 import { connectAssemblyView } from "./assembly-view.ts";
 import { createConverter, spawnPdfWorker } from "./converter.ts";
@@ -90,7 +90,9 @@ export function startPdfTool(root: Document): void {
 				? [
 						{
 							entries: degradedNames,
-							message: withCount(translate(locale, "degraded.many"), degradedNames.length),
+							message: interpolate(translate(locale, "degraded.many"), {
+								count: degradedNames.length,
+							}),
 						},
 					]
 				: [],

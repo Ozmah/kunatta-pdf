@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { es } from "../src/i18n/es.ts";
-import { pageCount, withCount } from "../src/i18n/format.ts";
+import { interpolate, pageCount } from "../src/i18n/format.ts";
 import { image } from "./support/images.ts";
 import {
 	brokenJpeg,
@@ -137,7 +137,9 @@ test("a failed file stops for a summary: back keeps it, without it pinned files 
 	await page.locator("[data-make]").click();
 	await expect(summary.locator("h2")).toHaveText("No pudimos convertir 1 de 4 archivos");
 	await expect(summary.locator("[data-fails]")).toContainText("b rota.jpg");
-	await expect(summary.locator("[data-body]")).toHaveText(withCount(es["summary.body"], 3));
+	await expect(summary.locator("[data-body]")).toHaveText(
+		interpolate(es["summary.body"], { count: 3 }),
+	);
 	// The safe choice has the initial focus.
 	await expect(summary.getByRole("button", { name: es["summary.back"] })).toBeFocused();
 	await summary.getByRole("button", { name: es["summary.back"] }).click();
@@ -229,7 +231,7 @@ test("old Office files are named in one notice after generating", async ({ page 
 	]);
 	await checked(page);
 	await make(page);
-	await expect(notice(page)).toContainText(withCount(es["degraded.many"], 2));
+	await expect(notice(page)).toContainText(interpolate(es["degraded.many"], { count: 2 }));
 	await expect(notice(page)).toContainText(officeSamples.doc);
 	await expect(notice(page)).toContainText(officeSamples.xls);
 });
