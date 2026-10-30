@@ -21,6 +21,7 @@ import { connectSettings } from "./gear.ts";
 import { connectLanguageGuard } from "./language-guard.ts";
 import { choosePath, type Origin } from "./paths.ts";
 import { admit, type PileEntry } from "./pile.ts";
+import { browserStore } from "./remembered.ts";
 
 function pageLocale(root: Document): Locale {
 	const lang = root.documentElement.lang;
@@ -33,7 +34,7 @@ type Run = typeof runFast;
 /** Wires the PDF tool: drop zone → path → worker → download. */
 export function startPdfTool(root: Document): void {
 	const locale = pageLocale(root);
-	const settings = connectSettings(root);
+	const settings = connectSettings(root, browserStore());
 	const converter = createConverter(spawnPdfWorker);
 	const view = connectFastView(root, locale);
 	const downloads = createDownloader(root);
