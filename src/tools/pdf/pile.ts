@@ -89,23 +89,3 @@ export async function admit(
 
 	return { pile: entries, rejected };
 }
-
-export function removeEntry(pile: Pile, id: string): Pile {
-	return pile.filter((entry) => entry.id !== id);
-}
-
-/** Moves an entry to `target`, clamped to the pile's bounds. Unknown ids leave the pile as is. */
-export function moveEntry(pile: Pile, id: string, target: number): Pile {
-	const from = pile.findIndex((entry) => entry.id === id);
-
-	if (from === -1) return pile;
-
-	const entries = [...pile];
-	const [moved] = entries.splice(from, 1);
-
-	if (moved === undefined) return pile;
-
-	entries.splice(Math.max(0, Math.min(target, entries.length)), 0, moved);
-
-	return entries;
-}
