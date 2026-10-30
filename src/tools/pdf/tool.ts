@@ -18,6 +18,7 @@ import {
 } from "./fast.ts";
 import { connectFastView, rejectionMessage } from "./fast-view.ts";
 import { connectSettings } from "./gear.ts";
+import { connectLanguageGuard } from "./language-guard.ts";
 import { choosePath, type Origin } from "./paths.ts";
 import { admit, type PileEntry } from "./pile.ts";
 
@@ -171,6 +172,21 @@ export function startPdfTool(root: Document): void {
 		}
 	};
 
+	connectLanguageGuard(root, {
+		hasWork: () => busy || assembly.items().length > 0,
+		confirm: (target) => prompts.confirmLanguage(target),
+	});
+
+	// One name, editable in Ajustes and next to Hacer mi PDF (panel 04 · Nombre).
+	const nameFields = Array.from(root.querySelectorAll<HTMLInputElement>("input[data-pdf-name]"));
+
+	for (const field of nameFields) {
+		field.addEventListener("input", () => {
+			for (const other of nameFields) if (other !== field) other.value = field.value;
+		});
+	}
+
+	// Files that arrive while a conversion or generation runs are ignored (decided in 10).
 	const dropzone = connectDropzone(root, (files, origin) => {
 		if (!busy) void receive(files, origin);
 	});

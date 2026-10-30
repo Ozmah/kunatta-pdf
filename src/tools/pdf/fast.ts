@@ -10,7 +10,7 @@ import {
 	type ComposeJobError,
 	type JobError,
 } from "./errors.ts";
-import { pdfName } from "./file-name.ts";
+import { resultName } from "./file-name.ts";
 import type { PileEntry } from "./pile.ts";
 import type { FilePdf } from "./protocol.ts";
 import type { Settings } from "./settings.ts";
@@ -106,7 +106,7 @@ export async function runFast(
 	settings: Settings,
 	prompts: Prompts,
 ): Promise<Outcome> {
-	const name = pdfName(entry.name);
+	const name = resultName(settings.name, entry.name);
 	let password: string | undefined;
 
 	if (settings.password === "on") {
@@ -132,7 +132,7 @@ export async function runSinglePdf(
 	settings: Settings,
 	prompts: Prompts,
 ): Promise<Outcome> {
-	const name = pdfName(entry.name);
+	const name = resultName(settings.name, entry.name);
 	const opened = await convertEntry(entry, converter, settings, prompts);
 
 	if (opened === backedOut || opened.isErr()) return opened;

@@ -23,6 +23,25 @@ export function sanitizeName(name: string): string {
 	return Array.from(cleaned).slice(0, maxNameLength).join("").trim();
 }
 
+function withoutPdf(name: string): string {
+	return name.replace(/\.pdf$/iu, "");
+}
+
+/**
+ * A name typed in a field that already shows ".pdf": cleaned, without a ".pdf" typed anyway.
+ * Stripped before and after cleaning, so ".pdf" and "report.pdf." both come out right.
+ */
+export function typedName(value: string): string {
+	return sanitizeName(withoutPdf(sanitizeName(withoutPdf(value.trim()))));
+}
+
+/** The result's file name: the typed one when there is one, otherwise the source file's. */
+export function resultName(typed: string, sourceName: string): string {
+	const clean = typedName(typed);
+
+	return clean.length > 0 ? `${clean}.pdf` : pdfName(sourceName);
+}
+
 /** The name of the resulting PDF: the source name without its extension, always ending in .pdf. */
 export function pdfName(sourceName: string): string {
 	const dot = sourceName.lastIndexOf(".");

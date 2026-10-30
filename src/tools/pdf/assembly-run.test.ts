@@ -51,7 +51,7 @@ function converter(log: Log): Converter {
 
 function setup(
 	summary: "back" | "without" = "without",
-	settings: Settings = { size: "letter", quality: "normal", password: "off" },
+	settings: Settings = { size: "letter", quality: "normal", password: "off", name: "" },
 ) {
 	const log: Log = { converted: [], composed: [] };
 	const asked: Array<string> = [];
@@ -140,7 +140,7 @@ describe("createAssembly", () => {
 
 		assembly.add([entry("a.jpg"), entry("notas.pdf", "pdf")]);
 		await assembly.generate("t.pdf");
-		change({ size: "letter", quality: "max", password: "on" });
+		change({ size: "letter", quality: "max", password: "on", name: "" });
 		await assembly.generate("t.pdf");
 
 		expect(log.converted).toEqual(["a.jpg normal", "notas.pdf normal", "a.jpg max"]);

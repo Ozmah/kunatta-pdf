@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- An ES · EN switch at the top right opens the page in the other language; with files in the list or a conversion running, it first warns that the page reloads and that work is lost.
+- Ajustes has a PDF name field for single files; it shares its value with the name next to Make my PDF, and a .pdf typed by hand is not doubled.
 - Fixed: hovering a pinned row's pin button no longer turns its icon light on the lime background.
 - Rows can be reordered by dragging the grip (the type tile on phones): the row follows the pointer, pinned rows stay put, the list scrolls near the screen edges, and Esc or dropping outside the list puts it back.
 - Rows can be reordered with the keyboard: Space on the grip takes the row, ↑ ↓ move it, Space drops it and Esc cancels; each step is announced to screen readers.

@@ -17,6 +17,21 @@ const { lang } = Astro.props;
 		aria-label={translate(lang, "settings.group")}
 		data-settings-panel
 	>
+		<label class="name">
+			<span class="legend">{translate(lang, "settings.name")}</span>
+			<span class="field">
+				<input
+					type="text"
+					name="name"
+					maxlength="200"
+					spellcheck="false"
+					autocomplete="off"
+					placeholder={translate(lang, "settings.name.placeholder")}
+					data-pdf-name
+				/>
+				<span class="suffix" aria-hidden="true">.pdf</span>
+			</span>
+		</label>
 		<fieldset>
 			<legend>{translate(lang, "settings.size")}</legend>
 			<div class="segments">
@@ -241,7 +256,9 @@ const { lang } = Astro.props;
 		padding: 0;
 	}
 
-	legend {
+	legend,
+	.legend {
+		display: block;
 		margin-bottom: 8px;
 		font: 600 12px var(--font-mono);
 		letter-spacing: var(--tracking-label);
@@ -291,6 +308,41 @@ const { lang } = Astro.props;
 	.segments input:focus-visible + span {
 		outline: 2.5px solid var(--focus);
 		outline-offset: -6px;
+	}
+
+	/* Duplicates the name field next to Hacer mi PDF; chunk 10c moves it to a shared primitive. */
+	.field {
+		display: flex;
+		height: 44px;
+		border: var(--border) solid var(--line);
+		background: var(--bg);
+	}
+
+	.field:focus-within {
+		outline: 3px solid var(--focus);
+		outline-offset: 2px;
+	}
+
+	.field input {
+		flex: 1;
+		min-width: 0;
+		padding: 0 12px;
+		border: 0;
+		background: none;
+		font-size: 15px;
+	}
+
+	.field input:focus {
+		outline: none;
+	}
+
+	.suffix {
+		display: grid;
+		place-items: center;
+		padding: 0 10px;
+		border-left: var(--border) solid var(--line);
+		font: 600 12px var(--font-mono);
+		color: var(--ink-muted);
 	}
 
 	.note {

@@ -107,6 +107,14 @@ export const en = {
 		"{name} grabbed, position {position} of {total}. Use ↑ ↓ to move it, Space to drop it and Escape to cancel.",
 	"announce.dropped": "{name} dropped at position {position} of {total}",
 	"announce.cancelled": "Move cancelled; {name} stays at position {position}",
+	"lang.label": "Language",
+	"language.title": "Switch to {language}?",
+	"language.body":
+		"The page reloads and anything in progress is lost: your files and whatever is converting.",
+	"language.stay": "Stay",
+	"language.switch": "Switch to {language}",
+	"settings.name": "PDF name",
+	"settings.name.placeholder": "same as the file",
 	"footer.notice": "Your files never leave your browser.",
 	"footer.author": "made by Ozmah",
 } as const satisfies Messages;

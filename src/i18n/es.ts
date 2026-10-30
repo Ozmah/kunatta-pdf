@@ -105,6 +105,14 @@ export const es = {
 		"{name} tomado, posición {position} de {total}. Usa ↑ ↓ para moverlo, Espacio para soltarlo y Esc para cancelar.",
 	"announce.dropped": "{name} soltado en la posición {position} de {total}",
 	"announce.cancelled": "Movimiento cancelado; {name} sigue en la posición {position}",
+	"lang.label": "Idioma",
+	"language.title": "¿Cambiar a {language}?",
+	"language.body":
+		"La página se recarga y se pierde lo que tengas en curso: tus archivos y lo que se esté convirtiendo.",
+	"language.stay": "Quedarme",
+	"language.switch": "Cambiar a {language}",
+	"settings.name": "Nombre del PDF",
+	"settings.name.placeholder": "igual que el archivo",
 	"footer.notice": "Tus archivos nunca salen de tu navegador.",
 	"footer.author": "hecho por Ozmah",
 } as const;

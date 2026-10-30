@@ -1,0 +1,79 @@
+---
+import { localeNames, locales, type Locale } from "../i18n/locales.ts";
+import { translate } from "../i18n/translate.ts";
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+
+// The same page in the other language: only the leading locale segment changes.
+const rest = Astro.url.pathname.replace(/^\/[^/]+\//u, "");
+---
+
+<nav class="lang" aria-label={translate(lang, "lang.label")} data-lang-switch>
+	{
+		locales.map((code) => (
+			<a
+				href={`/${code}/${rest}`}
+				hreflang={code}
+				lang={code}
+				aria-label={localeNames[code]}
+				aria-current={code === lang ? "page" : undefined}
+			>
+				{code.toUpperCase()}
+			</a>
+		))
+	}
+</nav>
+
+<style>
+	/* Panel 04 · Idioma. The active language is a lime riso tile, tilted, with a grape layer. */
+	.lang {
+		display: flex;
+		gap: 6px;
+	}
+
+	a {
+		display: grid;
+		place-items: center;
+		width: 40px;
+		height: 34px;
+		border: var(--border) solid var(--surface);
+		color: var(--ink-muted);
+		font: 700 12px var(--font-mono);
+		letter-spacing: 0.06em;
+		text-decoration: none;
+		transition:
+			color var(--duration-color) ease,
+			border-color var(--duration-color) ease;
+	}
+
+	a[aria-current="page"] {
+		border-color: var(--color-midnight);
+		background: var(--accent);
+		box-shadow: -3px 3px 0 var(--color-grape);
+		color: var(--on-accent);
+		transform: rotate(-3deg);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		a:not([aria-current]):hover {
+			border-color: var(--line);
+			color: var(--ink);
+		}
+	}
+
+	a:focus-visible {
+		outline: 3px solid var(--focus);
+		outline-offset: 3px;
+	}
+
+	/* Reduced motion keeps color; the tilt goes, the riso layer stays. */
+	@media (prefers-reduced-motion: reduce) {
+		a[aria-current="page"] {
+			transform: none;
+		}
+	}
+</style>

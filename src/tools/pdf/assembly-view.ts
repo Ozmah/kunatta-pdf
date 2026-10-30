@@ -4,7 +4,7 @@ import { translate } from "../../i18n/translate.ts";
 import { canMove, type Item, type Items } from "./assembly.ts";
 import { failureReason } from "./fast.ts";
 import { kindLabel } from "./fast-view.ts";
-import { pdfName, sanitizeName } from "./file-name.ts";
+import { pdfName, typedName } from "./file-name.ts";
 import { connectReorder } from "./reorder.ts";
 
 export interface AssemblyHandlers {
@@ -65,7 +65,7 @@ export function connectAssemblyView(
 	const section = required(root, "[data-assembly]");
 	const list = required(section, "[data-list]");
 	const template = required<HTMLTemplateElement>(root, "[data-row-template]");
-	const nameInput = required<HTMLInputElement>(section, "[data-name]");
+	const nameInput = required<HTMLInputElement>(section, "[data-pdf-name]");
 	const make = required<HTMLButtonElement>(section, "[data-make]");
 	const cancel = required<HTMLButtonElement>(section, "[data-cancel]");
 	const progress = required(section, "[data-progress]");
@@ -244,7 +244,7 @@ export function connectAssemblyView(
 		render,
 
 		name() {
-			const typed = sanitizeName(nameInput.value);
+			const typed = typedName(nameInput.value);
 
 			return `${typed.length > 0 ? typed : defaultName(latest)}.pdf`;
 		},

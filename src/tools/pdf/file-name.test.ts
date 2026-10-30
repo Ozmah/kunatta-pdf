@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { maxNameLength, pdfName, sanitizeName } from "./file-name.ts";
+import { maxNameLength, pdfName, resultName, sanitizeName, typedName } from "./file-name.ts";
 
 describe("pdfName", () => {
 	test("replaces the extension with .pdf", () => {
@@ -26,5 +26,27 @@ describe("sanitizeName", () => {
 
 		expect(Array.from(sanitizeName(long))).toHaveLength(maxNameLength);
 		expect(sanitizeName("🎉".repeat(121))).toBe("🎉".repeat(120));
+	});
+});
+
+describe("typedName", () => {
+	test("drops a .pdf the user typed next to the .pdf suffix, in any case", () => {
+		expect(typedName("reporte.pdf")).toBe("reporte");
+		expect(typedName("Reporte.PDF ")).toBe("Reporte");
+		expect(typedName("reporte.pdf.")).toBe("reporte");
+	});
+
+	test("keeps other dots, and a lone .pdf means no name at all", () => {
+		expect(typedName("v1.2 notas")).toBe("v1.2 notas");
+		expect(typedName(".pdf")).toBe("");
+		expect(typedName("   ")).toBe("");
+	});
+});
+
+describe("resultName", () => {
+	test("prefers the typed name and falls back to the source file's", () => {
+		expect(resultName("entrega", "foto.jpg")).toBe("entrega.pdf");
+		expect(resultName("", "foto.jpg")).toBe("foto.pdf");
+		expect(resultName("???", "foto.jpg")).toBe("foto.pdf");
 	});
 });

@@ -1,5 +1,5 @@
 import { fileCount, fileSize, fitNote, pageCount, withCount } from "../../i18n/format.ts";
-import type { Locale } from "../../i18n/locales.ts";
+import { localeNames, type Locale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
 import type { AssemblyPrompts } from "./assembly-run.ts";
 import type { Items } from "./assembly.ts";
@@ -95,20 +95,26 @@ function connectReveal(dialog: HTMLDialogElement, locale: Locale): void {
 	}
 }
 
+export interface LanguagePrompt {
+	/** Warns that switching language reloads the page; true to switch anyway. */
+	confirmLanguage(target: Locale): Promise<boolean>;
+}
+
 /** The dialogs of panel 04, bound to the page. Every user string goes through textContent. */
 export function connectDialogs(
 	root: Document,
 	locale: Locale,
 	settings: () => Settings,
-): Prompts & AssemblyPrompts {
+): Prompts & AssemblyPrompts & LanguagePrompt {
 	const single = required<HTMLDialogElement>(root, '[data-dialog="single"]');
 	const summary = required<HTMLDialogElement>(root, '[data-dialog="summary"]');
 	const failTemplate = required<HTMLTemplateElement>(root, "[data-fail-template]");
 	const incoming = required<HTMLDialogElement>(root, '[data-dialog="incoming"]');
 	const result = required<HTMLDialogElement>(root, '[data-dialog="result"]');
+	const language = required<HTMLDialogElement>(root, '[data-dialog="language"]');
 	const t = (key: Parameters<typeof translate>[1]): string => translate(locale, key);
 
-	for (const dialog of [single, summary, incoming, result]) connectBack(dialog);
+	for (const dialog of [single, summary, incoming, result, language]) connectBack(dialog);
 
 	const failRow = (problems: Items[number]): Node => {
 		const row = failTemplate.content.cloneNode(true);
@@ -181,6 +187,21 @@ export function connectDialogs(
 			if (choice === "confirm") return "make";
 
 			return choice === "more" ? "more" : "back";
+		},
+
+		async confirmLanguage(target) {
+			const name = localeNames[target];
+
+			required(language, "[data-title]").textContent = t("language.title").replace(
+				"{language}",
+				name,
+			);
+			required(language, "[data-switch]").textContent = t("language.switch").replace(
+				"{language}",
+				name,
+			);
+
+			return (await ask(language)).choice === "confirm";
 		},
 
 		async summary(problems, total) {

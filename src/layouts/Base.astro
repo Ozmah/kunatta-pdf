@@ -2,6 +2,7 @@
 import { Font } from "astro:assets";
 
 import Footer from "../components/Footer.astro";
+import LanguageSwitch from "../components/LanguageSwitch.astro";
 import Logo from "../components/Logo.astro";
 import { defaultLocale, locales, type Locale } from "../i18n/locales.ts";
 import { translate } from "../i18n/translate.ts";
@@ -35,6 +36,7 @@ const { lang } = Astro.props;
 	<body>
 		<header>
 			<Logo href={`/${lang}/`} />
+			<LanguageSwitch lang={lang} />
 		</header>
 		<main>
 			<slot />
@@ -51,6 +53,13 @@ const { lang } = Astro.props;
 		grid-template-rows: auto 1fr auto;
 		gap: 24px;
 		padding: 28px 32px 50px;
+	}
+
+	header {
+		display: flex;
+		gap: 16px;
+		align-items: center;
+		justify-content: space-between;
 	}
 
 	main {

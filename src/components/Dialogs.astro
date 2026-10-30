@@ -53,6 +53,17 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 	<li><span class="tile" aria-hidden="true"></span><span><b></b><span class="meta"></span></span></li>
 </template>
 
+<dialog class="dlg" role="alertdialog" aria-labelledby="language-title" data-dialog="language">
+	<form method="dialog">
+		<h2 id="language-title" data-title></h2>
+		<p class="question">{t("language.body")}</p>
+		<div class="actions">
+			<button class="btn btn-secondary" type="button" data-back autofocus>{t("language.stay")}</button>
+			<button class="btn btn-primary" value="confirm" data-switch></button>
+		</div>
+	</form>
+</dialog>
+
 <dialog class="dlg" aria-labelledby="incoming-title" data-dialog="incoming">
 	<form method="dialog">
 		<h2 id="incoming-title" data-title></h2>

@@ -34,7 +34,7 @@ const pdf: PileEntry = {
 	source: new Blob(["pdf"]),
 };
 
-const settings: Settings = { size: "a4", quality: "normal", password: "off" };
+const settings: Settings = { size: "a4", quality: "normal", password: "off", name: "" };
 const withPassword: Settings = { ...settings, password: "on" };
 
 /** A converter that needs `secret` for files whose name contains "constancia". */
@@ -121,6 +121,14 @@ describe("runFast", () => {
 		});
 	});
 
+	test("uses the name typed in Ajustes instead of the file's", async () => {
+		const fake = converter();
+		const result = await runFast(word, fake, { ...settings, name: "reporte final" }, prompts({}));
+
+		expect(fake.calls.at(-1)).toBe("compose reporte final.pdf a4");
+		expect(settled(result).unwrap().name).toBe("reporte final.pdf");
+	});
+
 	test("with the password setting on, asks for it first and backing out converts nothing", async () => {
 		const fake = converter();
 		const asked = prompts({ resultPassword: ["s3creta"] });
@@ -157,6 +165,16 @@ describe("runSinglePdf", () => {
 		]);
 		expect(fake.calls.at(-1)).toBe("compose constancia.pdf a4");
 		expect(settled(result).isOk()).toBe(true);
+	});
+
+	test("the dialog shows the name typed in Ajustes as the result", async () => {
+		const fake = converter();
+		const asked = prompts({ incomingPassword: ["secret"], confirmSinglePdf: ["make"] });
+
+		await runSinglePdf(pdf, fake, { ...settings, name: "inscripcion" }, asked);
+
+		expect(asked.asked.at(-1)).toBe("confirm constancia.pdf as inscripcion.pdf, 6 pages");
+		expect(fake.calls.at(-1)).toBe("compose inscripcion.pdf a4");
 	});
 
 	test("going back from the dialog composes nothing; the result password comes after confirming", async () => {

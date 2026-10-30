@@ -33,6 +33,9 @@ export function connectSettings(root: Document): SettingsControl {
 		}
 	};
 
+	// Enter in the name field would submit the form and reload the page, losing the work.
+	panel.addEventListener("submit", (event) => event.preventDefault());
+
 	gear.addEventListener("click", (event) => {
 		setOpen(!isOpen(), isKeyboardActivation(event.detail));
 	});
@@ -62,7 +65,7 @@ export function connectSettings(root: Document): SettingsControl {
 				return value instanceof File ? null : value;
 			};
 
-			return readSettings(text("size"), text("quality"), text("password"));
+			return readSettings(text("size"), text("quality"), text("password"), text("name"));
 		},
 	};
 }
