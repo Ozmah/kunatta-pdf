@@ -19,7 +19,7 @@ function entry(name: string): PileEntry {
 
 const names = (items: Items): Array<string> => items.map((item) => item.entry.name);
 
-/** Ten files named 1..10, with 3 and 6 pinned (the example in panel 04). */
+/** Ten files named 1..10, with 3 and 6 pinned. */
 function tenWithPins(): Items {
 	const items = addEntries(
 		[],

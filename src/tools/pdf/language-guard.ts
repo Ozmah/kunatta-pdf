@@ -38,7 +38,7 @@ export interface LanguageGuardOptions {
 	confirm(target: Locale): Promise<boolean>;
 }
 
-/** Panel 04 · Idioma: the switch is a pair of plain links; this only steps in when work would be lost. */
+/** The language switch is a pair of plain links; this only steps in when work would be lost. */
 export function connectLanguageGuard(root: Document, options: LanguageGuardOptions): void {
 	const nav = root.querySelector<HTMLElement>("[data-lang-switch]");
 

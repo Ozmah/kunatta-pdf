@@ -10,7 +10,7 @@ export interface ConvertSettings {
 	readonly quality: Quality;
 }
 
-/** Panel 04 · Estado de cada archivo. */
+/** Where each file in the list stands. */
 export type ItemState =
 	| { readonly kind: "checking" }
 	| { readonly kind: "ready"; readonly file: FilePdf; readonly usedSettings: ConvertSettings }

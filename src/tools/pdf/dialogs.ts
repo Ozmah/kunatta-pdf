@@ -100,7 +100,7 @@ export interface LanguagePrompt {
 	confirmLanguage(target: Locale): Promise<boolean>;
 }
 
-/** The dialogs of panel 04, bound to the page. Every user string goes through textContent. */
+/** The PDF tool's dialogs, bound to the page. Every user string goes through textContent. */
 export function connectDialogs(
 	root: Document,
 	locale: Locale,

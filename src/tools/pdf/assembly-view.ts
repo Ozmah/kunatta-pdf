@@ -38,7 +38,7 @@ function required<Element extends HTMLElement>(root: ParentNode, selector: strin
 	return element;
 }
 
-/** Panel 04 · Nombre: by default the first file's name, shown as the field's placeholder. */
+/** By default the first file's name, shown as the field's placeholder. */
 function defaultName(items: Items): string {
 	const first = items[0];
 

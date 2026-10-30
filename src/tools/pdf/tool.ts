@@ -177,7 +177,7 @@ export function startPdfTool(root: Document): void {
 		confirm: (target) => prompts.confirmLanguage(target),
 	});
 
-	// One name, editable in Ajustes and next to Hacer mi PDF (panel 04 · Nombre).
+	// One name, editable in Settings and next to Make my PDF.
 	const nameFields = Array.from(root.querySelectorAll<HTMLInputElement>("input[data-pdf-name]"));
 
 	for (const field of nameFields) {

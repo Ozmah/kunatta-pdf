@@ -9,7 +9,7 @@ export type Path =
 	| { readonly kind: "single-pdf"; readonly entry: PileEntry }
 	| { readonly kind: "assembly" };
 
-/** Panel 04 · Caminos: one non-PDF file is converted right away; one PDF asks first; anything else assembles. */
+/** One non-PDF file is converted right away; one PDF asks first; anything else assembles. */
 export function choosePath(accepted: ReadonlyArray<PileEntry>, origin: Origin): Path {
 	const [first, ...rest] = accepted;
 

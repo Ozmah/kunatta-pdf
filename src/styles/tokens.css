@@ -1,4 +1,4 @@
-/* Kunatta design tokens. Source of truth: doop canvas "Kunatta", guideline `brand-palette`. */
+/* Kunatta design tokens: palette, theme roles, type, riso offsets, motion and layers. */
 :root {
 	/* Palette */
 	--color-cheviot: #f6f2e8;
@@ -32,7 +32,7 @@
 	--riso-shadow-y: 4px;
 	--riso-layer: translate(-8px, 8px) rotate(-1deg);
 
-	/* Motion (see "Engrane · animación") */
+	/* Motion: press, gear spin, panel pop and the riso layer delay */
 	--ease-press: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 	--ease-spin: cubic-bezier(0.645, 0.045, 0.355, 1);
 	--ease-pop: cubic-bezier(0.19, 1, 0.22, 1);

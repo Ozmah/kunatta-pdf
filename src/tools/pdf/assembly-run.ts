@@ -57,7 +57,7 @@ function convertSettings(settings: Settings): ConvertSettings {
 
 /**
  * The list behind the assembly view. Every file is converted in the background as soon as it
- * enters (panel 04 · Revisar), one at a time, so "Make my PDF" mostly just composes.
+ * enters, one at a time, so "Make my PDF" mostly just composes.
  */
 export function createAssembly(options: AssemblyOptions): Assembly {
 	const { converter, prompts, locale } = options;

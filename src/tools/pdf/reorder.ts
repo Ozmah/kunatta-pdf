@@ -51,7 +51,7 @@ function reducedMotion(): boolean {
 	return matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Pointer (1:1 tracking, 200 ms settle) and keyboard (Space, ↑ ↓, Esc) reordering for panel 04. */
+/** Pointer (1:1 tracking, 200 ms settle) and keyboard (Space, ↑ ↓, Esc) reordering of the assembly list. */
 export function connectReorder(host: ReorderHost, locale: Locale): Reorder {
 	const { stack, slot } = host;
 	const t = (key: Messages): string => translate(locale, key);
