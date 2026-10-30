@@ -263,19 +263,20 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 		gap: 8px;
 	}
 
-	.field {
+	/* Scoped to the name: the rows come from this file's <template> and would inherit it. */
+	.name .field {
 		display: flex;
 		height: 48px;
 		border: var(--border) solid var(--line);
 		background: var(--bg);
 	}
 
-	.field:focus-within {
+	.name .field:focus-within {
 		outline: 3px solid var(--focus);
 		outline-offset: 2px;
 	}
 
-	.field input {
+	.name .field input {
 		flex: 1;
 		min-width: 0;
 		padding: 0 14px;
@@ -284,7 +285,7 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 		font-size: 16px;
 	}
 
-	.field input:focus {
+	.name .field input:focus {
 		outline: none;
 	}
 

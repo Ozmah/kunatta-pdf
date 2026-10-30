@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: on phones, the password field of a locked row no longer pushes Open out of the row.
 - Fixed: rows no longer jump mid-slide or lose keyboard focus when a background check finishes while the list is being reordered.
 - Fixed: Cancel stops Make my PDF at once even while files are still being checked; before, the button stayed busy until the checks ended.
 - Fixed: a file turned away next to a single file that converts stays named in the notice, alongside any note about the conversion, instead of vanishing when the PDF downloads.
