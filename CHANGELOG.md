@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Rows can be reordered by dragging the grip (the type tile on phones): the row follows the pointer, pinned rows stay put, the list scrolls near the screen edges, and Esc or dropping outside the list puts it back.
+- Rows can be reordered with the keyboard: Space on the grip takes the row, ↑ ↓ move it, Space drops it and Esc cancels; each step is announced to screen readers.
+- Fixed: on phones the page no longer scrolls sideways.
 - Several files, or anything pasted, open an ordered list: each row shows its state (checking, has a problem, needs password with the field in the row), can be pinned, moved with ↑ ↓ or removed, and more files can be added by dropping or picking.
 - Make my PDF waits for the checks, lists the files that failed with Back to the list or Make PDF without them, shows progress with Cancel, and downloads the PDF under the name typed next to the button (the first file's name by default); the list stays.
 - Add more files in the single-PDF dialog moves that PDF into a list as the first file.

@@ -46,6 +46,8 @@ const { lang } = Astro.props;
 <style>
 	body {
 		display: grid;
+		/* minmax(0, 1fr): an `auto` column grows to its widest content and pushes past the screen. */
+		grid-template-columns: minmax(0, 1fr);
 		grid-template-rows: auto 1fr auto;
 		gap: 24px;
 		padding: 28px 32px 50px;
@@ -53,6 +55,7 @@ const { lang } = Astro.props;
 
 	main {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		place-items: center;
 	}
 </style>

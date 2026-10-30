@@ -5,10 +5,12 @@ import { canMove, type Item, type Items } from "./assembly.ts";
 import { failureReason } from "./fast.ts";
 import { kindLabel } from "./fast-view.ts";
 import { pdfName, sanitizeName } from "./file-name.ts";
+import { connectReorder } from "./reorder.ts";
 
 export interface AssemblyHandlers {
 	pin(id: string): void;
 	move(id: string, delta: -1 | 1): void;
+	moveTo(id: string, position: number): void;
 	remove(id: string): void;
 	unlock(id: string, password: string): void;
 	make(): void;
@@ -125,6 +127,11 @@ export function connectAssemblyView(
 		else if (state.kind === "locked" && state.wrong) meta.textContent = t("incoming.wrong");
 		else meta.textContent = details.join(" · ");
 
+		const grip = required<HTMLButtonElement>(row, "[data-grip]");
+
+		grip.setAttribute("aria-label", t("row.grab").replace("{name}", entry.name));
+		grip.disabled = generating || pinned;
+
 		const buttons = {
 			pin: required<HTMLButtonElement>(row, '[data-action="pin"]'),
 			up: required<HTMLButtonElement>(row, '[data-action="up"]'),
@@ -139,8 +146,27 @@ export function connectAssemblyView(
 		buttons.remove.disabled = generating;
 	};
 
-	const render = (items: Items): void => {
-		latest = items;
+	const reorder = connectReorder(
+		{
+			stack: required(section, "[data-stack]"),
+			slot: required(section, "[data-slot]"),
+			committed: () => latest,
+			row: (id) => rows.get(id),
+			redraw: () => render(latest),
+			commit: (id, position) => handlers.moveTo(id, position),
+			announce: (text) => {
+				required(section, "[data-announce]").textContent = text;
+			},
+			enabled: () => !generating,
+		},
+		locale,
+	);
+
+	function render(committed: Items): void {
+		latest = committed;
+
+		// While a row is held, the rows show where it would land; the model changes on drop.
+		const items = reorder.adjust(committed);
 
 		const focused = root.activeElement;
 		const ids = new Set(items.map((item) => item.entry.id));
@@ -169,7 +195,7 @@ export function connectAssemblyView(
 		}
 
 		if (generating) updateProgress(items);
-	};
+	}
 
 	const updateProgress = (items: Items): void => {
 		const ready = items.filter((item) => item.state.kind === "ready").length;
@@ -224,6 +250,8 @@ export function connectAssemblyView(
 		},
 
 		working(active) {
+			if (active) reorder.stop();
+
 			generating = active;
 			make.setAttribute("aria-disabled", String(active));
 			make.textContent = t(active ? "assembly.making" : "assembly.make");

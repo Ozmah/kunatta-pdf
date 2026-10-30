@@ -91,6 +91,7 @@ export function startPdfTool(root: Document): void {
 	const list = connectAssemblyView(root, locale, {
 		pin: (id) => assembly.pin(id),
 		move: (id, delta) => assembly.moveBy(id, delta),
+		moveTo: (id, position) => assembly.moveTo(id, position),
 		remove: (id) => {
 			assembly.remove(id);
 

@@ -75,7 +75,7 @@ export const es = {
 	"password.show": "Mostrar contraseña",
 	"password.hide": "Ocultar contraseña",
 	"assembly.title": "Orden del PDF",
-	"assembly.hint": "Usa ↑ ↓ para ordenar",
+	"assembly.hint": "Arrastra o usa ↑ ↓",
 	"assembly.add": "Agregar archivos · o suéltalos aquí",
 	"assembly.name": "Nombre del PDF",
 	"assembly.make": "Hacer mi PDF",
@@ -98,6 +98,13 @@ export const es = {
 	"summary.without": "Hacer PDF sin ellos",
 	"degraded.many": "{count} archivos pueden verse distintos:",
 	"single.more": "Agregar más archivos",
+	"row.grab": "Mover {name}",
+	"row.moving": "MOVIENDO · {position} DE {total}",
+	"announce.position": "{name}, posición {position} de {total}",
+	"announce.grabbed":
+		"{name} tomado, posición {position} de {total}. Usa ↑ ↓ para moverlo, Espacio para soltarlo y Esc para cancelar.",
+	"announce.dropped": "{name} soltado en la posición {position} de {total}",
+	"announce.cancelled": "Movimiento cancelado; {name} sigue en la posición {position}",
 	"footer.notice": "Tus archivos nunca salen de tu navegador.",
 	"footer.author": "hecho por Ozmah",
 } as const;

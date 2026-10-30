@@ -18,7 +18,11 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 		<span class="hint">{t("assembly.hint")}</span>
 	</header>
 
-	<ol class="list" data-list></ol>
+	<div class="stack" data-stack>
+		<ol class="list" data-list></ol>
+		<div class="slot" hidden data-slot></div>
+	</div>
+	<div class="sr-only" aria-live="polite" data-announce></div>
 
 	<button class="add" type="button" data-dropzone data-add>
 		<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"></path></svg>
@@ -54,8 +58,12 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 <template data-row-template>
 	<li class="row">
 		<span class="pinmark" hidden></span>
+		<span class="mtag" hidden></span>
 		<span class="ix"></span>
-		<span class="tile" aria-hidden="true"></span>
+		<button class="grip" type="button" data-handle data-grip>
+			<svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true"><circle cx="3" cy="3" r="1.6"></circle><circle cx="9" cy="3" r="1.6"></circle><circle cx="3" cy="9" r="1.6"></circle><circle cx="9" cy="9" r="1.6"></circle><circle cx="3" cy="15" r="1.6"></circle><circle cx="9" cy="15" r="1.6"></circle></svg>
+		</button>
+		<span class="tile" aria-hidden="true" data-handle></span>
 		<span class="nm">
 			<span class="title"><b data-row-name></b><em class="st" hidden></em></span>
 			<span class="meta"></span>
@@ -137,6 +145,28 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 		font-size: 11px;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
+	}
+
+	.stack {
+		position: relative;
+		isolation: isolate;
+	}
+
+	.slot {
+		position: absolute;
+		z-index: -1;
+		right: 0;
+		left: 0;
+		border: var(--border) dashed var(--color-pacific);
+		background: repeating-linear-gradient(
+			45deg,
+			transparent 0 8px,
+			color-mix(in srgb, var(--color-pacific) 8%, transparent) 8px 16px
+		);
+	}
+
+	.slot[hidden] {
+		display: none;
 	}
 
 	.list {

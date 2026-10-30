@@ -5,7 +5,7 @@
 .row {
 	position: relative;
 	display: grid;
-	grid-template-columns: 34px 40px 1fr auto;
+	grid-template-columns: 34px 20px 40px 1fr auto;
 	gap: 0 14px;
 	align-items: center;
 	min-height: 64px;
@@ -35,7 +35,8 @@
 	color: var(--accent);
 }
 
-.row .pinmark {
+.row .pinmark,
+.row .mtag {
 	position: absolute;
 	top: -9px;
 	left: 10px;
@@ -47,6 +48,7 @@
 }
 
 .row .pinmark[hidden],
+.row .mtag[hidden],
 .row .st[hidden],
 .row .unlock[hidden] {
 	display: none;
@@ -61,6 +63,70 @@
 	background: var(--color-cheviot);
 	color: var(--color-midnight);
 	font: 700 9px var(--font-mono);
+}
+
+/* Handles: the grip on desktop, the type tile on phones. Touch drags must not scroll the page. */
+.row .grip {
+	display: grid;
+	place-items: center;
+	width: 20px;
+	height: 40px;
+	color: var(--color-pacific);
+	cursor: grab;
+	touch-action: none;
+}
+
+.row .grip svg {
+	fill: currentColor;
+}
+
+.row .grip:disabled {
+	opacity: 0.25;
+	cursor: default;
+}
+
+.row .tile {
+	position: relative;
+	touch-action: none;
+}
+
+.row[data-pinned] .tile {
+	touch-action: auto;
+}
+
+/* Lifted by the pointer: follows it 1:1 through `translate`; the riso tilt lives in `transform`. */
+.row.lift {
+	z-index: 2;
+	border-color: var(--accent);
+	background: var(--surface);
+	box-shadow: -6px 6px 0 var(--accent);
+	transform: rotate(-1.2deg) translate(12px, -6px);
+	cursor: grabbing;
+}
+
+.row.kbd {
+	z-index: 2;
+	outline: 3px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.row.lift .ib,
+.row.kbd .ib {
+	border-color: var(--surface);
+	color: var(--color-pacific);
+}
+
+.row.shifting {
+	transition:
+		translate 200ms ease-out,
+		transform 200ms ease-out,
+		box-shadow 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.row.shifting {
+		transition: none;
+	}
 }
 
 .row[data-state="checking"] .tile {
@@ -159,7 +225,7 @@
 
 .row .unlock {
 	display: flex;
-	grid-column: 3 / -1;
+	grid-column: 4 / -1;
 	gap: 10px;
 	margin-top: 10px;
 }
@@ -205,8 +271,26 @@
 		padding: 12px;
 	}
 
-	.row .ix {
+	.row .ix,
+	.row .grip {
 		display: none;
+	}
+
+	.row.lift {
+		transform: rotate(-1.2deg) translate(3px, -4px);
+	}
+
+	/* The tile is the handle here; a small grip badge says so. */
+	.row:not([data-pinned]) .tile::after {
+		position: absolute;
+		right: 1px;
+		bottom: 1px;
+		width: 14px;
+		height: 14px;
+		background:
+			radial-gradient(circle, var(--color-pacific) 1px, transparent 1.5px) 1px 1px / 4px 4px,
+			var(--color-midnight);
+		content: "";
 	}
 
 	.row .acts {

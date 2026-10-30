@@ -76,7 +76,7 @@ export const en = {
 	"password.show": "Show password",
 	"password.hide": "Hide password",
 	"assembly.title": "PDF order",
-	"assembly.hint": "Use ↑ ↓ to reorder",
+	"assembly.hint": "Drag or use ↑ ↓",
 	"assembly.add": "Add files · or drop them here",
 	"assembly.name": "PDF name",
 	"assembly.make": "Make my PDF",
@@ -100,6 +100,13 @@ export const en = {
 	"summary.without": "Make PDF without them",
 	"degraded.many": "{count} files may look different:",
 	"single.more": "Add more files",
+	"row.grab": "Move {name}",
+	"row.moving": "MOVING · {position} OF {total}",
+	"announce.position": "{name}, position {position} of {total}",
+	"announce.grabbed":
+		"{name} grabbed, position {position} of {total}. Use ↑ ↓ to move it, Space to drop it and Escape to cancel.",
+	"announce.dropped": "{name} dropped at position {position} of {total}",
+	"announce.cancelled": "Move cancelled; {name} stays at position {position}",
 	"footer.notice": "Your files never leave your browser.",
 	"footer.author": "made by Ozmah",
 } as const satisfies Messages;
