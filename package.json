@@ -20,6 +20,7 @@
 		"glados": "bun run fmt:check && bun run lint && bun run typecheck && bun run build",
 		"shodan": "bun run test",
 		"shodan:watch": "bun run test --watch",
+		"e2e": "bun run build && playwright test",
 		"check": "bun run glados && bun run shodan",
 		"prepare": "husky || true"
 	},
@@ -34,6 +35,7 @@
 	"devDependencies": {
 		"@astrojs/check": "0.9.12",
 		"@oxlint/plugins": "1.89.0",
+		"@playwright/test": "1.64.1",
 		"@types/bun": "1.4.4",
 		"husky": "9.1.7",
 		"oxfmt": "0.74.0",

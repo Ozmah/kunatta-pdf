@@ -8,6 +8,7 @@
 - Commit messages: one line, conventional format (`feat(pdf): …`, `chore: …`), no body.
 - Every `feat` or `fix` adds its line under `## Unreleased` in `CHANGELOG.md` in the same commit. Lines describe behavior, not files.
 - `bun run check` must pass before every commit: Glados (format, lint, typecheck, build) + Shodan (tests). The husky pre-commit hook runs both on the staged snapshot; CI runs them on pull requests to `develop` and `master`.
+- `bun run e2e` builds the site and runs the Playwright suite in `e2e/` (Chromium, Firefox and a phone). It is too slow for the pre-commit hook; run it before pushing, CI runs it on pull requests. Every user-facing path gets an end-to-end test, with real samples and its edge cases.
 - Commits are made by Ozmah. Agents propose the conventional message and never commit.
 - Lint is oxlint + anti-slop (vendored in `tools/oxlint/anti-slop`). Rules are never disabled or downgraded to make lint pass; if a rule conflicts with a real need, raise it first.
 - Exact versions for every dependency. Check npm before adding one.
