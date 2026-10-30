@@ -26,7 +26,7 @@ import {
 	type Fatal,
 	type FilePdf,
 } from "./protocol.ts";
-import { imageKinds } from "./sniff.ts";
+import { isImageKind } from "./sniff.ts";
 
 export type Reply = ConvertResponse | ComposeResponse | Fatal;
 
@@ -110,15 +110,14 @@ async function convert(
 	if (read.isErr()) return read;
 
 	const bytes = read.value;
-	const image = imageKinds.find((known) => known === kind);
 	const office = officeFormats.find((known) => known === kind);
 
-	if (image !== undefined) {
+	if (isImageKind(kind)) {
 		const module = await load(fileName, available.image);
 
 		if (module.isErr()) return module;
 
-		return module.value.convertImage(bytes, { fileName, kind: image, quality: settings.quality });
+		return module.value.convertImage(bytes, { fileName, kind, quality: settings.quality });
 	}
 
 	if (office !== undefined) {

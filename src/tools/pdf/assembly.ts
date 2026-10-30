@@ -2,7 +2,7 @@ import type { JobError } from "./errors.ts";
 import type { PileEntry } from "./pile.ts";
 import type { FilePdf } from "./protocol.ts";
 import type { PageSize, Quality } from "./settings.ts";
-import type { InputKind } from "./sniff.ts";
+import { isImageKind, type InputKind } from "./sniff.ts";
 
 /** The settings a conversion depended on; composing settings (size of the sheet) live elsewhere. */
 export interface ConvertSettings {
@@ -124,7 +124,7 @@ export function canMove(items: Items, id: string, delta: -1 | 1): boolean {
 
 /** Images depend on quality and plain text on the page size; PDFs and Office depend on neither. */
 export function isStale(kind: InputKind, used: ConvertSettings, current: ConvertSettings): boolean {
-	if (kind === "jpeg" || kind === "png" || kind === "webp") return used.quality !== current.quality;
+	if (isImageKind(kind)) return used.quality !== current.quality;
 
 	if (kind === "text") return used.size !== current.size;
 

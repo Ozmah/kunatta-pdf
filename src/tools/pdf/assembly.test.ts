@@ -12,6 +12,7 @@ import {
 	type Items,
 } from "./assembly.ts";
 import type { PileEntry } from "./pile.ts";
+import { imageKinds } from "./sniff.ts";
 
 function entry(name: string): PileEntry {
 	return { id: name, name, kind: "jpeg", size: 1, source: new Blob(["x"]) };
@@ -84,8 +85,11 @@ describe("isStale", () => {
 	const normal = { size: "letter", quality: "normal" } as const;
 
 	test("images follow quality, text follows page size, PDFs and Office follow neither", () => {
-		expect(isStale("jpeg", normal, { ...normal, quality: "max" })).toBe(true);
-		expect(isStale("jpeg", normal, { ...normal, size: "a4" })).toBe(false);
+		for (const kind of imageKinds) {
+			expect(isStale(kind, normal, { ...normal, quality: "max" })).toBe(true);
+			expect(isStale(kind, normal, { ...normal, size: "a4" })).toBe(false);
+		}
+
 		expect(isStale("text", normal, { ...normal, size: "a4" })).toBe(true);
 		expect(isStale("docx", normal, { size: "a4", quality: "light" })).toBe(false);
 	});

@@ -4,6 +4,10 @@ export const imageKinds = ["jpeg", "png", "webp"] as const;
 
 export type ImageKind = (typeof imageKinds)[number];
 
+export function isImageKind(kind: InputKind): kind is ImageKind {
+	return imageKinds.some((known) => known === kind);
+}
+
 /** File kinds the PDF tool can turn into pages. */
 export const inputKinds = [...imageKinds, "pdf", "text", ...officeFormats] as const;
 
