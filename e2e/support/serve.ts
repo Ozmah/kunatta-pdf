@@ -19,24 +19,40 @@ const types = new Map([
 	[".txt", "text/plain; charset=utf-8"],
 ]);
 
+interface Found {
+	readonly path: string;
+	readonly size: number;
+}
+
+/** The file under dist for a request URL. A malformed escape, a folder or a missing file is a 404, never a crash. */
+async function find(url: string): Promise<Found | undefined> {
+	try {
+		const pathname = decodeURIComponent(new URL(url, "http://localhost").pathname);
+		// normalize() resolves "..", so a request can never climb out of dist.
+		const path = normalize(pathname);
+		const file = join(root, path.endsWith("/") ? join(path, "index.html") : path);
+		const info = await stat(file);
+
+		return info.isFile() ? { path: file, size: info.size } : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
 createServer((request, response) => {
-	const pathname = new URL(request.url ?? "/", "http://localhost").pathname;
-	// normalize() resolves "..", so a request can never climb out of dist.
-	const path = normalize(decodeURIComponent(pathname));
-	const file = join(root, path.endsWith("/") ? join(path, "index.html") : path);
-
-	stat(file).then(
-		(info) => {
-			if (!info.isFile()) throw new Error("Not a file");
-
-			response.writeHead(200, {
-				"content-type": types.get(extname(file)) ?? "application/octet-stream",
-				"content-length": info.size,
-			});
-			createReadStream(file).pipe(response);
-		},
-		() => {
+	void find(request.url ?? "/").then((found) => {
+		if (found === undefined) {
 			response.writeHead(404).end("Not found");
-		},
-	);
+
+			return;
+		}
+
+		response.writeHead(200, {
+			"content-type": types.get(extname(found.path)) ?? "application/octet-stream",
+			"content-length": found.size,
+		});
+		createReadStream(found.path)
+			.on("error", () => response.destroy())
+			.pipe(response);
+	});
 }).listen(port);
