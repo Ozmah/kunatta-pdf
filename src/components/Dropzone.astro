@@ -37,11 +37,11 @@ const cards = [
 
 <section class="tool" data-tool>
 	<div class="flow" role="img" aria-label={translate(lang, "flow.label")} data-flow>
-		<span class="doc any"></span>
+		<span class="tile any"></span>
 		<svg width="56" height="16" viewBox="0 0 56 16" aria-hidden="true">
 			<path d="M2 8h48M42 2l8 6-8 6"></path>
 		</svg>
-		<span class="doc pdf">PDF</span>
+		<span class="tile tile-pdf result">PDF</span>
 	</div>
 
 	<div class="notice" role="status" hidden data-notice>
@@ -52,13 +52,13 @@ const cards = [
 		<span data-notice-text></span>
 	</div>
 
-	<label class="drop" data-dropzone data-empty-drop>
+	<label class="riso-card drop" data-dropzone data-empty-drop>
 		<input class="sr-only" type="file" multiple accept={accept} data-picker />
 		<span class="fan" aria-hidden="true">
 			{
 				cards.map((card, index) => (
 					<span
-						class={`card ${card.tone}`}
+						class={`tile tile-lg card ${card.tone}`}
 						style={`--place: ${card.place}; z-index: ${index === 2 ? 2 : index % 2}`}
 					>
 						{card.label}
@@ -66,7 +66,7 @@ const cards = [
 				))
 			}
 		</span>
-		<span class="title">{translate(lang, "drop.title")}</span>
+		<span class="display title">{translate(lang, "drop.title")}</span>
 		<span class="hint">
 			{translate(lang, "drop.paste")} <kbd data-modifier>Ctrl</kbd> <kbd>V</kbd>
 		</span>
@@ -89,12 +89,6 @@ const cards = [
 		width: min(760px, 100%);
 	}
 
-	.flow[hidden],
-	.drop[hidden],
-	.notice[hidden] {
-		display: none;
-	}
-
 	.flow {
 		display: flex;
 		align-items: center;
@@ -108,38 +102,24 @@ const cards = [
 		stroke-linecap: square;
 	}
 
-	.doc {
+	.any {
 		position: relative;
-		display: grid;
-		place-items: center;
-		width: 40px;
-		height: 52px;
-		border: var(--border) solid var(--color-midnight);
-		font: 700 10px var(--font-mono);
-		color: var(--color-midnight);
-	}
-
-	.doc.any {
-		background: var(--color-cheviot);
 		box-shadow: -3px 3px 0 var(--color-grape);
 	}
 
-	.doc.any::before {
+	.any::before {
 		content: "";
 		position: absolute;
 		inset: 14px 8px 10px;
 		background: repeating-linear-gradient(var(--color-grape) 0 2px, transparent 2px 7px);
 	}
 
-	.doc.pdf {
-		background: var(--accent);
+	.result {
 		box-shadow: -3px 3px 0 var(--color-neptune);
 		transform: rotate(-3deg);
 	}
 
 	.drop {
-		position: relative;
-		isolation: isolate;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -152,22 +132,9 @@ const cards = [
 		cursor: pointer;
 	}
 
-	.drop::before {
-		content: "";
-		position: absolute;
-		inset: 0;
-		z-index: -2;
-		background: var(--surface);
-		transform: translate(-8px, 8px) rotate(-0.8deg);
-	}
-
+	/* Something can be dropped here: a dashed outline. */
 	.drop::after {
-		content: "";
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		border: var(--border-strong) dashed var(--line);
-		transform: rotate(0.4deg);
+		border-style: dashed;
 	}
 
 	.drop:has(input:focus-visible)::after,
@@ -188,19 +155,13 @@ const cards = [
 		transform: translateY(-6px) scale(1.04);
 	}
 
+	/* Differs from the shared large tile: 600 11px instead of 700 12px. */
 	.card {
 		position: absolute;
 		bottom: 0;
 		left: 50%;
-		display: grid;
-		place-items: center;
-		width: 62px;
-		height: 80px;
 		margin-left: -31px;
-		border: var(--border) solid var(--color-midnight);
-		box-shadow: -4px 4px 0 var(--color-midnight);
 		font: 600 11px var(--font-mono);
-		color: var(--color-midnight);
 		transform: var(--place);
 	}
 
@@ -218,8 +179,6 @@ const cards = [
 
 	.title {
 		font-size: 40px;
-		font-weight: 800;
-		letter-spacing: var(--tracking-display);
 	}
 
 	.hint {

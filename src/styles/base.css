@@ -46,3 +46,33 @@ button {
 	clip-path: inset(50%);
 	white-space: nowrap;
 }
+
+/* The hidden attribute wins over any display a class sets. */
+[hidden] {
+	display: none !important;
+}
+
+/* Headings focused from code (tabindex="-1") are not controls: no ring. */
+[tabindex="-1"]:focus {
+	outline: none;
+}
+
+/* Display type: titles are Inter 800 with the display tracking. Sizes belong to each screen. */
+.display {
+	font-weight: 800;
+	letter-spacing: var(--tracking-display);
+}
+
+/* Uppercase mono label for fields, settings and definition terms. */
+.label {
+	font: 600 11px var(--font-mono);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--ink-muted);
+}
+
+/* Secondary line under a file name: kind, pages, size or a reason. */
+.meta {
+	font: 500 12px var(--font-mono);
+	color: var(--ink-muted);
+}

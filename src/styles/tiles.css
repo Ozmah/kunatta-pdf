@@ -1,0 +1,43 @@
+/* Type tile: a file's kind as a small riso card. 40 × 52 by default. */
+.tile {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 40px;
+	height: 52px;
+	border: var(--border) solid var(--color-midnight);
+	background: var(--color-cheviot);
+	color: var(--color-midnight);
+	font: 700 10px var(--font-mono);
+}
+
+.tile-sm {
+	width: 36px;
+	height: 48px;
+}
+
+.tile-lg {
+	width: 62px;
+	height: 80px;
+	box-shadow: -4px 4px 0 var(--color-midnight);
+	font-size: 12px;
+}
+
+.tile-xl {
+	width: 72px;
+	height: 94px;
+	box-shadow: -4px 4px 0 var(--color-midnight);
+	font-size: 12px;
+}
+
+/* The PDF that comes out. */
+.tile-pdf {
+	background: var(--accent);
+}
+
+/* A PDF that comes in: midnight with a pacific border. */
+.tile-dark {
+	border-color: var(--line);
+	background: var(--bg);
+	color: var(--ink);
+}

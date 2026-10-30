@@ -12,7 +12,7 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 
 <section class="assembly" hidden data-assembly aria-labelledby="assembly-title">
 	<header class="head">
-		<h2 id="assembly-title" tabindex="-1">
+		<h2 class="display" id="assembly-title" tabindex="-1">
 			{t("assembly.title")} <span class="count" data-count></span>
 		</h2>
 		<span class="hint">{t("assembly.hint")}</span>
@@ -29,7 +29,7 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 		{t("assembly.add")}
 	</button>
 
-	<div class="done" role="status" hidden data-assembly-done>
+	<div class="notice notice-accent done" role="status" hidden data-assembly-done>
 		<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg>
 		<span data-done-text></span>
 		<button class="btn-ghost" type="button" data-assembly-again>{t("fast.again")}</button>
@@ -43,11 +43,11 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 	</div>
 
 	<div class="bar">
-		<label class="name">
+		<label class="name field-group">
 			<span class="label">{t("assembly.name")}</span>
 			<span class="field">
 				<input type="text" maxlength="200" spellcheck="false" autocomplete="off" data-pdf-name />
-				<span class="suffix" aria-hidden="true">.pdf</span>
+				<span class="field-suffix" aria-hidden="true">.pdf</span>
 			</span>
 		</label>
 		<button class="btn btn-primary" type="button" data-make>{t("assembly.make")}</button>
@@ -63,7 +63,7 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 		<button class="grip" type="button" data-handle data-grip>
 			<svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true"><circle cx="3" cy="3" r="1.6"></circle><circle cx="9" cy="3" r="1.6"></circle><circle cx="3" cy="9" r="1.6"></circle><circle cx="9" cy="9" r="1.6"></circle><circle cx="3" cy="15" r="1.6"></circle><circle cx="9" cy="15" r="1.6"></circle></svg>
 		</button>
-		<span class="tile" aria-hidden="true" data-handle></span>
+		<span class="tile tile-sm" aria-hidden="true" data-handle></span>
 		<span class="nm">
 			<span class="title"><b data-row-name></b><em class="st" hidden></em></span>
 			<span class="meta"></span>
@@ -83,7 +83,7 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 			</button>
 		</span>
 		<form class="unlock" hidden>
-			<span class="field">
+			<span class="field field-sm field-mono">
 				<input type="password" name="password" autocomplete="off" spellcheck="false" aria-label={t("incoming.label")} />
 			</span>
 			<button class="btn btn-secondary btn-sm" type="submit">{t("incoming.open")}</button>
@@ -99,10 +99,6 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 		width: 100%;
 	}
 
-	.assembly[hidden] {
-		display: none;
-	}
-
 	.head {
 		display: flex;
 		flex-wrap: wrap;
@@ -113,12 +109,6 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 
 	h2 {
 		font-size: 34px;
-		font-weight: 800;
-		letter-spacing: var(--tracking-display);
-	}
-
-	h2:focus {
-		outline: none;
 	}
 
 	.count {
@@ -135,16 +125,9 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 	}
 
 	.hint,
-	.label,
 	.progress-text {
 		font: 600 12px var(--font-mono);
 		color: var(--ink-muted);
-	}
-
-	.label {
-		font-size: 11px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
 	}
 
 	.stack {
@@ -163,10 +146,6 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 			transparent 0 8px,
 			color-mix(in srgb, var(--color-pacific) 8%, transparent) 8px 16px
 		);
-	}
-
-	.slot[hidden] {
-		display: none;
 	}
 
 	.list {
@@ -202,24 +181,11 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 		stroke-linecap: square;
 	}
 
+	/* Differs from the shared notice: centered, tighter and without its line height. */
 	.done {
-		display: flex;
-		gap: 12px;
 		align-items: center;
 		padding: 10px 14px;
-		border: var(--border) solid var(--accent);
-		background: var(--bg);
-		font-size: 14px;
-	}
-
-	.done[hidden],
-	.progress[hidden] {
-		display: none;
-	}
-
-	.done svg {
-		flex: none;
-		stroke: var(--accent);
+		line-height: normal;
 	}
 
 	.done span {
@@ -227,18 +193,8 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 		overflow-wrap: anywhere;
 	}
 
-	.track {
-		position: relative;
-		height: 14px;
-		border: var(--border) solid var(--line);
-		background: var(--bg);
-	}
-
 	.track span {
-		position: absolute;
-		inset: 0 auto 0 0;
 		width: var(--done, 0%);
-		background: var(--accent);
 		transition: width 200ms var(--ease-pop);
 	}
 
@@ -257,53 +213,7 @@ const t = (key: Parameters<typeof translate>[1]): string => translate(lang, key)
 	}
 
 	.name {
-		display: flex;
 		flex: 1 1 260px;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	/* Scoped to the name: the rows come from this file's <template> and would inherit it. */
-	.name .field {
-		display: flex;
-		height: 48px;
-		border: var(--border) solid var(--line);
-		background: var(--bg);
-	}
-
-	.name .field:focus-within {
-		outline: 3px solid var(--focus);
-		outline-offset: 2px;
-	}
-
-	.name .field input {
-		flex: 1;
-		min-width: 0;
-		padding: 0 14px;
-		border: 0;
-		background: none;
-		font-size: 16px;
-	}
-
-	.name .field input:focus {
-		outline: none;
-	}
-
-	.suffix {
-		display: grid;
-		place-items: center;
-		padding: 0 12px;
-		border-left: var(--border) solid var(--surface);
-		font: 500 13px var(--font-mono);
-		color: var(--ink-muted);
-	}
-
-	[data-make][aria-disabled="true"] {
-		border-color: var(--line);
-		background: var(--surface);
-		box-shadow: -4px 4px 0 var(--bg);
-		color: var(--ink-muted);
-		cursor: progress;
 	}
 
 	@media (max-width: 520px) {

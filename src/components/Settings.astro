@@ -18,8 +18,8 @@ const { lang } = Astro.props;
 		data-settings-panel
 	>
 		<label class="name">
-			<span class="legend">{translate(lang, "settings.name")}</span>
-			<span class="field">
+			<span class="label">{translate(lang, "settings.name")}</span>
+			<span class="field field-sm">
 				<input
 					type="text"
 					name="name"
@@ -29,11 +29,11 @@ const { lang } = Astro.props;
 					placeholder={translate(lang, "settings.name.placeholder")}
 					data-pdf-name
 				/>
-				<span class="suffix" aria-hidden="true">.pdf</span>
+				<span class="field-suffix" aria-hidden="true">.pdf</span>
 			</span>
 		</label>
 		<fieldset>
-			<legend>{translate(lang, "settings.size")}</legend>
+			<legend class="label">{translate(lang, "settings.size")}</legend>
 			<div class="segments">
 				{
 					pageSizes.map((size) => (
@@ -51,7 +51,7 @@ const { lang } = Astro.props;
 			</div>
 		</fieldset>
 		<fieldset>
-			<legend>{translate(lang, "settings.quality")}</legend>
+			<legend class="label">{translate(lang, "settings.quality")}</legend>
 			<div class="segments">
 				{
 					qualities.map((quality) => (
@@ -69,7 +69,7 @@ const { lang } = Astro.props;
 			</div>
 		</fieldset>
 		<fieldset>
-			<legend>{translate(lang, "settings.password")}</legend>
+			<legend class="label">{translate(lang, "settings.password")}</legend>
 			<div class="segments">
 				{
 					passwordModes.map((mode) => (
@@ -256,14 +256,12 @@ const { lang } = Astro.props;
 		padding: 0;
 	}
 
-	legend,
-	.legend {
+	/* Differs from the shared label: 12px with the token tracking (0.12em) instead of 11px · 0.1em. */
+	.label {
 		display: block;
 		margin-bottom: 8px;
-		font: 600 12px var(--font-mono);
+		font-size: 12px;
 		letter-spacing: var(--tracking-label);
-		text-transform: uppercase;
-		color: var(--ink-muted);
 	}
 
 	.segments {
@@ -310,39 +308,11 @@ const { lang } = Astro.props;
 		outline-offset: -6px;
 	}
 
-	/* Duplicates the name field next to Hacer mi PDF; chunk 10c moves it to a shared primitive. */
-	.field {
-		display: flex;
-		height: 44px;
-		border: var(--border) solid var(--line);
-		background: var(--bg);
-	}
-
-	.field:focus-within {
-		outline: 3px solid var(--focus);
-		outline-offset: 2px;
-	}
-
-	.field input {
-		flex: 1;
-		min-width: 0;
-		padding: 0 12px;
-		border: 0;
-		background: none;
-		font-size: 15px;
-	}
-
-	.field input:focus {
-		outline: none;
-	}
-
-	.suffix {
-		display: grid;
-		place-items: center;
+	/* Differs from the shared suffix: a pacific border and 600 12px. */
+	.field-suffix {
 		padding: 0 10px;
-		border-left: var(--border) solid var(--line);
+		border-left-color: var(--line);
 		font: 600 12px var(--font-mono);
-		color: var(--ink-muted);
 	}
 
 	.note {

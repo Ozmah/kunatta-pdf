@@ -1,6 +1,6 @@
 /*
- * Assembly rows. Global because the rows are cloned from a <template> at runtime and Astro's
- * scoped styles only reach markup it rendered.
+ * Assembly row: index, grip, type tile, name with its state tag, and pin · ↑ · ↓ · ×. A shared
+ * component like the buttons and fields; Assembly.astro clones it from a <template>.
  */
 .row {
 	position: relative;
@@ -47,24 +47,6 @@
 	letter-spacing: 0.08em;
 }
 
-.row .pinmark[hidden],
-.row .mtag[hidden],
-.row .st[hidden],
-.row .unlock[hidden] {
-	display: none;
-}
-
-.row .tile {
-	display: grid;
-	place-items: center;
-	width: 36px;
-	height: 48px;
-	border: var(--border) solid var(--color-midnight);
-	background: var(--color-cheviot);
-	color: var(--color-midnight);
-	font: 700 9px var(--font-mono);
-}
-
 /* Handles: the grip on desktop, the type tile on phones. Touch drags must not scroll the page. */
 .row .grip {
 	display: grid;
@@ -87,6 +69,7 @@
 
 .row .tile {
 	position: relative;
+	font-size: 9px;
 	touch-action: none;
 }
 
@@ -150,11 +133,6 @@
 .row b {
 	font-size: 15px;
 	overflow-wrap: anywhere;
-}
-
-.row .meta {
-	font: 500 12px var(--font-mono);
-	color: var(--ink-muted);
 }
 
 .row[data-state="failed"] .meta,
@@ -237,36 +215,8 @@
 }
 
 .row .unlock .field {
-	display: flex;
 	flex: 1;
 	max-width: 340px;
-	height: 44px;
-	border: var(--border) solid var(--line);
-	background: var(--bg);
-}
-
-.row .unlock input {
-	flex: 1;
-	min-width: 0;
-	padding: 0 12px;
-	border: 0;
-	background: none;
-	font: 500 15px var(--font-mono);
-}
-
-.row .unlock .field:focus-within {
-	outline: 3px solid var(--focus);
-	outline-offset: 2px;
-}
-
-.row .unlock input:focus {
-	outline: none;
-}
-
-.btn-sm {
-	height: 44px;
-	padding: 0 18px;
-	font-size: 15px;
 }
 
 /* Phones: name and tag on one column, actions on their own line below. */

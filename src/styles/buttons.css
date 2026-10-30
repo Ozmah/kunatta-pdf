@@ -1,4 +1,4 @@
-/* Buttons shared by every tool. Riso: hard offset shadow, press sinks into it (110 ms). */
+/* Buttons. Riso: hard offset shadow, press sinks into it (110 ms). 52 px tall, 44 px compact. */
 .btn {
 	display: inline-flex;
 	align-items: center;
@@ -46,6 +46,21 @@
 	color: var(--ink);
 }
 
+/* Busy: neptune and muted while it works; aria-disabled keeps it focusable. */
+.btn[aria-disabled="true"] {
+	border-color: var(--line);
+	background: var(--surface);
+	box-shadow: -4px 4px 0 var(--bg);
+	color: var(--ink-muted);
+	cursor: progress;
+}
+
+.btn-sm {
+	height: 44px;
+	padding: 0 18px;
+	font-size: 15px;
+}
+
 .btn-ghost {
 	height: 44px;
 	padding: 0 6px;
@@ -54,31 +69,6 @@
 	text-decoration: underline;
 	text-decoration-color: var(--color-neptune);
 	text-underline-offset: 4px;
-}
-
-.notice {
-	display: flex;
-	gap: 12px;
-	align-items: flex-start;
-	width: 100%;
-	padding: 12px 14px;
-	border: var(--border) dashed var(--ink-quiet);
-	background: var(--bg);
-	font-size: 14px;
-	line-height: 1.45;
-}
-
-.notice svg {
-	flex: none;
-	fill: none;
-	stroke: var(--ink-quiet);
-	stroke-width: 2.2;
-	stroke-linecap: square;
-}
-
-.notice code {
-	font: 12px var(--font-mono);
-	color: var(--ink-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

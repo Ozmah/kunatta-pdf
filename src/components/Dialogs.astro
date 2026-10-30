@@ -13,19 +13,19 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 
 <dialog class="dlg" aria-labelledby="single-title" data-dialog="single">
 	<form method="dialog">
-		<h2 id="single-title">{t("single.title")}</h2>
+		<h2 class="display" id="single-title">{t("single.title")}</h2>
 		<div class="file">
-			<span class="tile" aria-hidden="true">PDF</span>
+			<span class="tile tile-dark" aria-hidden="true">PDF</span>
 			<span><b data-name></b><span class="meta" data-meta></span></span>
 		</div>
 		<dl>
-			<dt>{t("settings.size")}</dt>
+			<dt class="label">{t("settings.size")}</dt>
 			<dd><span data-size></span> <small data-fit></small></dd>
-			<dt>{t("settings.quality")}</dt>
+			<dt class="label">{t("settings.quality")}</dt>
 			<dd data-quality></dd>
-			<dt>{t("settings.password")}</dt>
+			<dt class="label">{t("settings.password")}</dt>
 			<dd data-password></dd>
-			<dt>{t("single.result")}</dt>
+			<dt class="label">{t("single.result")}</dt>
 			<dd data-result></dd>
 		</dl>
 		<p class="question">{t("single.question")}</p>
@@ -39,7 +39,7 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 
 <dialog class="dlg" role="alertdialog" aria-labelledby="summary-title" data-dialog="summary">
 	<form method="dialog">
-		<h2 id="summary-title" data-title></h2>
+		<h2 class="display" id="summary-title" data-title></h2>
 		<ul class="fails" data-fails></ul>
 		<p class="question" data-body></p>
 		<div class="actions">
@@ -50,12 +50,12 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 </dialog>
 
 <template data-fail-template>
-	<li><span class="tile" aria-hidden="true"></span><span><b></b><span class="meta"></span></span></li>
+	<li><span class="tile tile-sm" aria-hidden="true"></span><span><b></b><span class="meta"></span></span></li>
 </template>
 
 <dialog class="dlg" role="alertdialog" aria-labelledby="language-title" data-dialog="language">
 	<form method="dialog">
-		<h2 id="language-title" data-title></h2>
+		<h2 class="display" id="language-title" data-title></h2>
 		<p class="question">{t("language.body")}</p>
 		<div class="actions">
 			<button class="btn btn-secondary" type="button" data-back autofocus>{t("language.stay")}</button>
@@ -66,19 +66,19 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 
 <dialog class="dlg" aria-labelledby="incoming-title" data-dialog="incoming">
 	<form method="dialog">
-		<h2 id="incoming-title" data-title></h2>
+		<h2 class="display" id="incoming-title" data-title></h2>
 		<div class="file">
-			<span class="tile" aria-hidden="true" data-kind></span>
+			<span class="tile tile-dark" aria-hidden="true" data-kind></span>
 			<span><b data-name></b><span class="meta">{t("incoming.protected")}</span></span>
 		</div>
 		<label class="field-group">
 			<span class="label">{t("incoming.label")}</span>
-			<span class="field">
+			<span class="field field-mono">
 				<input type="password" name="password" autocomplete="off" spellcheck="false" autofocus />
 			</span>
 			<span class="error" role="alert" data-error></span>
 		</label>
-		<p class="warn">
+		<p class="notice notice-accent">
 			<span>{t("incoming.warn.start")} <b>{t("incoming.warn.strong")}</b>{t("incoming.warn.end")}</span>
 		</p>
 		<div class="actions">
@@ -90,16 +90,16 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 
 <dialog class="dlg" aria-labelledby="result-title" data-dialog="result">
 	<form method="dialog">
-		<h2 id="result-title">{t("result.title")}</h2>
+		<h2 class="display" id="result-title">{t("result.title")}</h2>
 		<div class="file">
-			<span class="tile pdf" aria-hidden="true">PDF</span>
+			<span class="tile tile-pdf" aria-hidden="true">PDF</span>
 			<span><b data-name></b><span class="meta" data-meta></span></span>
 		</div>
 		{
 			(["password", "repeat"] as const).map((name) => (
 				<label class="field-group">
 					<span class="label">{t(name === "password" ? "result.label" : "result.repeat")}</span>
-					<span class="field">
+					<span class="field field-mono">
 						<input
 							type="password"
 							name={name}
@@ -123,7 +123,7 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 			))
 		}
 		<span class="error" role="alert" data-error></span>
-		<p class="warn">
+		<p class="notice notice-accent">
 			<span>{t("result.warn.start")} <b>{t("result.warn.strong")}</b></span>
 		</p>
 		<div class="actions">
@@ -168,9 +168,9 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 		padding: 28px;
 	}
 
+	/* Differs from the display tracking (-0.045em). */
 	h2 {
 		font-size: 26px;
-		font-weight: 800;
 		letter-spacing: -0.03em;
 		line-height: 1.1;
 	}
@@ -184,25 +184,6 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 
 	.meta {
 		display: block;
-		font: 500 12px var(--font-mono);
-		color: var(--ink-muted);
-	}
-
-	.tile {
-		display: grid;
-		flex: none;
-		place-items: center;
-		width: 40px;
-		height: 52px;
-		border: var(--border) solid var(--line);
-		background: var(--bg);
-		font: 700 10px var(--font-mono);
-	}
-
-	.tile.pdf {
-		border-color: var(--color-midnight);
-		background: var(--accent);
-		color: var(--on-accent);
 	}
 
 	dl {
@@ -216,10 +197,6 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 
 	dt {
 		padding-top: 3px;
-		font: 600 11px var(--font-mono);
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--ink-muted);
 	}
 
 	dd {
@@ -245,7 +222,7 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 		list-style: none;
 	}
 
-	.fails :global(li) {
+	.fails li {
 		display: flex;
 		gap: 14px;
 		align-items: center;
@@ -253,58 +230,6 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 		border: var(--border) solid var(--ink);
 		background: var(--bg);
 		overflow-wrap: anywhere;
-	}
-
-	.fails :global(.tile) {
-		width: 36px;
-		height: 48px;
-		border-color: var(--color-midnight);
-		background: var(--color-cheviot);
-		color: var(--color-midnight);
-	}
-
-	.field-group {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.label {
-		font: 600 11px var(--font-mono);
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--ink-muted);
-	}
-
-	.field {
-		display: flex;
-		height: 48px;
-		border: var(--border) solid var(--line);
-		background: var(--bg);
-	}
-
-	.field:focus-within {
-		outline: 3px solid var(--focus);
-		outline-offset: 2px;
-	}
-
-	[data-invalid] .field {
-		border-color: var(--ink);
-		outline: 3px solid var(--ink);
-		outline-offset: 2px;
-	}
-
-	input {
-		flex: 1;
-		min-width: 0;
-		padding: 0 14px;
-		border: 0;
-		background: none;
-		font: 500 16px var(--font-mono);
-	}
-
-	input:focus {
-		outline: none;
 	}
 
 	.eye {
@@ -332,14 +257,6 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 
 	.error:empty {
 		display: none;
-	}
-
-	.warn {
-		padding: 12px 14px;
-		border: var(--border) solid var(--accent);
-		background: var(--bg);
-		font-size: 14px;
-		line-height: 1.45;
 	}
 
 	.actions {

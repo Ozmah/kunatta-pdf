@@ -1,0 +1,34 @@
+/* Notices above the tool: dotted grape for what was left out, solid lime for what went well. */
+.notice {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	width: 100%;
+	padding: 12px 14px;
+	border: var(--border) dashed var(--ink-quiet);
+	background: var(--bg);
+	font-size: 14px;
+	line-height: 1.45;
+}
+
+.notice svg {
+	flex: none;
+	fill: none;
+	stroke: var(--ink-quiet);
+	stroke-width: 2.2;
+	stroke-linecap: square;
+}
+
+.notice code {
+	font: 12px var(--font-mono);
+	color: var(--ink-muted);
+}
+
+.notice-accent {
+	border-style: solid;
+	border-color: var(--accent);
+}
+
+.notice-accent svg {
+	stroke: var(--accent);
+}
