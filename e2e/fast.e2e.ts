@@ -165,6 +165,20 @@ test.describe("plain text", () => {
 	});
 });
 
+test.describe("offline", () => {
+	test("plain text without its font says the converter could not load, not that it crashed", async ({
+		page,
+	}) => {
+		await page.route("**/fonts/office/Cousine_400Regular.ttf", (route) =>
+			route.abort("internetdisconnected"),
+		);
+		await drop(page, [text("notas.txt", "Apuntes")]);
+
+		await expect(page.locator('[data-view="failed"] h2')).toHaveText(es["fast.failed"]);
+		await expect(page.locator("[data-failure]")).toContainText(es["reason.engine"]);
+	});
+});
+
 test.describe("settings", () => {
 	test("with Contraseña on, mismatches are refused and the PDF opens only with it", async ({
 		page,

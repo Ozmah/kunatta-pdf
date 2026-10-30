@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import { PDF } from "@libpdf/core";
+import { Result } from "better-result";
 import * as v from "valibot";
 
 import {
@@ -10,6 +11,7 @@ import {
 	PasswordRequired,
 } from "./errors.ts";
 import { fixtureFontFetch, officeFixture, tinyJpeg } from "./fixtures.ts";
+import type { FontFetch } from "./office-fonts.ts";
 import type { DecodeImage } from "./image.ts";
 import {
 	ComposeResponseSchema,
@@ -32,6 +34,9 @@ const decodeTiny: DecodeImage = () =>
 		encode: () => Promise.resolve(tinyJpeg),
 		close: () => undefined,
 	});
+
+/** A font fetch on a device that lost its connection. */
+const offline: FontFetch = () => Promise.reject(new TypeError("Failed to fetch"));
 
 const withTinyDecoder: Engines = {
 	...engines,
@@ -114,6 +119,60 @@ describe("handleMessage: convert", () => {
 		expect(pdf.isErr() && ConversionFailed.is(pdf.error)).toBe(true);
 		expect(text.isOk()).toBe(true);
 		expect(image.isOk()).toBe(true);
+	});
+
+	test("a file that can no longer be read fails as that file, not as a crash", async () => {
+		// Files picked on a phone can lose their permission or change on disk before conversion.
+		class Unreadable extends Blob {
+			override arrayBuffer(): Promise<ArrayBuffer> {
+				return Promise.reject(new DOMException("The file changed", "NotReadableError"));
+			}
+		}
+
+		const result = converted(await handle(request("foto.jpg", "jpeg", new Unreadable(["x"]))));
+
+		expect(result.isErr() && ConversionFailed.is(result.error) && result.error.reason).toBe(
+			"The file changed",
+		);
+	});
+
+	test("plain text whose font cannot be fetched reports the converter as unavailable", async () => {
+		const reply = await handleMessage(
+			new MessageEvent<unknown>("message", { data: request("notas.txt", "text", new Blob(["a"])) }),
+			offline,
+			withTinyDecoder,
+		);
+
+		const result = converted(reply);
+
+		expect(result.isErr() && EngineUnavailable.is(result.error) && result.error.reason).toBe(
+			"Failed to fetch",
+		);
+	});
+
+	test("counting Office pages reports a missing PDF engine or an unreadable result", async () => {
+		const noPdfEngine = converted(
+			await handle(await office("SampleDoc.docx"), {
+				...withTinyDecoder,
+				pdf: () => Promise.reject(new Error("chunk failed to load")),
+			}),
+		);
+
+		const garbage = converted(
+			await handle(await office("SampleDoc.docx"), {
+				...withTinyDecoder,
+				office: async () => ({
+					...(await engines.office()),
+					convertOffice: () =>
+						Promise.resolve(
+							Result.ok({ format: "docx", pdf: new Uint8Array([1, 2, 3]), degraded: false }),
+						),
+				}),
+			}),
+		);
+
+		expect(noPdfEngine.isErr() && EngineUnavailable.is(noPdfEngine.error)).toBe(true);
+		expect(garbage.isErr() && ConversionFailed.is(garbage.error)).toBe(true);
 	});
 
 	test("turns a malformed request into a fatal reply instead of hanging", async () => {

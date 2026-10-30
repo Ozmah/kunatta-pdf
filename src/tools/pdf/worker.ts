@@ -3,7 +3,9 @@ import * as v from "valibot";
 
 import {
 	causeMessage,
+	conversionFailed,
 	engineUnavailable,
+	type ConversionFailed,
 	type EngineUnavailable,
 	type ComposeError,
 	type Converted,
@@ -57,13 +59,57 @@ function load<Module>(
 	});
 }
 
+/** The face plain text is drawn with. Failing to fetch it means the converter cannot run, like a chunk that does not load. */
+function textFontBytes(
+	fileName: string,
+	fontFetch: FontFetch,
+): Promise<ResultType<Uint8Array, EngineUnavailable>> {
+	return Result.tryPromise({
+		try: async () => {
+			const font = await fontFetch(textFont);
+
+			if (!font.ok) throw new Error(`${textFont} could not be loaded`);
+
+			return new Uint8Array(await font.arrayBuffer());
+		},
+		catch: (cause) => engineUnavailable(fileName, cause),
+	});
+}
+
+/** Pages of a converted file. Office does not report them, so they are counted from its PDF. */
+async function pagesOf(
+	fileName: string,
+	converted: Converted,
+	available: Engines,
+): Promise<ResultType<number, ConversionFailed | EngineUnavailable>> {
+	if (converted.pages !== undefined) return Result.ok(converted.pages);
+
+	const module = await load(fileName, available.pdf);
+
+	if (module.isErr()) return module;
+
+	return Result.tryPromise({
+		try: () => module.value.countPages(converted.pdf),
+		catch: (cause) => conversionFailed(fileName, cause),
+	});
+}
+
 async function convert(
 	request: ConvertRequest,
 	fontFetch: FontFetch,
 	available: Engines,
 ): Promise<ResultType<Converted, ConvertError>> {
 	const { fileName, kind, password, settings } = request;
-	const bytes = new Uint8Array(await request.file.arrayBuffer());
+
+	// A picked file can change on disk or lose its permission before its turn comes.
+	const read = await Result.tryPromise({
+		try: async () => new Uint8Array(await request.file.arrayBuffer()),
+		catch: (cause) => conversionFailed(fileName, cause),
+	});
+
+	if (read.isErr()) return read;
+
+	const bytes = read.value;
 	const image = imageKinds.find((known) => known === kind);
 	const office = officeFormats.find((known) => known === kind);
 
@@ -101,15 +147,11 @@ async function convert(
 
 	if (module.isErr()) return module;
 
-	const font = await fontFetch(textFont);
+	const font = await textFontBytes(fileName, fontFetch);
 
-	if (!font.ok) return Result.err(engineUnavailable(fileName, `${textFont} could not be loaded`));
+	if (font.isErr()) return font;
 
-	return module.value.convertText(bytes, {
-		fileName,
-		size: settings.size,
-		font: new Uint8Array(await font.arrayBuffer()),
-	});
+	return module.value.convertText(bytes, { fileName, size: settings.size, font: font.value });
 }
 
 async function compose(
@@ -152,9 +194,12 @@ export async function handleMessage(
 
 		if (converted.isErr()) return encodeConverted(request.jobId, converted);
 
-		const { pdf, degraded, pages } = converted.value;
-		const counted = pages ?? (await (await available.pdf()).countPages(pdf));
-		const file: FilePdf = { pdf: pdfBlob(pdf), degraded, pages: counted };
+		const pages = await pagesOf(request.fileName, converted.value, available);
+
+		if (pages.isErr()) return encodeConverted(request.jobId, pages);
+
+		const { pdf, degraded } = converted.value;
+		const file: FilePdf = { pdf: pdfBlob(pdf), degraded, pages: pages.value };
 
 		return encodeConverted(request.jobId, Result.ok(file));
 	} catch (error) {

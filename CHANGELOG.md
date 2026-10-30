@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: a file that can no longer be read, or a converter that cannot download while working, is reported with its real reason instead of as an unexpected stop, and no longer restarts the background worker.
 - Fixed: file names with `$` or `{…}` in them now show as they are in row labels, screen reader announcements and progress.
 - Fixed: on phones, the password field of a locked row no longer pushes Open out of the row.
 - Fixed: rows no longer jump mid-slide or lose keyboard focus when a background check finishes while the list is being reordered.
