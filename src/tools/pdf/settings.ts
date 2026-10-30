@@ -10,6 +10,17 @@ export type Quality = (typeof qualities)[number];
 
 export type PasswordMode = (typeof passwordModes)[number];
 
+/** The settings a conversion depends on. Only these reach the worker; the name and the password setting stay here. */
+export interface ConvertSettings {
+	readonly size: PageSize;
+	readonly quality: Quality;
+}
+
+/** Picks the conversion settings out of a larger object: the worker's schema refuses extra fields. */
+export function convertSettings(settings: ConvertSettings): ConvertSettings {
+	return { size: settings.size, quality: settings.quality };
+}
+
 export interface Settings {
 	readonly size: PageSize;
 	readonly quality: Quality;

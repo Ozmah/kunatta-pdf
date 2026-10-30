@@ -3,14 +3,8 @@ import { Panic } from "better-result";
 import type { JobError } from "./errors.ts";
 import type { PileEntry } from "./pile.ts";
 import type { FilePdf } from "./protocol.ts";
-import type { PageSize, Quality } from "./settings.ts";
+import type { ConvertSettings } from "./settings.ts";
 import { isImageKind, type InputKind } from "./sniff.ts";
-
-/** The settings a conversion depended on; composing settings (size of the sheet) live elsewhere. */
-export interface ConvertSettings {
-	readonly size: PageSize;
-	readonly quality: Quality;
-}
 
 /** Where each file in the list stands. */
 export type ItemState =

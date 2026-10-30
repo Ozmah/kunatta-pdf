@@ -1,7 +1,7 @@
 import type { Result as ResultType } from "better-result";
 
 import type { MessageKey } from "../../i18n/es.ts";
-import type { Converter } from "./converter.ts";
+import { composeJob, convertJob, type Converter } from "./converter.ts";
 import {
 	CompositionFailed,
 	ConversionFailed,
@@ -63,15 +63,7 @@ async function convertEntry(
 	let retry = false;
 
 	for (;;) {
-		// The worker only needs what shapes the conversion; the password setting stays here.
-		const job = {
-			fileName: entry.name,
-			kind: entry.kind,
-			file: entry.source,
-			settings: { size: settings.size, quality: settings.quality },
-		};
-
-		const converted = await converter.convert(password === undefined ? job : { ...job, password });
+		const converted = await converter.convert(convertJob(entry, settings, password));
 
 		if (converted.isOk() || !PasswordRequired.is(converted.error)) return converted;
 
@@ -90,8 +82,7 @@ async function compose(
 	settings: Settings,
 	password: string | undefined,
 ): Promise<ResultType<FastPdf, FastError>> {
-	const job = { fileName: name, parts: [file.pdf], size: settings.size };
-	const composed = await converter.compose(password === undefined ? job : { ...job, password });
+	const composed = await converter.compose(composeJob(name, [file.pdf], settings.size, password));
 
 	return composed.map(({ pdf, pages }) => ({ name, pdf, pages, degraded: file.degraded }));
 }

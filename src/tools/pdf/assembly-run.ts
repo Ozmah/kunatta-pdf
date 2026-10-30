@@ -8,15 +8,14 @@ import {
 	togglePin,
 	updateState,
 	isStale,
-	type ConvertSettings,
 	type Items,
 } from "./assembly.ts";
-import type { Converter } from "./converter.ts";
+import { composeJob, convertJob, type Converter } from "./converter.ts";
 import { ConversionCancelled, PasswordRequired, type ComposeJobError } from "./errors.ts";
 import { backedOut, type FastPdf } from "./fast.ts";
 import type { PileEntry } from "./pile.ts";
 import type { FilePdf } from "./protocol.ts";
-import type { Settings } from "./settings.ts";
+import { convertSettings, type Settings } from "./settings.ts";
 
 export interface AssemblyPrompts {
 	/** "No pudimos convertir N de M": back to the list, or make the PDF without them. */
@@ -49,10 +48,6 @@ export interface AssemblyOptions {
 	readonly settings: () => Settings;
 	readonly prompts: AssemblyPrompts;
 	readonly locale: string;
-}
-
-function convertSettings(settings: Settings): ConvertSettings {
-	return { size: settings.size, quality: settings.quality };
 }
 
 /**
@@ -91,11 +86,7 @@ export function createAssembly(options: AssemblyOptions): Assembly {
 			const { entry } = item;
 			const used = convertSettings(options.settings());
 			const password = passwords.get(entry.id);
-			const job = { fileName: entry.name, kind: entry.kind, file: entry.source, settings: used };
-
-			const converted = await converter.convert(
-				password === undefined ? job : { ...job, password },
-			);
+			const converted = await converter.convert(convertJob(entry, used, password));
 
 			// The file may have been removed while it was converting.
 			if (!has(entry.id)) continue;
@@ -217,13 +208,14 @@ export function createAssembly(options: AssemblyOptions): Assembly {
 				if (password === undefined || cancelled()) return backedOut;
 			}
 
-			const job = {
-				fileName: name,
-				parts: parts.map((part) => part.pdf),
-				size: options.settings().size,
-			};
-
-			const composed = await converter.compose(password === undefined ? job : { ...job, password });
+			const composed = await converter.compose(
+				composeJob(
+					name,
+					parts.map((part) => part.pdf),
+					options.settings().size,
+					password,
+				),
+			);
 
 			if (cancelled()) return backedOut;
 
