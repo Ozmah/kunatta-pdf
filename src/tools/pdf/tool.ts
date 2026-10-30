@@ -16,7 +16,7 @@ import {
 	runSinglePdf,
 	type Outcome,
 } from "./fast.ts";
-import { connectFastView, rejectionMessage } from "./fast-view.ts";
+import { connectFastView, rejectionMessage, type NoticeLine } from "./fast-view.ts";
 import { connectSettings } from "./gear.ts";
 import { connectLanguageGuard } from "./language-guard.ts";
 import { choosePath, type Origin } from "./paths.ts";
@@ -42,6 +42,8 @@ export function startPdfTool(root: Document): void {
 	let busy = false;
 	let assembling = false;
 	let last: PileEntry | undefined;
+	// The latest "could not convert" line, kept until the user moves on to other files.
+	let rejections: ReadonlyArray<NoticeLine> = [];
 
 	const enterAssembly = (): void => {
 		assembling = true;
@@ -69,7 +71,7 @@ export function startPdfTool(root: Document): void {
 		if (result === backedOut) return;
 
 		if (result.isErr()) {
-			view.notice([name], translate(locale, failureReason(result.error)));
+			view.notice([{ entries: [name], message: translate(locale, failureReason(result.error)) }]);
 
 			return;
 		}
@@ -84,8 +86,14 @@ export function startPdfTool(root: Document): void {
 		downloads.save(pdf, name);
 		list.done(name, pages, pdf.size);
 		view.notice(
-			degraded ? degradedNames : [],
-			degraded ? withCount(translate(locale, "degraded.many"), degradedNames.length) : undefined,
+			degraded
+				? [
+						{
+							entries: degradedNames,
+							message: withCount(translate(locale, "degraded.many"), degradedNames.length),
+						},
+					]
+				: [],
 		);
 	};
 
@@ -139,10 +147,13 @@ export function startPdfTool(root: Document): void {
 		const { name, pdf, pages, degraded } = result.value;
 
 		downloads.save(pdf, name);
-		view.notice(
-			degraded ? [entry.name] : [],
-			degraded ? translate(locale, degradedNotice(entry.kind)) : undefined,
-		);
+		// Files turned away on the way in stay listed next to what the conversion reported.
+		view.notice([
+			...rejections,
+			...(degraded
+				? [{ entries: [entry.name], message: translate(locale, degradedNotice(entry.kind)) }]
+				: []),
+		]);
 		view.done(name, pages, pdf.size);
 	};
 
@@ -152,7 +163,9 @@ export function startPdfTool(root: Document): void {
 		const accepted = assembling ? pile.slice(current.length) : pile;
 		const names = rejected.map((rejection) => rejection.fileName);
 
-		view.notice(names, names.length > 0 ? rejectionMessage(locale, names.length) : undefined);
+		rejections =
+			names.length > 0 ? [{ entries: names, message: rejectionMessage(locale, names.length) }] : [];
+		view.notice(rejections);
 
 		if (assembling) {
 			assembly.add(accepted);
@@ -196,7 +209,8 @@ export function startPdfTool(root: Document): void {
 	root.querySelector("[data-download-again]")?.addEventListener("click", () => downloads.again());
 
 	root.querySelector("[data-another]")?.addEventListener("click", () => {
-		view.notice([], undefined);
+		rejections = [];
+		view.notice([]);
 		view.show("idle");
 	});
 
@@ -205,7 +219,8 @@ export function startPdfTool(root: Document): void {
 	});
 
 	root.querySelector("[data-pick-another]")?.addEventListener("click", () => {
-		view.notice([], undefined);
+		rejections = [];
+		view.notice([]);
 		view.show("idle");
 		dropzone.pick();
 	});

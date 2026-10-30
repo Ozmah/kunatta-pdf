@@ -7,13 +7,19 @@ import type { InputKind } from "./sniff.ts";
 /** "assembly" hides every fast-path view: the list takes the space. */
 type View = "idle" | "converting" | "done" | "failed" | "assembly";
 
+/** One line of the dotted notice: file names in code style and what happened to them. */
+export interface NoticeLine {
+	readonly entries: ReadonlyArray<string>;
+	readonly message: string;
+}
+
 export interface FastView {
 	show(view: View): void;
 	converting(fileName: string, kind: InputKind): void;
 	done(pdfName: string, pages: number, bytes: number): void;
 	failed(fileName: string, kind: InputKind, reason: MessageKey): void;
-	/** A file name in code style followed by a message, or nothing. */
-	notice(entries: ReadonlyArray<string>, message: string | undefined): void;
+	/** Shows every line, one under the other; no lines hide the notice. */
+	notice(lines: ReadonlyArray<NoticeLine>): void;
 }
 
 /** The label on the file's card: JPG instead of jpeg, TXT for plain text. */
@@ -80,23 +86,27 @@ export function connectFastView(root: Document, locale: Locale): FastView {
 			show("failed");
 		},
 
-		notice(entries, message) {
+		notice(lines) {
 			noticeText.replaceChildren();
-			notice.hidden = message === undefined;
+			notice.hidden = lines.length === 0;
 			// The file → PDF flow belongs to the empty drop zone only.
 			flow.hidden = !notice.hidden || drop.hidden;
 
-			if (message === undefined) return;
+			lines.forEach(({ entries, message }, lineIndex) => {
+				const names = entries.flatMap((entry, index) => {
+					const code = root.createElement("code");
 
-			entries.forEach((entry, index) => {
-				const code = root.createElement("code");
+					code.textContent = entry;
 
-				code.textContent = entry;
-				noticeText.append(index === 0 ? "" : ", ", code);
+					return index === 0 ? [code] : [", ", code];
+				});
+
+				if (lineIndex > 0) noticeText.append(root.createElement("br"));
+
+				// One file reads "a.mp4 cannot…"; several read "N files did not fit: a, b".
+				if (entries.length === 1) noticeText.append(...names, ` ${message}`);
+				else noticeText.append(`${message} `, ...names);
 			});
-			noticeText.append(entries.length === 1 ? ` ${message}` : "");
-
-			if (entries.length !== 1) noticeText.prepend(`${message} `);
 		},
 	};
 }
