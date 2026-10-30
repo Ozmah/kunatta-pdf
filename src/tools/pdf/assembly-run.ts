@@ -67,6 +67,8 @@ export function createAssembly(options: AssemblyOptions): Assembly {
 	let running = false;
 	let generation = 0;
 	let idle: Array<() => void> = [];
+	// Ends the wait of the generation in progress; checks keep going on their own.
+	let stopWaiting: (() => void) | undefined;
 
 	const set = (next: Items): void => {
 		items = next;
@@ -177,7 +179,13 @@ export function createAssembly(options: AssemblyOptions): Assembly {
 			const cancelled = (): boolean => mine !== generation;
 
 			requeueStale();
-			await settled();
+
+			// Cancel must not wait for the checks: a check restarts after the worker is stopped.
+			const stopped = new Promise<void>((resolve) => {
+				stopWaiting = resolve;
+			});
+
+			await Promise.race([settled(), stopped]);
 
 			if (cancelled()) return backedOut;
 
@@ -223,6 +231,7 @@ export function createAssembly(options: AssemblyOptions): Assembly {
 
 		cancel() {
 			generation += 1;
+			stopWaiting?.();
 			converter.cancel();
 		},
 	};

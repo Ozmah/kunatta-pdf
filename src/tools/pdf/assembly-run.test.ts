@@ -3,8 +3,8 @@ import { describe, expect, test } from "bun:test";
 import { Result } from "better-result";
 
 import { createAssembly, type AssemblyPrompts } from "./assembly-run.ts";
-import type { ComposeJob, Converter, ConvertJob } from "./converter.ts";
-import { ConversionFailed, PasswordRequired } from "./errors.ts";
+import type { ComposeJob, Converter, ConvertJob, JobResult } from "./converter.ts";
+import { ConversionCancelled, ConversionFailed, PasswordRequired } from "./errors.ts";
 import { backedOut } from "./fast.ts";
 import type { PileEntry } from "./pile.ts";
 import type { Settings } from "./settings.ts";
@@ -146,6 +146,41 @@ describe("createAssembly", () => {
 		expect(log.converted).toEqual(["a.jpg normal", "notas.pdf normal", "a.jpg max"]);
 		expect(asked).toEqual(["password t.pdf 4"]);
 		expect(log.composed[1]?.password).toBe("s3creta");
+	});
+
+	test("cancelling while a check is still running returns at once", async () => {
+		type Waiting = (result: JobResult) => void;
+
+		const waiting: Array<Waiting> = [];
+
+		// Like the real worker: a check only ends when cancelled, and then starts over.
+		const hanging: Converter = {
+			convert: () => new Promise<JobResult>((resolve) => waiting.push(resolve)),
+			compose: () => Promise.reject(new Error("must not compose")),
+			cancel: () => {
+				for (const resolve of waiting.splice(0)) {
+					resolve(Result.err(new ConversionCancelled({ fileName: "a.jpg", message: "x" })));
+				}
+			},
+		};
+
+		const assembly = createAssembly({
+			converter: hanging,
+			settings: () => ({ size: "letter", quality: "normal", password: "off", name: "" }),
+			prompts: {
+				summary: () => Promise.resolve("back"),
+				resultPassword: () => Promise.resolve(undefined),
+			},
+			locale: "es",
+		});
+
+		assembly.add([entry("a.jpg")]);
+
+		const pending = assembly.generate("t.pdf");
+
+		assembly.cancel();
+
+		expect(await pending).toBe(backedOut);
 	});
 
 	test("cancelling a generation backs out without composing", async () => {
