@@ -96,3 +96,49 @@ test("Agregar más archivos moves the PDF into a list, first, and opens the pick
 	await drop(page, [text("anexo b.txt", "b"), text("anexo a.txt", "a")], "[data-add]");
 	await expect.poll(() => order(page)).toEqual(["portada.pdf", "anexo a.txt", "anexo b.txt"]);
 });
+
+test.describe("the veil", () => {
+	test("on a phone, tapping the veil above the sheet goes back without a PDF", async ({
+		page,
+		isMobile,
+	}) => {
+		test.skip(!isMobile, "the dialog is a bottom sheet only on narrow screens");
+
+		const asks = dialog(page, "single");
+
+		await drop(page, [await pdf("practica-3.pdf", [page200])]);
+		await expect(asks).toBeVisible();
+		await page.touchscreen.tap(40, 40);
+		await expect(asks).toBeHidden();
+		await expect(page.locator("[data-empty-drop]")).toBeVisible();
+	});
+
+	test("a narrow desktop window gets the sheet, and a click on its veil goes back", async ({
+		page,
+		isMobile,
+	}) => {
+		test.skip(isMobile, "the phone project taps instead");
+
+		const asks = dialog(page, "single");
+
+		await page.setViewportSize({ width: 420, height: 800 });
+		await drop(page, [await pdf("practica-3.pdf", [page200])]);
+		await expect(asks).toBeVisible();
+		await page.mouse.click(20, 20);
+		await expect(asks).toBeHidden();
+	});
+
+	test("on a wide screen, a click on the veil leaves the dialog open", async ({
+		page,
+		isMobile,
+	}) => {
+		test.skip(isMobile, "the centered dialog only closes with Back or Escape");
+
+		const asks = dialog(page, "single");
+
+		await drop(page, [await pdf("practica-3.pdf", [page200])]);
+		await expect(asks).toBeVisible();
+		await page.mouse.click(20, 20);
+		await expect(asks).toBeVisible();
+	});
+});

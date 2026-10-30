@@ -134,7 +134,10 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 </dialog>
 
 <style>
+	/* Read by dialogs.ts: only the bottom sheet closes when its veil is tapped. */
 	.dlg {
+		--closed-by: closerequest;
+
 		width: min(540px, calc(100% - 32px));
 		max-height: calc(100dvh - 32px);
 		margin: auto;
@@ -270,6 +273,8 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 	/* Phones: a sheet on the bottom edge, actions stacked with the primary on top. */
 	@media (max-width: 520px) {
 		.dlg {
+			--closed-by: any;
+
 			width: 100%;
 			max-width: none;
 			margin: auto 0 0;

@@ -15,7 +15,17 @@ function inputs(dialog: HTMLDialogElement): ReadonlyArray<HTMLInputElement> {
 }
 
 /**
- * Opens a modal dialog and resolves with the button the user chose ("" for Escape).
+ * Where the dialog is a bottom sheet, tapping the veil closes it like Back; elsewhere only Back and
+ * Escape do. The stylesheet owns the breakpoint and says which one applies through --closed-by.
+ */
+function closedBy(dialog: HTMLDialogElement): "any" | "closerequest" {
+	return getComputedStyle(dialog).getPropertyValue("--closed-by").trim() === "any"
+		? "any"
+		: "closerequest";
+}
+
+/**
+ * Opens a modal dialog and resolves with the button the user chose ("" for Escape or the veil).
  * `accept` may refuse a confirmation (returning an error message) and keep the dialog open.
  * Password fields are emptied on close, so no password stays in the page.
  */
@@ -57,6 +67,7 @@ function ask(
 		form.addEventListener("submit", onSubmit);
 		dialog.addEventListener("close", onClose, { once: true });
 		dialog.returnValue = "";
+		dialog.closedBy = closedBy(dialog);
 		dialog.showModal();
 	});
 }

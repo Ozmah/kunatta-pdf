@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- On phones, tapping the dark veil above a dialog closes it like Back; on wide screens the dialog still closes only with Back or Escape.
 - Ajustes remembers the page size, the quality and whether to protect the PDF on this device, across visits and languages; the name and passwords are never stored.
 - Fixed: a file that can no longer be read, or a converter that cannot download while working, is reported with its real reason instead of as an unexpected stop, and no longer restarts the background worker.
 - Fixed: file names with `$` or `{…}` in them now show as they are in row labels, screen reader announcements and progress.
