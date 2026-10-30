@@ -131,6 +131,6 @@ export async function convertImage(
 				raster.close();
 			}
 		},
-		catch: (cause) => conversionFailed(fileName, cause instanceof Error ? cause : String(cause)),
+		catch: (cause) => conversionFailed(fileName, cause),
 	});
 }

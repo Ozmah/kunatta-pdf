@@ -2,10 +2,12 @@ import { Result, type Result as ResultType } from "better-result";
 import * as v from "valibot";
 
 import {
-	CompositionFailed,
-	ConversionFailed,
+	compositionFailed,
+	conversionFailed,
 	EngineUnavailable,
+	engineUnavailable,
 	PasswordRequired,
+	passwordRequired,
 	type ComposeError,
 	type ConvertError,
 } from "./errors.ts";
@@ -150,25 +152,13 @@ function fromWire(error: WireError): ConvertError | ComposeError {
 
 	switch (error.tag) {
 		case "PasswordRequired":
-			return new PasswordRequired({ fileName, message: `${fileName} needs a password` });
+			return passwordRequired(fileName);
 		case "EngineUnavailable":
-			return new EngineUnavailable({
-				fileName,
-				reason: error.reason,
-				message: `the converter for ${fileName} is unavailable`,
-			});
+			return engineUnavailable(fileName, error.reason);
 		case "CompositionFailed":
-			return new CompositionFailed({
-				fileName,
-				reason: error.reason,
-				message: `${fileName} could not be composed`,
-			});
+			return compositionFailed(fileName, error.reason);
 		case "ConversionFailed":
-			return new ConversionFailed({
-				fileName,
-				reason: error.reason,
-				message: `${fileName} could not be converted`,
-			});
+			return conversionFailed(fileName, error.reason);
 	}
 }
 

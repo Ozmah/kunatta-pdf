@@ -57,9 +57,36 @@ export interface Converted {
 	readonly pages?: number;
 }
 
-/** A library refused the file: the bytes are damaged or use features it cannot read. */
-export function conversionFailed(fileName: string, cause: Error | string): ConversionFailed {
-	const reason = cause instanceof Error ? cause.message : cause;
+/** The text of whatever was thrown: an error's message, or the value itself (a wire reason is already text). */
+export function causeMessage(cause: unknown): string {
+	return cause instanceof Error ? cause.message : String(cause);
+}
 
-	return new ConversionFailed({ fileName, reason, message: `${fileName} could not be converted` });
+/** A library refused the file: the bytes are damaged or use features it cannot read. */
+export function conversionFailed(fileName: string, cause: unknown): ConversionFailed {
+	return new ConversionFailed({
+		fileName,
+		reason: causeMessage(cause),
+		message: `${fileName} could not be converted`,
+	});
+}
+
+export function passwordRequired(fileName: string): PasswordRequired {
+	return new PasswordRequired({ fileName, message: `${fileName} needs a password` });
+}
+
+export function engineUnavailable(fileName: string, cause: unknown): EngineUnavailable {
+	return new EngineUnavailable({
+		fileName,
+		reason: causeMessage(cause),
+		message: `the converter for ${fileName} is unavailable`,
+	});
+}
+
+export function compositionFailed(fileName: string, cause: unknown): CompositionFailed {
+	return new CompositionFailed({
+		fileName,
+		reason: causeMessage(cause),
+		message: `${fileName} could not be composed`,
+	});
 }

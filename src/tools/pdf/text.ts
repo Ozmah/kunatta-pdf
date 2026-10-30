@@ -99,6 +99,6 @@ export async function convertText(
 
 			return { pdf: await pdf.save({ subsetFonts: true }), degraded, pages: pdf.getPages().length };
 		},
-		catch: (cause) => conversionFailed(fileName, cause instanceof Error ? cause : String(cause)),
+		catch: (cause) => conversionFailed(fileName, cause),
 	});
 }

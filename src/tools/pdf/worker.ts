@@ -2,7 +2,9 @@ import { Result, type Result as ResultType } from "better-result";
 import * as v from "valibot";
 
 import {
-	EngineUnavailable,
+	causeMessage,
+	engineUnavailable,
+	type EngineUnavailable,
 	type ComposeError,
 	type Converted,
 	type ConvertError,
@@ -45,21 +47,13 @@ export const engines: Engines = {
 
 const textFont = "Cousine_400Regular.ttf";
 
-function unavailable(fileName: string, reason: string): EngineUnavailable {
-	return new EngineUnavailable({
-		fileName,
-		reason,
-		message: `the converter for ${fileName} is unavailable`,
-	});
-}
-
 function load<Module>(
 	fileName: string,
 	loader: () => Promise<Module>,
 ): Promise<ResultType<Module, EngineUnavailable>> {
 	return Result.tryPromise({
 		try: loader,
-		catch: (cause) => unavailable(fileName, cause instanceof Error ? cause.message : String(cause)),
+		catch: (cause) => engineUnavailable(fileName, cause),
 	});
 }
 
@@ -109,7 +103,7 @@ async function convert(
 
 	const font = await fontFetch(textFont);
 
-	if (!font.ok) return Result.err(unavailable(fileName, `${textFont} could not be loaded`));
+	if (!font.ok) return Result.err(engineUnavailable(fileName, `${textFont} could not be loaded`));
 
 	return module.value.convertText(bytes, {
 		fileName,
@@ -165,6 +159,6 @@ export async function handleMessage(
 		return encodeConverted(request.jobId, Result.ok(file));
 	} catch (error) {
 		// Converters return expected failures as values; reaching this is a bug in the worker.
-		return fatal(error instanceof Error ? error.message : String(error));
+		return fatal(causeMessage(error));
 	}
 }

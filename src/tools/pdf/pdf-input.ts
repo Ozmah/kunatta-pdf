@@ -1,7 +1,7 @@
 import { PDF } from "@libpdf/core";
 import { Result, type Result as ResultType } from "better-result";
 
-import { conversionFailed, PasswordRequired, type Converted, type ConvertError } from "./errors.ts";
+import { conversionFailed, passwordRequired, type Converted, type ConvertError } from "./errors.ts";
 
 export interface PdfOptions {
 	readonly fileName: string;
@@ -21,7 +21,7 @@ export async function openPdf(
 
 	const loaded = await Result.tryPromise({
 		try: () => PDF.load(bytes, password === undefined ? {} : { credentials: password }),
-		catch: (cause) => conversionFailed(fileName, cause instanceof Error ? cause : String(cause)),
+		catch: (cause) => conversionFailed(fileName, cause),
 	});
 
 	if (loaded.isErr()) return loaded;
@@ -34,14 +34,14 @@ export async function openPdf(
 
 	// libpdf opens protected files without throwing; a missing or wrong password leaves them unauthenticated.
 	if (!pdf.isAuthenticated) {
-		return Result.err(new PasswordRequired({ fileName, message: `${fileName} needs a password` }));
+		return Result.err(passwordRequired(fileName));
 	}
 
 	pdf.removeProtection({ ignorePermissions: true });
 
 	return Result.tryPromise({
 		try: async () => ({ pdf: await pdf.save(), degraded: false, pages }),
-		catch: (cause) => conversionFailed(fileName, cause instanceof Error ? cause : String(cause)),
+		catch: (cause) => conversionFailed(fileName, cause),
 	});
 }
 

@@ -1,7 +1,7 @@
 import { Result, type Result as ResultType } from "better-result";
 import { Ream, WrongPasswordError, type LossReport } from "reamkit";
 
-import { conversionFailed, PasswordRequired, type Converted, type ConvertError } from "./errors.ts";
+import { conversionFailed, passwordRequired, type Converted, type ConvertError } from "./errors.ts";
 import type { FontFetch } from "./office-fonts.ts";
 import { officeFormats, type OfficeFormat } from "./office-sniff.ts";
 
@@ -27,10 +27,10 @@ export function isDegraded(losses: LossReport): boolean {
 
 function failure(fileName: string, cause: unknown): ConvertError {
 	if (cause instanceof WrongPasswordError) {
-		return new PasswordRequired({ fileName, message: `${fileName} needs a password` });
+		return passwordRequired(fileName);
 	}
 
-	return conversionFailed(fileName, cause instanceof Error ? cause : String(cause));
+	return conversionFailed(fileName, cause);
 }
 
 /** Converts one Word, Excel or PowerPoint file into PDF bytes, entirely in memory. */

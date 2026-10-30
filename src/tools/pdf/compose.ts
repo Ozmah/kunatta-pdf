@@ -1,7 +1,7 @@
 import { PDF, type PDFEmbeddedPage } from "@libpdf/core";
 import { Result, type Result as ResultType } from "better-result";
 
-import { CompositionFailed } from "./errors.ts";
+import { compositionFailed, type CompositionFailed } from "./errors.ts";
 import type { PageSize } from "./settings.ts";
 
 export interface ComposeOptions {
@@ -94,11 +94,6 @@ export async function composePdf(
 
 			return { pdf: await document.save(), pages: document.getPages().length };
 		},
-		catch: (cause) =>
-			new CompositionFailed({
-				fileName,
-				reason: cause instanceof Error ? cause.message : String(cause),
-				message: `${fileName} could not be composed`,
-			}),
+		catch: (cause) => compositionFailed(fileName, cause),
 	});
 }
