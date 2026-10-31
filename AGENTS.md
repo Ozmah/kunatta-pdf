@@ -3,7 +3,7 @@
 ## Rules
 
 - Everything in the repository is in English: code, comments, tests, error messages, docs and commit messages. User-facing copy lives in `src/i18n/`.
-- Everything runs in the browser. No server code, no third-party requests, no analytics, no CDNs.
+- Everything runs in the browser. No server code, no CDNs. The only third-party request is anonymous product analytics (PostHog, main thread only): events and their properties come from an allowlist, nothing is stored on the device, and file names, file contents, passwords and typed text never reach it. With Do Not Track or Global Privacy Control on, nothing is sent.
 - One chunk = one responsibility, 300 to 400 lines at most, with tests. This can vary depending on the file.
 - Commit messages: one line, conventional format (`feat(pdf): …`, `chore: …`), no body.
 - Every `feat` or `fix` adds its line under `## Unreleased` in `CHANGELOG.md` in the same commit. Lines describe behavior, not files.
