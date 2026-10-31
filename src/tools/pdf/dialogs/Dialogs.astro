@@ -6,129 +6,143 @@ const t = translator(lang);
 const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z";
 ---
 
-<dialog class="dlg" aria-labelledby="single-title" data-dialog="single">
-	<form method="dialog">
-		<h2 class="display" id="single-title">{t("single.title")}</h2>
-		<div class="file">
-			<span class="tile tile-dark" aria-hidden="true">PDF</span>
-			<span><b data-name></b><span class="meta" data-meta></span></span>
-		</div>
-		<dl>
-			<dt class="label">{t("settings.size")}</dt>
-			<dd><span data-size></span> <small data-fit></small></dd>
-			<dt class="label">{t("settings.quality")}</dt>
-			<dd data-quality></dd>
-			<dt class="label">{t("settings.password")}</dt>
-			<dd data-password></dd>
-			<dt class="label">{t("single.result")}</dt>
-			<dd data-result></dd>
-		</dl>
-		<p class="question">{t("single.question")}</p>
-		<div class="actions">
-			<button class="btn-ghost" type="button" data-back>{t("single.back")}</button>
-			<button class="btn btn-secondary" value="more">{t("single.more")}</button>
-			<button class="btn btn-primary" value="confirm" autofocus>{t("single.confirm")}</button>
-		</div>
-	</form>
-</dialog>
+<kn-dialogs>
+	<dialog class="dlg" aria-labelledby="single-title" data-dialog="single">
+		<form method="dialog">
+			<h2 class="display" id="single-title">{t("single.title")}</h2>
+			<div class="file">
+				<span class="tile tile-dark" aria-hidden="true">PDF</span>
+				<span><b data-name></b><span class="meta" data-meta></span></span>
+			</div>
+			<dl>
+				<dt class="label">{t("settings.size")}</dt>
+				<dd><span data-size></span> <small data-fit></small></dd>
+				<dt class="label">{t("settings.quality")}</dt>
+				<dd data-quality></dd>
+				<dt class="label">{t("settings.password")}</dt>
+				<dd data-password></dd>
+				<dt class="label">{t("single.result")}</dt>
+				<dd data-result></dd>
+			</dl>
+			<p class="question">{t("single.question")}</p>
+			<div class="actions">
+				<button class="btn-ghost" type="button" data-back>{t("single.back")}</button>
+				<button class="btn btn-secondary" value="more">{t("single.more")}</button>
+				<button class="btn btn-primary" value="confirm" autofocus>{t("single.confirm")}</button>
+			</div>
+		</form>
+	</dialog>
 
-<dialog class="dlg" role="alertdialog" aria-labelledby="summary-title" data-dialog="summary">
-	<form method="dialog">
-		<h2 class="display" id="summary-title" data-title></h2>
-		<ul class="fails" data-fails></ul>
-		<p class="question" data-body></p>
-		<div class="actions">
-			<button class="btn btn-secondary" type="button" data-back autofocus>{t("summary.back")}</button>
-			<button class="btn btn-primary" value="confirm">{t("summary.without")}</button>
-		</div>
-	</form>
-</dialog>
+	<dialog class="dlg" role="alertdialog" aria-labelledby="summary-title" data-dialog="summary">
+		<form method="dialog">
+			<h2 class="display" id="summary-title" data-title></h2>
+			<ul class="fails" data-fails></ul>
+			<p class="question" data-body></p>
+			<div class="actions">
+				<button class="btn btn-secondary" type="button" data-back autofocus>{t("summary.back")}</button>
+				<button class="btn btn-primary" value="confirm">{t("summary.without")}</button>
+			</div>
+		</form>
+	</dialog>
 
-<template data-fail-template>
-	<li><span class="tile tile-sm" aria-hidden="true"></span><span><b></b><span class="meta"></span></span></li>
-</template>
+	<template data-fail-template>
+		<li><span class="tile tile-sm" aria-hidden="true"></span><span><b></b><span class="meta"></span></span></li>
+	</template>
 
-<dialog class="dlg" role="alertdialog" aria-labelledby="language-title" data-dialog="language">
-	<form method="dialog">
-		<h2 class="display" id="language-title" data-title></h2>
-		<p class="question">{t("language.body")}</p>
-		<div class="actions">
-			<button class="btn btn-secondary" type="button" data-back autofocus>{t("language.stay")}</button>
-			<button class="btn btn-primary" value="confirm" data-switch></button>
-		</div>
-	</form>
-</dialog>
+	<dialog class="dlg" role="alertdialog" aria-labelledby="language-title" data-dialog="language">
+		<form method="dialog">
+			<h2 class="display" id="language-title" data-title></h2>
+			<p class="question">{t("language.body")}</p>
+			<div class="actions">
+				<button class="btn btn-secondary" type="button" data-back autofocus>{t("language.stay")}</button>
+				<button class="btn btn-primary" value="confirm" data-switch></button>
+			</div>
+		</form>
+	</dialog>
 
-<dialog class="dlg" aria-labelledby="incoming-title" data-dialog="incoming">
-	<form method="dialog">
-		<h2 class="display" id="incoming-title" data-title></h2>
-		<div class="file">
-			<span class="tile tile-dark" aria-hidden="true" data-kind></span>
-			<span><b data-name></b><span class="meta">{t("incoming.protected")}</span></span>
-		</div>
-		<label class="field-group">
-			<span class="label">{t("incoming.label")}</span>
-			<span class="field field-mono">
-				<input type="password" name="password" autocomplete="off" spellcheck="false" autofocus />
-			</span>
+	<dialog class="dlg" aria-labelledby="incoming-title" data-dialog="incoming">
+		<form method="dialog">
+			<h2 class="display" id="incoming-title" data-title></h2>
+			<div class="file">
+				<span class="tile tile-dark" aria-hidden="true" data-kind></span>
+				<span><b data-name></b><span class="meta">{t("incoming.protected")}</span></span>
+			</div>
+			<label class="field-group">
+				<span class="label">{t("incoming.label")}</span>
+				<span class="field field-mono">
+					<input type="password" name="password" autocomplete="off" spellcheck="false" autofocus />
+				</span>
+				<span class="error" role="alert" data-error></span>
+			</label>
+			<p class="notice notice-accent">
+				<span>{t("incoming.warn.start")} <b>{t("incoming.warn.strong")}</b>{t("incoming.warn.end")}</span>
+			</p>
+			<div class="actions">
+				<button class="btn-ghost" type="button" data-back>{t("incoming.cancel")}</button>
+				<button class="btn btn-primary" value="confirm">{t("incoming.open")}</button>
+			</div>
+		</form>
+	</dialog>
+
+	<dialog class="dlg" aria-labelledby="result-title" data-dialog="result">
+		<form method="dialog">
+			<h2 class="display" id="result-title">{t("result.title")}</h2>
+			<div class="file">
+				<span class="tile tile-pdf" aria-hidden="true">PDF</span>
+				<span><b data-name></b><span class="meta" data-meta></span></span>
+			</div>
+			{
+				(["password", "repeat"] as const).map((name) => (
+					<label class="field-group">
+						<span class="label">{t(name === "password" ? "result.label" : "result.repeat")}</span>
+						<span class="field field-mono">
+							<input
+								type="password"
+								name={name}
+								autocomplete="new-password"
+								spellcheck="false"
+								autofocus={name === "password"}
+							/>
+							<button
+								class="eye"
+								type="button"
+								aria-label={t("password.show")}
+								aria-pressed="false"
+								data-reveal
+							>
+								<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+									<path d={eye}></path>
+								</svg>
+							</button>
+						</span>
+					</label>
+				))
+			}
 			<span class="error" role="alert" data-error></span>
-		</label>
-		<p class="notice notice-accent">
-			<span>{t("incoming.warn.start")} <b>{t("incoming.warn.strong")}</b>{t("incoming.warn.end")}</span>
-		</p>
-		<div class="actions">
-			<button class="btn-ghost" type="button" data-back>{t("incoming.cancel")}</button>
-			<button class="btn btn-primary" value="confirm">{t("incoming.open")}</button>
-		</div>
-	</form>
-</dialog>
+			<p class="notice notice-accent">
+				<span>{t("result.warn.start")} <b>{t("result.warn.strong")}</b></span>
+			</p>
+			<div class="actions">
+				<button class="btn-ghost" type="button" data-back>{t("result.back")}</button>
+				<button class="btn btn-primary" value="confirm">{t("result.confirm")}</button>
+			</div>
+		</form>
+	</dialog>
+</kn-dialogs>
 
-<dialog class="dlg" aria-labelledby="result-title" data-dialog="result">
-	<form method="dialog">
-		<h2 class="display" id="result-title">{t("result.title")}</h2>
-		<div class="file">
-			<span class="tile tile-pdf" aria-hidden="true">PDF</span>
-			<span><b data-name></b><span class="meta" data-meta></span></span>
-		</div>
-		{
-			(["password", "repeat"] as const).map((name) => (
-				<label class="field-group">
-					<span class="label">{t(name === "password" ? "result.label" : "result.repeat")}</span>
-					<span class="field field-mono">
-						<input
-							type="password"
-							name={name}
-							autocomplete="new-password"
-							spellcheck="false"
-							autofocus={name === "password"}
-						/>
-						<button
-							class="eye"
-							type="button"
-							aria-label={t("password.show")}
-							aria-pressed="false"
-							data-reveal
-						>
-							<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-								<path d={eye}></path>
-							</svg>
-						</button>
-					</span>
-				</label>
-			))
-		}
-		<span class="error" role="alert" data-error></span>
-		<p class="notice notice-accent">
-			<span>{t("result.warn.start")} <b>{t("result.warn.strong")}</b></span>
-		</p>
-		<div class="actions">
-			<button class="btn-ghost" type="button" data-back>{t("result.back")}</button>
-			<button class="btn btn-primary" value="confirm">{t("result.confirm")}</button>
-		</div>
-	</form>
-</dialog>
+<script>
+	import { defineOnce } from "../../../lib/dom.ts";
+	import { DialogsElement } from "./element.ts";
+
+	defineOnce("kn-dialogs", DialogsElement);
+</script>
 
 <style>
+	/* The element only carries behavior; its children lay out as if it were not there. */
+	kn-dialogs {
+		display: contents;
+	}
+
 	/* Read by dialogs.ts: only the bottom sheet closes when its veil is tapped. */
 	.dlg {
 		--closed-by: closerequest;

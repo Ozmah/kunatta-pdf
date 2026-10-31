@@ -5,91 +5,105 @@ const lang = routeLocale(Astro.currentLocale);
 const t = translator(lang);
 ---
 
-<section class="assembly" hidden data-assembly aria-labelledby="assembly-title">
-	<header class="head">
-		<h2 class="display" id="assembly-title" tabindex="-1">
-			{t("assembly.title")} <span class="count" data-count></span>
-		</h2>
-		<span class="hint">{t("assembly.hint")}</span>
-	</header>
+<kn-assembly>
+	<section class="assembly" hidden data-assembly aria-labelledby="assembly-title">
+		<header class="head">
+			<h2 class="display" id="assembly-title" tabindex="-1">
+				{t("assembly.title")} <span class="count" data-count></span>
+			</h2>
+			<span class="hint">{t("assembly.hint")}</span>
+		</header>
 
-	<div class="stack" data-stack>
-		<ol class="list" data-list></ol>
-		<div class="slot" hidden data-slot></div>
-	</div>
-	<div class="sr-only" aria-live="polite" data-announce></div>
-
-	<button class="add" type="button" data-dropzone data-add>
-		<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"></path></svg>
-		{t("assembly.add")}
-	</button>
-
-	<div class="notice notice-accent done" role="status" hidden data-assembly-done>
-		<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg>
-		<span data-done-text></span>
-		<button class="btn-ghost" type="button" data-assembly-again>{t("fast.again")}</button>
-	</div>
-
-	<div class="progress" hidden data-progress>
-		<div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-progress-bar>
-			<span data-progress-fill></span>
+		<div class="stack" data-stack>
+			<ol class="list" data-list></ol>
+			<div class="slot" hidden data-slot></div>
 		</div>
-		<div class="progress-text"><span data-progress-label></span><span data-progress-percent></span></div>
-	</div>
+		<div class="sr-only" aria-live="polite" data-announce></div>
 
-	<div class="bar">
-		<label class="name field-group">
-			<span class="label">{t("assembly.name")}</span>
-			<span class="field">
-				<input type="text" maxlength="200" spellcheck="false" autocomplete="off" data-pdf-name />
-				<span class="field-suffix" aria-hidden="true">.pdf</span>
-			</span>
-		</label>
-		<button class="btn btn-primary" type="button" data-make>{t("assembly.make")}</button>
-		<button class="btn-ghost" type="button" hidden data-cancel>{t("assembly.cancel")}</button>
-	</div>
-</section>
-
-<template data-row-template>
-	<li class="row">
-		<span class="pinmark" hidden></span>
-		<span class="mtag" hidden></span>
-		<span class="ix"></span>
-		<button class="grip" type="button" data-handle data-grip>
-			<svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true"><circle cx="3" cy="3" r="1.6"></circle><circle cx="9" cy="3" r="1.6"></circle><circle cx="3" cy="9" r="1.6"></circle><circle cx="9" cy="9" r="1.6"></circle><circle cx="3" cy="15" r="1.6"></circle><circle cx="9" cy="15" r="1.6"></circle></svg>
+		<button class="add" type="button" data-dropzone data-add>
+			<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"></path></svg>
+			{t("assembly.add")}
 		</button>
-		<span class="tile tile-sm" aria-hidden="true" data-handle>
-			<span data-kind></span>
-			<img class="thumb" alt="" draggable="false" hidden />
-		</span>
-		<span class="nm">
-			<span class="title"><b data-row-name></b><em class="st" hidden></em></span>
-			<span class="meta"></span>
-		</span>
-		<span class="acts">
-			<button class="ib" type="button" aria-pressed="false" aria-label={t("row.pin")} data-action="pin">
-				<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l-1 6 4 4H6l4-4-1-6zM12 13v8"></path></svg>
+
+		<div class="notice notice-accent done" role="status" hidden data-assembly-done>
+			<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg>
+			<span data-done-text></span>
+			<button class="btn-ghost" type="button" data-assembly-again>{t("fast.again")}</button>
+		</div>
+
+		<div class="progress" hidden data-progress>
+			<div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-progress-bar>
+				<span data-progress-fill></span>
+			</div>
+			<div class="progress-text"><span data-progress-label></span><span data-progress-percent></span></div>
+		</div>
+
+		<div class="bar">
+			<label class="name field-group">
+				<span class="label">{t("assembly.name")}</span>
+				<span class="field">
+					<input type="text" maxlength="200" spellcheck="false" autocomplete="off" data-pdf-name />
+					<span class="field-suffix" aria-hidden="true">.pdf</span>
+				</span>
+			</label>
+			<button class="btn btn-primary" type="button" data-make>{t("assembly.make")}</button>
+			<button class="btn-ghost" type="button" hidden data-cancel>{t("assembly.cancel")}</button>
+		</div>
+	</section>
+
+	<template data-row-template>
+		<li class="row">
+			<span class="pinmark" hidden></span>
+			<span class="mtag" hidden></span>
+			<span class="ix"></span>
+			<button class="grip" type="button" data-handle data-grip>
+				<svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true"><circle cx="3" cy="3" r="1.6"></circle><circle cx="9" cy="3" r="1.6"></circle><circle cx="3" cy="9" r="1.6"></circle><circle cx="9" cy="9" r="1.6"></circle><circle cx="3" cy="15" r="1.6"></circle><circle cx="9" cy="15" r="1.6"></circle></svg>
 			</button>
-			<button class="ib" type="button" aria-label={t("row.up")} data-action="up">
-				<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
-			</button>
-			<button class="ib" type="button" aria-label={t("row.down")} data-action="down">
-				<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"></path></svg>
-			</button>
-			<button class="ib" type="button" aria-label={t("row.remove")} data-action="remove">
-				<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"></path></svg>
-			</button>
-		</span>
-		<form class="unlock" hidden>
-			<span class="field field-sm field-mono">
-				<input type="password" name="password" autocomplete="off" spellcheck="false" aria-label={t("incoming.label")} />
+			<span class="tile tile-sm" aria-hidden="true" data-handle>
+				<span data-kind></span>
+				<img class="thumb" alt="" draggable="false" hidden />
 			</span>
-			<button class="btn btn-secondary btn-sm" type="submit">{t("incoming.open")}</button>
-		</form>
-	</li>
-</template>
+			<span class="nm">
+				<span class="title"><b data-row-name></b><em class="st" hidden></em></span>
+				<span class="meta"></span>
+			</span>
+			<span class="acts">
+				<button class="ib" type="button" aria-pressed="false" aria-label={t("row.pin")} data-action="pin">
+					<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l-1 6 4 4H6l4-4-1-6zM12 13v8"></path></svg>
+				</button>
+				<button class="ib" type="button" aria-label={t("row.up")} data-action="up">
+					<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
+				</button>
+				<button class="ib" type="button" aria-label={t("row.down")} data-action="down">
+					<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"></path></svg>
+				</button>
+				<button class="ib" type="button" aria-label={t("row.remove")} data-action="remove">
+					<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"></path></svg>
+				</button>
+			</span>
+			<form class="unlock" hidden>
+				<span class="field field-sm field-mono">
+					<input type="password" name="password" autocomplete="off" spellcheck="false" aria-label={t("incoming.label")} />
+				</span>
+				<button class="btn btn-secondary btn-sm" type="submit">{t("incoming.open")}</button>
+			</form>
+		</li>
+	</template>
+</kn-assembly>
+
+<script>
+	import { defineOnce } from "../../../lib/dom.ts";
+	import { AssemblyElement } from "./element.ts";
+
+	defineOnce("kn-assembly", AssemblyElement);
+</script>
 
 <style>
+	/* The element only carries behavior; its children lay out as if it were not there. */
+	kn-assembly {
+		display: contents;
+	}
+
 	.assembly {
 		display: flex;
 		flex-direction: column;

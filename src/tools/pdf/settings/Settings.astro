@@ -6,112 +6,126 @@ import { pageSizes, qualities } from "../contract/options.ts";
 const lang = routeLocale(Astro.currentLocale);
 ---
 
-<div class="settings" data-settings>
-	<form
-		class="panel"
-		id="pdf-settings"
-		aria-label={translate(lang, "settings.group")}
-		data-settings-panel
-	>
-		<label class="name">
-			<span class="label">{translate(lang, "settings.name")}</span>
-			<span class="field field-sm">
-				<input
-					type="text"
-					name="name"
-					maxlength="200"
-					spellcheck="false"
-					autocomplete="off"
-					placeholder={translate(lang, "settings.name.placeholder")}
-					data-pdf-name
-				/>
-				<span class="field-suffix" aria-hidden="true">.pdf</span>
-			</span>
-		</label>
-		<fieldset>
-			<legend class="label">{translate(lang, "settings.size")}</legend>
-			<div class="segments">
-				{
-					pageSizes.map((size) => (
-						<label>
-							<input
-								type="radio"
-								name="size"
-								value={size}
-								checked={size === defaultSettings.size}
-							/>
-							<span>{translate(lang, `settings.size.${size}`)}</span>
-						</label>
-					))
-				}
-			</div>
-		</fieldset>
-		<fieldset>
-			<legend class="label">{translate(lang, "settings.quality")}</legend>
-			<div class="segments">
-				{
-					qualities.map((quality) => (
-						<label>
-							<input
-								type="radio"
-								name="quality"
-								value={quality}
-								checked={quality === defaultSettings.quality}
-							/>
-							<span>{translate(lang, `settings.quality.${quality}`)}</span>
-						</label>
-					))
-				}
-			</div>
-		</fieldset>
-		<fieldset>
-			<legend class="label">{translate(lang, "settings.password")}</legend>
-			<div class="segments">
-				{
-					passwordModes.map((mode) => (
-						<label>
-							<input
-								type="radio"
-								name="password"
-								value={mode}
-								checked={mode === defaultSettings.password}
-							/>
-							<span>{translate(lang, `settings.password.${mode}`)}</span>
-						</label>
-					))
-				}
-			</div>
-			<p class="note">{translate(lang, "settings.password.note")}</p>
-		</fieldset>
-	</form>
-
-	<button
-		class="gear"
-		type="button"
-		aria-label={translate(lang, "settings.open")}
-		aria-controls="pdf-settings"
-		aria-expanded="false"
-		data-gear
-	>
-		<svg
-			width="22"
-			height="22"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			aria-hidden="true"
+<kn-settings>
+	<div class="settings" data-settings>
+		<form
+			class="panel"
+			id="pdf-settings"
+			aria-label={translate(lang, "settings.group")}
+			data-settings-panel
 		>
-			<circle cx="12" cy="12" r="3"></circle>
-			<path
-				d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68 1.65 1.65 0 0 0 10 3.17V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
-			></path>
-		</svg>
-	</button>
-</div>
+			<label class="name">
+				<span class="label">{translate(lang, "settings.name")}</span>
+				<span class="field field-sm">
+					<input
+						type="text"
+						name="name"
+						maxlength="200"
+						spellcheck="false"
+						autocomplete="off"
+						placeholder={translate(lang, "settings.name.placeholder")}
+						data-pdf-name
+					/>
+					<span class="field-suffix" aria-hidden="true">.pdf</span>
+				</span>
+			</label>
+			<fieldset>
+				<legend class="label">{translate(lang, "settings.size")}</legend>
+				<div class="segments">
+					{
+						pageSizes.map((size) => (
+							<label>
+								<input
+									type="radio"
+									name="size"
+									value={size}
+									checked={size === defaultSettings.size}
+								/>
+								<span>{translate(lang, `settings.size.${size}`)}</span>
+							</label>
+						))
+					}
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend class="label">{translate(lang, "settings.quality")}</legend>
+				<div class="segments">
+					{
+						qualities.map((quality) => (
+							<label>
+								<input
+									type="radio"
+									name="quality"
+									value={quality}
+									checked={quality === defaultSettings.quality}
+								/>
+								<span>{translate(lang, `settings.quality.${quality}`)}</span>
+							</label>
+						))
+					}
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend class="label">{translate(lang, "settings.password")}</legend>
+				<div class="segments">
+					{
+						passwordModes.map((mode) => (
+							<label>
+								<input
+									type="radio"
+									name="password"
+									value={mode}
+									checked={mode === defaultSettings.password}
+								/>
+								<span>{translate(lang, `settings.password.${mode}`)}</span>
+							</label>
+						))
+					}
+				</div>
+				<p class="note">{translate(lang, "settings.password.note")}</p>
+			</fieldset>
+		</form>
+
+		<button
+			class="gear"
+			type="button"
+			aria-label={translate(lang, "settings.open")}
+			aria-controls="pdf-settings"
+			aria-expanded="false"
+			data-gear
+		>
+			<svg
+				width="22"
+				height="22"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+			>
+				<circle cx="12" cy="12" r="3"></circle>
+				<path
+					d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68 1.65 1.65 0 0 0 10 3.17V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+				></path>
+			</svg>
+		</button>
+	</div>
+</kn-settings>
+
+<script>
+	import { defineOnce } from "../../../lib/dom.ts";
+	import { SettingsElement } from "./element.ts";
+
+	defineOnce("kn-settings", SettingsElement);
+</script>
 
 <style>
+	/* The element only carries behavior; its children lay out as if it were not there. */
+	kn-settings {
+		display: contents;
+	}
+
 	/* The gear and panel are fixed to the viewport; the wrapper must not take a layout slot. */
 	.settings {
 		display: contents;

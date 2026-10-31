@@ -1,7 +1,5 @@
 import type { PileEntry } from "../shared/entry.ts";
-
-/** How files arrived: dropping and picking can take the fast path, pasting always assembles. */
-export type Origin = "drop" | "pick" | "paste";
+import type { Origin } from "../shared/files.ts";
 
 export type Path =
 	| { readonly kind: "none" }

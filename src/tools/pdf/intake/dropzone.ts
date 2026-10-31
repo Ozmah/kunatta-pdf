@@ -1,91 +1,96 @@
-import { Panic } from "better-result";
-
 import { required } from "../../../lib/dom.ts";
-import type { Origin } from "./paths.ts";
-
-/** Receives files in the order they arrived, with how they arrived. */
-export type ReceiveFiles = (files: ReadonlyArray<File>, origin: Origin) => void;
-
-/** True when a drag carries files (as opposed to text or links). */
-export function carriesFiles(types: ReadonlyArray<string>): boolean {
-	return types.includes("Files");
-}
+import { acceptDrops, type ReceiveFiles } from "../shared/files.ts";
 
 /** Apple keyboards paste with ⌘ instead of Ctrl. */
 export function isApplePlatform(platform: string): boolean {
 	return /mac|iphone|ipad|ipod/i.test(platform);
 }
 
+/** One line of the dotted notice: file names in code style and what happened to them. */
+export interface NoticeLine {
+	readonly entries: ReadonlyArray<string>;
+	readonly message: string;
+}
+
 export interface DropzoneControl {
 	/** Opens the system file picker. */
 	pick(): void;
+	/** The empty drop zone shows only while nothing else takes its place. */
+	show(idle: boolean): void;
+	/** Shows every line, one under the other; no lines hide the notice. */
+	notice(lines: ReadonlyArray<NoticeLine>): void;
 }
 
-export function connectDropzone(root: Document, receive: ReceiveFiles): DropzoneControl {
-	const zones = Array.from(root.querySelectorAll<HTMLElement>("[data-dropzone]"));
-	const picker = required<HTMLInputElement>(root, "[data-picker]");
-
-	if (zones.length === 0) throw new Panic({ message: "The page has no [data-dropzone]" });
-
-	const deliver = (files: ReadonlyArray<File>, origin: Origin): void => {
-		if (files.length > 0) receive(files, origin);
-	};
+/**
+ * The way in: the empty drop zone, the file picker and pasting anywhere on the page, plus the
+ * notice above them. Every user-provided string goes through textContent.
+ */
+export function connectDropzone(host: HTMLElement, receive: ReceiveFiles): DropzoneControl {
+	const page = host.ownerDocument;
+	const flow = required(host, "[data-flow]");
+	const drop = required(host, "[data-empty-drop]");
+	const picker = required<HTMLInputElement>(host, "[data-picker]");
+	const notice = required(host, "[data-notice]");
+	const noticeText = required(host, "[data-notice-text]");
 
 	// A file dropped anywhere else would make the browser navigate away from the page.
-	root.defaultView?.addEventListener("dragover", (event) => event.preventDefault());
-	root.defaultView?.addEventListener("drop", (event) => event.preventDefault());
+	page.defaultView?.addEventListener("dragover", (event) => event.preventDefault());
+	page.defaultView?.addEventListener("drop", (event) => event.preventDefault());
 
-	// The empty drop zone and the assembly's "add files" strip accept drops the same way.
-	for (const zone of zones) {
-		let depth = 0;
-
-		const setDragging = (dragging: boolean): void => {
-			zone.toggleAttribute("data-dragging", dragging);
-		};
-
-		zone.addEventListener("dragenter", (event) => {
-			if (!carriesFiles(event.dataTransfer?.types ?? [])) return;
-
-			depth += 1;
-			setDragging(true);
-		});
-
-		zone.addEventListener("dragleave", () => {
-			depth = Math.max(0, depth - 1);
-
-			if (depth === 0) setDragging(false);
-		});
-
-		zone.addEventListener("drop", (event) => {
-			depth = 0;
-			setDragging(false);
-			deliver(Array.from(event.dataTransfer?.files ?? []), "drop");
-		});
-	}
+	acceptDrops(drop, (files) => receive(files, "drop"));
 
 	picker.addEventListener("change", () => {
-		deliver(Array.from(picker.files ?? []), "pick");
+		const files = Array.from(picker.files ?? []);
+
+		if (files.length > 0) receive(files, "pick");
+
 		// Clearing the value lets the same file be picked again later.
 		picker.value = "";
 	});
 
-	root.addEventListener("paste", (event) => {
+	page.addEventListener("paste", (event) => {
 		const files = Array.from(event.clipboardData?.files ?? []);
 
 		if (files.length === 0) return;
 
 		event.preventDefault();
-		deliver(files, "paste");
+		receive(files, "paste");
 	});
 
 	const platform =
-		root.defaultView?.navigator.platform || root.defaultView?.navigator.userAgent || "";
+		page.defaultView?.navigator.platform || page.defaultView?.navigator.userAgent || "";
 
-	if (isApplePlatform(platform)) {
-		const modifier = root.querySelector("[data-modifier]");
+	if (isApplePlatform(platform)) required(host, "[data-modifier]").textContent = "⌘";
 
-		if (modifier !== null) modifier.textContent = "⌘";
-	}
+	return {
+		pick: () => picker.click(),
 
-	return { pick: () => picker.click() };
+		show(idle) {
+			drop.hidden = !idle;
+			flow.hidden = !idle || !notice.hidden;
+		},
+
+		notice(lines) {
+			noticeText.replaceChildren();
+			notice.hidden = lines.length === 0;
+			// The file → PDF flow belongs to the empty drop zone only.
+			flow.hidden = !notice.hidden || drop.hidden;
+
+			lines.forEach(({ entries, message }, lineIndex) => {
+				const names = entries.flatMap((entry, index) => {
+					const code = page.createElement("code");
+
+					code.textContent = entry;
+
+					return index === 0 ? [code] : [", ", code];
+				});
+
+				if (lineIndex > 0) noticeText.append(page.createElement("br"));
+
+				// One file reads "a.mp4 cannot…"; several read "N files did not fit: a, b".
+				if (entries.length === 1) noticeText.append(...names, ` ${message}`);
+				else noticeText.append(`${message} `, ...names);
+			});
+		},
+	};
 }

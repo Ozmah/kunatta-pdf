@@ -9,6 +9,7 @@ import { failureReason, kindLabel } from "../shared/labels.ts";
 import { required } from "../../../lib/dom.ts";
 import { browserUrls, createThumbnails } from "./thumbnails.ts";
 import { pdfName, typedName } from "../shared/file-name.ts";
+import { acceptDrops } from "../shared/files.ts";
 import { connectReorder } from "./reorder.ts";
 
 export interface AssemblyHandlers {
@@ -20,6 +21,12 @@ export interface AssemblyHandlers {
 	make(): void;
 	cancel(): void;
 	again(): void;
+	/** Agregar archivos: opens the picker. */
+	pick(): void;
+	/** Files dropped on the "add files" strip. */
+	drop(files: ReadonlyArray<File>): void;
+	/** The name typed next to the button, as it changes. */
+	typed(value: string): void;
 }
 
 export interface AssemblyView {
@@ -30,6 +37,8 @@ export interface AssemblyView {
 	/** Generating: the button shows it is busy, progress follows the checks, Cancel appears. */
 	working(active: boolean): void;
 	done(name: string, pages: number, bytes: number): void;
+	/** Mirrors the name typed in Ajustes: both fields hold one value. */
+	setName(value: string): void;
 }
 
 /** By default the first file's name, shown as the field's placeholder. */
@@ -52,13 +61,14 @@ const statusKey: Readonly<Record<Item["state"]["kind"], MessageKey | undefined>>
 
 /** Rows are cloned from a <template> and filled with textContent only: file names are user data. */
 export function connectAssemblyView(
-	root: Document,
+	host: HTMLElement,
 	locale: Locale,
 	handlers: AssemblyHandlers,
 ): AssemblyView {
-	const section = required(root, "[data-assembly]");
+	const page = host.ownerDocument;
+	const section = required(host, "[data-assembly]");
 	const list = required(section, "[data-list]");
-	const template = required<HTMLTemplateElement>(root, "[data-row-template]");
+	const template = required<HTMLTemplateElement>(host, "[data-row-template]");
 	const nameInput = required<HTMLInputElement>(section, "[data-pdf-name]");
 	const make = required<HTMLButtonElement>(section, "[data-make]");
 	const cancel = required<HTMLButtonElement>(section, "[data-cancel]");
@@ -173,7 +183,7 @@ export function connectAssemblyView(
 		// While a row is held, the rows show where it would land; the model changes on drop.
 		const items = reorder.adjust(committed);
 
-		const focused = root.activeElement;
+		const focused = page.activeElement;
 		const ids = new Set(items.map((item) => item.entry.id));
 
 		for (const id of rows.keys()) {
@@ -203,7 +213,7 @@ export function connectAssemblyView(
 		required(section, "[data-count]").textContent = String(items.length);
 
 		// Reordering detaches rows; keep the keyboard where it was.
-		if (focused instanceof HTMLElement && focused.isConnected && root.activeElement !== focused) {
+		if (focused instanceof HTMLElement && focused.isConnected && page.activeElement !== focused) {
 			focused.focus();
 		}
 
@@ -248,6 +258,12 @@ export function connectAssemblyView(
 	cancel.addEventListener("click", () => handlers.cancel());
 	required(section, "[data-assembly-again]").addEventListener("click", () => handlers.again());
 
+	const add = required(section, "[data-add]");
+
+	add.addEventListener("click", () => handlers.pick());
+	acceptDrops(add, (files) => handlers.drop(files));
+	nameInput.addEventListener("input", () => handlers.typed(nameInput.value));
+
 	return {
 		show(visible) {
 			section.hidden = !visible;
@@ -256,6 +272,10 @@ export function connectAssemblyView(
 		},
 
 		render,
+
+		setName(value) {
+			nameInput.value = value;
+		},
 
 		name() {
 			const typed = typedName(nameInput.value);

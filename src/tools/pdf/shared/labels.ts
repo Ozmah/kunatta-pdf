@@ -1,4 +1,7 @@
 import type { MessageKey } from "../../../i18n/es.ts";
+import { interpolate } from "../../../i18n/format.ts";
+import type { Locale } from "../../../i18n/locales.ts";
+import { translate } from "../../../i18n/translate.ts";
 import {
 	CompositionFailed,
 	ConversionFailed,
@@ -41,4 +44,11 @@ export function failureReason(error: JobError | ComposeJobError): MessageKey {
 
 	// WorkerCrashed, or a cancellation the fast path never asks for.
 	return "reason.crashed";
+}
+
+/** The rejected-files notice: one file reads "x no se puede…", several read "No entraron N archivos: a, b". */
+export function rejectionMessage(locale: Locale, count: number): string {
+	return count === 1
+		? translate(locale, "rejected.one")
+		: interpolate(translate(locale, "rejected.many"), { count });
 }

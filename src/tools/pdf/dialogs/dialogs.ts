@@ -106,16 +106,16 @@ export interface LanguagePrompt {
 
 /** The PDF tool's dialogs, bound to the page. Every user string goes through textContent. */
 export function connectDialogs(
-	root: Document,
+	host: HTMLElement,
 	locale: Locale,
 	settings: () => Settings,
 ): Prompts & AssemblyPrompts & LanguagePrompt {
-	const single = required<HTMLDialogElement>(root, '[data-dialog="single"]');
-	const summary = required<HTMLDialogElement>(root, '[data-dialog="summary"]');
-	const failTemplate = required<HTMLTemplateElement>(root, "[data-fail-template]");
-	const incoming = required<HTMLDialogElement>(root, '[data-dialog="incoming"]');
-	const result = required<HTMLDialogElement>(root, '[data-dialog="result"]');
-	const language = required<HTMLDialogElement>(root, '[data-dialog="language"]');
+	const single = required<HTMLDialogElement>(host, '[data-dialog="single"]');
+	const summary = required<HTMLDialogElement>(host, '[data-dialog="summary"]');
+	const failTemplate = required<HTMLTemplateElement>(host, "[data-fail-template]");
+	const incoming = required<HTMLDialogElement>(host, '[data-dialog="incoming"]');
+	const result = required<HTMLDialogElement>(host, '[data-dialog="result"]');
+	const language = required<HTMLDialogElement>(host, '[data-dialog="language"]');
 	const t = translator(locale);
 
 	for (const dialog of [single, summary, incoming, result, language]) connectBack(dialog);

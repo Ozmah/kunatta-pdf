@@ -1,15 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { carriesFiles, isApplePlatform } from "./dropzone.ts";
-
-describe("carriesFiles", () => {
-	test("reacts only to drags that carry files", () => {
-		expect(carriesFiles(["Files"])).toBe(true);
-		expect(carriesFiles(["text/plain", "Files"])).toBe(true);
-		expect(carriesFiles(["text/plain", "text/uri-list"])).toBe(false);
-		expect(carriesFiles([])).toBe(false);
-	});
-});
+import { isApplePlatform } from "./dropzone.ts";
 
 describe("isApplePlatform", () => {
 	test("detects Apple platforms for the ⌘ hint", () => {

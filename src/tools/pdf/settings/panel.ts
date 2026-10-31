@@ -9,6 +9,8 @@ export function isKeyboardActivation(detail: number): boolean {
 
 export interface SettingsControl {
 	read(): Settings;
+	/** Mirrors the name typed next to Hacer mi PDF: both fields hold one value. */
+	setName(value: string): void;
 }
 
 /** Checks the remembered option of each group. Values come from closed lists, already validated. */
@@ -21,12 +23,17 @@ function restore(panel: HTMLFormElement, remembered: Remembered): void {
 }
 
 export function connectSettings(
-	root: Document,
+	host: HTMLElement,
 	store: PreferenceStore | undefined,
+	typed: (value: string) => void,
 ): SettingsControl {
-	const container = required(root, "[data-settings]");
-	const gear = required<HTMLButtonElement>(root, "[data-gear]");
-	const panel = required<HTMLFormElement>(root, "[data-settings-panel]");
+	const page = host.ownerDocument;
+	const container = required(host, "[data-settings]");
+	const gear = required<HTMLButtonElement>(host, "[data-gear]");
+	const panel = required<HTMLFormElement>(host, "[data-settings-panel]");
+	const nameInput = required<HTMLInputElement>(panel, "[data-pdf-name]");
+
+	nameInput.addEventListener("input", () => typed(nameInput.value));
 
 	const isOpen = (): boolean => container.hasAttribute("data-open");
 
@@ -75,14 +82,14 @@ export function connectSettings(
 		setOpen(!isOpen(), isKeyboardActivation(event.detail));
 	});
 
-	root.addEventListener("keydown", (event) => {
+	page.addEventListener("keydown", (event) => {
 		if (event.key !== "Escape" || !isOpen()) return;
 
 		setOpen(false, true);
 		gear.focus();
 	});
 
-	root.addEventListener("pointerdown", (event) => {
+	page.addEventListener("pointerdown", (event) => {
 		if (!isOpen() || !(event.target instanceof Node)) return;
 
 		if (panel.contains(event.target) || gear.contains(event.target)) return;
@@ -90,5 +97,10 @@ export function connectSettings(
 		setOpen(false, false);
 	});
 
-	return { read };
+	return {
+		read,
+		setName(value) {
+			nameInput.value = value;
+		},
+	};
 }
