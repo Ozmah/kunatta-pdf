@@ -2,43 +2,45 @@
 
 From the Old Norse word _kunnátta_ ("knowledge"). It's a simple tool for when you just need it done.
 
-Drop, pick or paste photos, documents and PDFs, and get a single PDF back. Everything runs in the browser: files are read, converted and assembled on the device and never uploaded.
+Drop, pick or paste photos, documents and PDFs and get one PDF back. The browser reads, converts and assembles the files on your device, and nothing is uploaded.
 
-Live at [pdf.kunatta.tools](https://pdf.kunatta.tools), in Spanish and English.
+It runs at [pdf.kunatta.tools](https://pdf.kunatta.tools) in Spanish and English.
 
 ## Features
 
-**Input**
+### Input
 
-| Kind   | Formats                                    |
-| ------ | ------------------------------------------ |
-| Images | JPEG, PNG, WebP                            |
-| Office | DOCX, XLSX, PPTX and 97–2003 DOC, XLS, PPT |
-| PDF    | PDF, including password-protected ones     |
-| Text   | Plain text                                 |
+| Kind   | Formats                                                    |
+| ------ | ---------------------------------------------------------- |
+| Images | JPEG, PNG, WebP                                            |
+| Office | DOCX, XLSX, PPTX, and DOC, XLS, PPT from Office 97 to 2003 |
+| PDF    | PDF, including password-protected ones                     |
+| Text   | Plain text                                                 |
 
-Files are recognized by their content, not their extension. Limits per tab: 100 files, 50 MiB each and 200 MiB in total.
+Kunatta reads the bytes of each file to tell what it is, so a file with the wrong extension is still recognized. A tab accepts up to 100 files, 50 MiB per file and 200 MiB in total.
 
-**Paths**
+### How it works
 
-- **One file**: converted and downloaded right away.
-- **One PDF**: shows what the settings will change and asks before making it.
-- **Several files, or a paste**: an ordered list. Rows can be reordered by dragging or with the keyboard (Space, ↑ ↓, Esc), pinned in place, unlocked with their password, or removed, and are turned into one PDF.
+One file that isn't a PDF is converted and downloaded right away.
 
-**Settings**
+A single PDF opens a dialog that shows what the settings will change, and asks before making the new one.
 
-Page size (Letter, A4 or the original), quality (light, normal, max), the PDF name and an optional password for the result. Size, quality and whether to protect the PDF are remembered on the device; the name and passwords never are.
+Several files, or anything pasted, go into a list. You can reorder the rows by dragging them or with the keyboard (Space to take and drop, ↑ ↓ to move, Esc to cancel), pin them in place, unlock protected PDFs with their password, or remove them. Then the whole list becomes one PDF.
+
+### Settings
+
+You can choose the page size (Letter, A4 or original), the quality (light, normal or max), the PDF name and a password for the result. The device remembers the size, the quality and whether to protect the PDF. It never stores the name or any password.
 
 ## Stack
 
-- [Astro](https://astro.build) static site, no UI framework: each part of the tool is a custom element that owns its markup.
-- PDF work runs in a module Web Worker with [`@libpdf/core`](https://www.npmjs.com/package/@libpdf/core); Office documents are rendered with [`reamkit`](https://www.npmjs.com/package/reamkit) using bundled metric-compatible fonts (Arimo, Tinos, Cousine, Carlito, Caladea).
-- Expected failures are [`better-result`](https://www.npmjs.com/package/better-result) values; worker messages are validated with [`valibot`](https://valibot.dev).
-- Tooling: Bun, oxlint, oxfmt, `bun test` and Playwright.
+- Static [Astro](https://astro.build) site with no UI framework. Each part of the tool is a custom element that owns its markup.
+- A module Web Worker does the PDF work with [`@libpdf/core`](https://www.npmjs.com/package/@libpdf/core). [`reamkit`](https://www.npmjs.com/package/reamkit) renders Office documents with bundled metric-compatible fonts (Arimo, Tinos, Cousine, Carlito and Caladea).
+- Expected failures are returned as [`better-result`](https://www.npmjs.com/package/better-result) values, and [`valibot`](https://valibot.dev) validates every message between the page and the worker.
+- Bun, oxlint, oxfmt, `bun test` and Playwright for tooling.
 
 ## Development
 
-Requires [Bun](https://bun.sh) 1.4.4 and Node.js 24.
+You need [Bun](https://bun.sh) 1.4.4 and Node.js 24.
 
 ```sh
 bun install
@@ -48,10 +50,10 @@ bun run e2e           # end-to-end tests: Chromium, Firefox and a phone
 bun run visual        # screenshot comparison inside the Playwright Docker image
 ```
 
-The pre-commit hook runs `bun run check`. See [AGENTS.md](AGENTS.md) for the project rules.
+The pre-commit hook runs `bun run check`. The project rules are in [AGENTS.md](AGENTS.md).
 
 ## License
 
-[MIT](LICENSE) © Gabriel Alejandro Alegría Robles (Ozmah).
+[MIT](LICENSE) © Gabriel Alegría (Ozmah).
 
-Fonts are under the SIL Open Font License 1.1: Inter, Paper Mono and the Office substitutes in `public/fonts/office/`. Test fixtures in `tests/fixtures/office/` come from Apache POI under the Apache License 2.0.
+Inter, Paper Mono and the Office substitute fonts in `public/fonts/office/` are under the SIL Open Font License 1.1. The test fixtures in `tests/fixtures/office/` come from Apache POI under the Apache License 2.0.
