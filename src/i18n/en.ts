@@ -118,4 +118,9 @@ export const en = {
 	"footer.notice": "Your files never leave your browser.",
 	"footer.author": "made by Ozmah",
 	"footer.repo": "Kunatta on GitHub",
+	"notFound.meta": "Page not found · Kunatta",
+	"notFound.title": "We couldn’t find that page",
+	"notFound.page": "pg.",
+	"notFound.of": "of",
+	"notFound.home": "Go to page 1",
 } as const satisfies Messages;

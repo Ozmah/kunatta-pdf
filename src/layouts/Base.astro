@@ -5,6 +5,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import Footer from "../components/Footer.astro";
 import LanguageSwitch from "../components/LanguageSwitch.astro";
 import Logo from "../components/Logo.astro";
+import type { MessageKey } from "../i18n/es.ts";
 import { defaultLocale, locales } from "../i18n/locales.ts";
 import { routeLocale, translate } from "../i18n/translate.ts";
 import { localeHome, siteOrigin } from "../lib/crawlers.ts";
@@ -17,6 +18,13 @@ import "../styles/notices.css";
 import "../styles/surfaces.css";
 import "../styles/dialogs.css";
 
+interface Props {
+	/** Pages that must stay out of search results: no canonical, no language alternates. */
+	readonly noindex?: boolean;
+	readonly title?: MessageKey;
+}
+
+const { noindex = false, title = "meta.title" } = Astro.props;
 const lang = routeLocale(Astro.currentLocale);
 const site = siteOrigin(Astro.site);
 ---
@@ -28,11 +36,21 @@ const site = siteOrigin(Astro.site);
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="dark" />
 		<meta name="theme-color" content="#002233" />
-		<title>{translate(lang, "meta.title")}</title>
+		<title>{translate(lang, title)}</title>
 		<meta name="description" content={translate(lang, "meta.description")} />
-		<link rel="canonical" href={new URL(Astro.url.pathname, site).href} />
-		{locales.map((code) => <link rel="alternate" hreflang={code} href={localeHome(site, code)} />)}
-		<link rel="alternate" hreflang="x-default" href={localeHome(site, defaultLocale)} />
+		{
+			noindex ? (
+				<meta name="robots" content="noindex" />
+			) : (
+				<>
+					<link rel="canonical" href={new URL(Astro.url.pathname, site).href} />
+					{locales.map((code) => (
+						<link rel="alternate" hreflang={code} href={localeHome(site, code)} />
+					))}
+					<link rel="alternate" hreflang="x-default" href={localeHome(site, defaultLocale)} />
+				</>
+			)
+		}
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<Font cssVariable="--font-inter" preload />
 		<Font cssVariable="--font-paper-mono" preload />

@@ -116,6 +116,11 @@ export const es = {
 	"footer.notice": "Tus archivos nunca salen de tu navegador.",
 	"footer.author": "hecho por Ozmah",
 	"footer.repo": "Kunatta en GitHub",
+	"notFound.meta": "Página no encontrada · Kunatta",
+	"notFound.title": "No encontramos esa página",
+	"notFound.page": "pág.",
+	"notFound.of": "de",
+	"notFound.home": "Ir a la página 1",
 } as const;
 
 export type MessageKey = keyof typeof es;
