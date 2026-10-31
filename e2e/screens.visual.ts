@@ -31,6 +31,16 @@ test("empty in English", async ({ page }) => {
 	await shot(page, "empty-en");
 });
 
+test("not found", async ({ page }) => {
+	await page.goto("/es/no-existe/");
+	await shot(page, "not-found");
+});
+
+test("not found in English", async ({ page }) => {
+	await page.goto("/en/missing/");
+	await shot(page, "not-found-en");
+});
+
 test("settings open with a name", async ({ page }) => {
 	await page.locator("[data-gear]").click();
 	await page.locator("[data-settings] input[data-pdf-name]").fill("Entrega final");

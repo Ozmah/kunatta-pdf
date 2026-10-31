@@ -39,15 +39,26 @@ async function find(url: string): Promise<Found | undefined> {
 	}
 }
 
+/** The not-found page in the language of the path prefix, Spanish otherwise, as the production server does. */
+function notFoundPage(url: string): Promise<Found | undefined> {
+	const english = /^\/en(?:\/|$)/u.test(new URL(url, "http://localhost").pathname);
+
+	return find(english ? "/en/404/" : "/es/404/");
+}
+
 createServer((request, response) => {
-	void find(request.url ?? "/").then((found) => {
+	const url = request.url ?? "/";
+
+	void find(url).then(async (page) => {
+		const found = page ?? (await notFoundPage(url));
+
 		if (found === undefined) {
 			response.writeHead(404).end("Not found");
 
 			return;
 		}
 
-		response.writeHead(200, {
+		response.writeHead(page === undefined ? 404 : 200, {
 			"content-type": types.get(extname(found.path)) ?? "application/octet-stream",
 			"content-length": found.size,
 		});

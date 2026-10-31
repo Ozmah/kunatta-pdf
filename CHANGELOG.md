@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- A missing address shows a not-found page in the language of its path, with a PDF stuck on page 404 of 2 and a button back to the tool; search engines are told not to index it.
+
 ## 0.6.0 · 2026-10-31
 
 - The footer sits closer together, "made by Ozmah" opens ozmah.dev, and a GitHub button next to it opens the Kunatta repository.
