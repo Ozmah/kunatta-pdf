@@ -1,7 +1,7 @@
 ---
-import Dialogs from "../../components/Dialogs.astro";
-import Dropzone from "../../components/Dropzone.astro";
-import Settings from "../../components/Settings.astro";
+import Dialogs from "../../tools/pdf/dialogs/Dialogs.astro";
+import Dropzone from "../../tools/pdf/intake/Dropzone.astro";
+import Settings from "../../tools/pdf/settings/Settings.astro";
 import { locales } from "../../i18n/locales.ts";
 import { routeLocale } from "../../i18n/translate.ts";
 import Base from "../../layouts/Base.astro";
@@ -21,7 +21,7 @@ const lang = routeLocale(Astro.params.lang);
 </Base>
 
 <script>
-	import { startPdfTool } from "../../tools/pdf/tool.ts";
+	import { startPdfTool } from "../../tools/pdf/index.ts";
 
 	startPdfTool(document);
 </script>

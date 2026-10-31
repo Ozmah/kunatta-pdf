@@ -1,0 +1,287 @@
+import { Panic } from "better-result";
+
+import { fileSize, interpolate, pageCount } from "../../../i18n/format.ts";
+import type { Locale } from "../../../i18n/locales.ts";
+import type { MessageKey } from "../../../i18n/es.ts";
+import { translator } from "../../../i18n/translate.ts";
+import { canMove, type Item, type Items } from "./model.ts";
+import { failureReason } from "../single/run.ts";
+import { kindLabel } from "../single/view.ts";
+import { required } from "../../../lib/dom.ts";
+import { browserUrls, createThumbnails } from "./thumbnails.ts";
+import { pdfName, typedName } from "../shared/file-name.ts";
+import { connectReorder } from "./reorder.ts";
+
+export interface AssemblyHandlers {
+	pin(id: string): void;
+	move(id: string, delta: -1 | 1): void;
+	moveTo(id: string, position: number): void;
+	remove(id: string): void;
+	unlock(id: string, password: string): void;
+	make(): void;
+	cancel(): void;
+	again(): void;
+}
+
+export interface AssemblyView {
+	show(visible: boolean): void;
+	render(items: Items): void;
+	/** The name typed next to the button, or the first file's; always ending in ".pdf". */
+	name(): string;
+	/** Generating: the button shows it is busy, progress follows the checks, Cancel appears. */
+	working(active: boolean): void;
+	done(name: string, pages: number, bytes: number): void;
+}
+
+/** By default the first file's name, shown as the field's placeholder. */
+function defaultName(items: Items): string {
+	const first = items[0];
+
+	return first === undefined ? "kunatta" : pdfName(first.entry.name).slice(0, -".pdf".length);
+}
+
+function twoDigits(position: number): string {
+	return String(position).padStart(2, "0");
+}
+
+const statusKey: Readonly<Record<Item["state"]["kind"], MessageKey | undefined>> = {
+	checking: "row.checking",
+	ready: undefined,
+	failed: "row.failed",
+	locked: "row.locked",
+};
+
+/** Rows are cloned from a <template> and filled with textContent only: file names are user data. */
+export function connectAssemblyView(
+	root: Document,
+	locale: Locale,
+	handlers: AssemblyHandlers,
+): AssemblyView {
+	const section = required(root, "[data-assembly]");
+	const list = required(section, "[data-list]");
+	const template = required<HTMLTemplateElement>(root, "[data-row-template]");
+	const nameInput = required<HTMLInputElement>(section, "[data-pdf-name]");
+	const make = required<HTMLButtonElement>(section, "[data-make]");
+	const cancel = required<HTMLButtonElement>(section, "[data-cancel]");
+	const progress = required(section, "[data-progress]");
+	const doneBanner = required(section, "[data-assembly-done]");
+	const rows = new Map<string, HTMLLIElement>();
+	const thumbnails = createThumbnails(browserUrls);
+	let thumbnailUrls: ReadonlyMap<string, string> = new Map();
+	const t = translator(locale);
+	let generating = false;
+	let latest: Items = [];
+
+	const createRow = (id: string): HTMLLIElement => {
+		const fragment = template.content.cloneNode(true);
+		const row = fragment instanceof DocumentFragment ? fragment.querySelector("li") : null;
+
+		if (row === null) throw new Panic({ message: "The row template has no <li>" });
+
+		row.dataset["id"] = id;
+		row.querySelector("form")?.addEventListener("submit", (event) => {
+			event.preventDefault();
+
+			const input = row.querySelector<HTMLInputElement>('input[name="password"]');
+			const password = input?.value ?? "";
+
+			if (input !== null) input.value = "";
+
+			if (password.length > 0) handlers.unlock(id, password);
+		});
+
+		return row;
+	};
+
+	const fillRow = (row: HTMLLIElement, item: Item, index: number, items: Items): void => {
+		const { entry, state, pinned } = item;
+		const id = entry.id;
+		const status = statusKey[state.kind];
+		const tag = required(row, ".st");
+		const meta = required(row, ".meta");
+		const pinmark = required(row, ".pinmark");
+		const unlock = required(row, ".unlock");
+
+		row.dataset["state"] = state.kind;
+		row.toggleAttribute("data-pinned", pinned);
+		required(row, ".ix").textContent = twoDigits(index + 1);
+		required(row, "[data-kind]").textContent = kindLabel(entry.kind);
+
+		const thumb = required<HTMLImageElement>(row, ".thumb");
+		const url = thumbnailUrls.get(id);
+
+		thumb.hidden = url === undefined;
+
+		if (url !== undefined && thumb.getAttribute("src") !== url) thumb.src = url;
+
+		if (url === undefined) thumb.removeAttribute("src");
+		required(row, "[data-row-name]").textContent = entry.name;
+		pinmark.hidden = !pinned;
+		pinmark.textContent = interpolate(t("row.pinned"), { position: twoDigits(index + 1) });
+		tag.hidden = status === undefined;
+		tag.textContent = status === undefined ? "" : t(status);
+		unlock.hidden = state.kind !== "locked";
+
+		const details = [kindLabel(entry.kind)];
+
+		if (state.kind === "ready" && entry.kind === "pdf")
+			details.push(pageCount(locale, state.file.pages));
+
+		details.push(fileSize(locale, entry.size));
+
+		if (state.kind === "failed") meta.textContent = t(failureReason(state.error));
+		else if (state.kind === "locked" && state.wrong) meta.textContent = t("incoming.wrong");
+		else meta.textContent = details.join(" · ");
+
+		const grip = required<HTMLButtonElement>(row, "[data-grip]");
+
+		grip.setAttribute("aria-label", interpolate(t("row.grab"), { name: entry.name }));
+		grip.disabled = generating || pinned;
+
+		const buttons = {
+			pin: required<HTMLButtonElement>(row, '[data-action="pin"]'),
+			up: required<HTMLButtonElement>(row, '[data-action="up"]'),
+			down: required<HTMLButtonElement>(row, '[data-action="down"]'),
+			remove: required<HTMLButtonElement>(row, '[data-action="remove"]'),
+		};
+
+		buttons.pin.setAttribute("aria-pressed", String(pinned));
+		buttons.up.disabled = generating || !canMove(items, id, -1);
+		buttons.down.disabled = generating || !canMove(items, id, 1);
+		buttons.pin.disabled = generating;
+		buttons.remove.disabled = generating;
+	};
+
+	const reorder = connectReorder(
+		{
+			stack: required(section, "[data-stack]"),
+			slot: required(section, "[data-slot]"),
+			committed: () => latest,
+			row: (id) => rows.get(id),
+			redraw: () => render(latest),
+			commit: (id, position) => handlers.moveTo(id, position),
+			announce: (text) => {
+				required(section, "[data-announce]").textContent = text;
+			},
+			enabled: () => !generating,
+		},
+		locale,
+	);
+
+	function render(committed: Items): void {
+		latest = committed;
+
+		// While a row is held, the rows show where it would land; the model changes on drop.
+		const items = reorder.adjust(committed);
+
+		const focused = root.activeElement;
+		const ids = new Set(items.map((item) => item.entry.id));
+
+		for (const id of rows.keys()) {
+			if (!ids.has(id)) rows.delete(id);
+		}
+
+		nameInput.placeholder = defaultName(items);
+		thumbnailUrls = thumbnails.sync(items);
+
+		const ordered = items.map((item, index) => {
+			const row = rows.get(item.entry.id) ?? createRow(item.entry.id);
+
+			rows.set(item.entry.id, row);
+			fillRow(row, item, index, items);
+
+			return row;
+		});
+
+		// Only touch the DOM when the order changed: moving a row detaches it, which drops focus
+		// and cancels the slide of every row in flight.
+		const unchanged =
+			list.children.length === ordered.length &&
+			ordered.every((row, index) => list.children[index] === row);
+
+		if (!unchanged) list.replaceChildren(...ordered);
+
+		required(section, "[data-count]").textContent = String(items.length);
+
+		// Reordering detaches rows; keep the keyboard where it was.
+		if (focused instanceof HTMLElement && focused.isConnected && root.activeElement !== focused) {
+			focused.focus();
+		}
+
+		if (generating) updateProgress(items);
+	}
+
+	const updateProgress = (items: Items): void => {
+		const ready = items.filter((item) => item.state.kind === "ready").length;
+		const current = items.find((item) => item.state.kind === "checking");
+		const percent = items.length === 0 ? 0 : Math.round((ready / items.length) * 100);
+
+		required(progress, "[data-progress-fill]").style.setProperty("--done", `${percent}%`);
+		required(progress, "[data-progress-bar]").setAttribute("aria-valuenow", String(percent));
+		required(progress, "[data-progress-percent]").textContent = `${percent} %`;
+		required(progress, "[data-progress-label]").textContent =
+			current === undefined
+				? t("assembly.composing")
+				: interpolate(t("assembly.progress"), {
+						done: ready,
+						total: items.length,
+						name: current.entry.name,
+					});
+	};
+
+	list.addEventListener("click", (event) => {
+		const button = event.target instanceof Element ? event.target.closest("[data-action]") : null;
+		const id = button?.closest("li")?.dataset["id"];
+
+		if (!(button instanceof HTMLButtonElement) || id === undefined || button.disabled) return;
+
+		const action = button.dataset["action"];
+
+		if (action === "pin") handlers.pin(id);
+		else if (action === "up") handlers.move(id, -1);
+		else if (action === "down") handlers.move(id, 1);
+		else if (action === "remove") handlers.remove(id);
+	});
+
+	make.addEventListener("click", () => {
+		if (make.getAttribute("aria-disabled") !== "true") handlers.make();
+	});
+	cancel.addEventListener("click", () => handlers.cancel());
+	required(section, "[data-assembly-again]").addEventListener("click", () => handlers.again());
+
+	return {
+		show(visible) {
+			section.hidden = !visible;
+
+			if (visible) required<HTMLHeadingElement>(section, "h2").focus();
+		},
+
+		render,
+
+		name() {
+			const typed = typedName(nameInput.value);
+
+			return `${typed.length > 0 ? typed : defaultName(latest)}.pdf`;
+		},
+
+		working(active) {
+			if (active) reorder.stop();
+
+			generating = active;
+			make.setAttribute("aria-disabled", String(active));
+			make.textContent = t(active ? "assembly.making" : "assembly.make");
+			cancel.hidden = !active;
+			progress.hidden = !active;
+
+			if (active) doneBanner.hidden = true;
+
+			render(latest);
+		},
+
+		done(name, pages, bytes) {
+			required(doneBanner, "[data-done-text]").textContent =
+				`${name} ${t("assembly.downloaded")} · ${pageCount(locale, pages)} · ${fileSize(locale, bytes)}`;
+			doneBanner.hidden = false;
+		},
+	};
+}

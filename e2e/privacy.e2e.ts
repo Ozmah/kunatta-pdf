@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { pdfName } from "../src/tools/pdf/file-name.ts";
+import { pdfName } from "../src/tools/pdf/shared/file-name.ts";
 import { image } from "./support/images.ts";
 import { brokenJpeg, office, officeSamples, pdf, text } from "./support/samples.ts";
 import { checked, downloadOf, drop, paste, rows } from "./support/tool.ts";

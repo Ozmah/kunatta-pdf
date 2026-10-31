@@ -22,7 +22,7 @@ const loadingPatterns: ReadonlyArray<RegExp> = [
 // origin, and the Content-Security-Policy (connect-src 'self') enforces that in the browser.
 const sameOriginFetch: ReadonlyMap<string, string> = new Map([
 	[
-		"src/tools/pdf/office-fonts.ts",
+		"src/tools/pdf/worker/office-fonts.ts",
 		"loads the bundled substitute fonts for Office documents from /fonts/office/",
 	],
 ]);
