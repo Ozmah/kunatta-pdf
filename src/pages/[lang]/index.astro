@@ -1,27 +1,14 @@
 ---
-import Dialogs from "../../tools/pdf/dialogs/Dialogs.astro";
-import Dropzone from "../../tools/pdf/intake/Dropzone.astro";
-import Settings from "../../tools/pdf/settings/Settings.astro";
 import { locales } from "../../i18n/locales.ts";
-import { routeLocale } from "../../i18n/translate.ts";
 import Base from "../../layouts/Base.astro";
+import PdfTool from "../../tools/pdf/PdfTool.astro";
 
 export function getStaticPaths() {
 	return locales.map((lang) => ({ params: { lang } }));
 }
-
-const lang = routeLocale(Astro.params.lang);
 ---
 
-<Base lang={lang}>
+<Base>
 	<h1 class="sr-only">Kunatta</h1>
-	<Dropzone lang={lang} />
-	<Settings lang={lang} />
-	<Dialogs lang={lang} />
+	<PdfTool />
 </Base>
-
-<script>
-	import { startPdfTool } from "../../tools/pdf/index.ts";
-
-	startPdfTool(document);
-</script>

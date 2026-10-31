@@ -1,22 +1,21 @@
 ---
-import { localeNames, locales, type Locale } from "../i18n/locales.ts";
-import { translate } from "../i18n/translate.ts";
+import { getRelativeLocaleUrl } from "astro:i18n";
 
-interface Props {
-	lang: Locale;
-}
+import { localeNames, locales } from "../i18n/locales.ts";
+import { routeLocale, translate } from "../i18n/translate.ts";
 
-const { lang } = Astro.props;
+const lang = routeLocale(Astro.currentLocale);
 
-// The same page in the other language: only the leading locale segment changes.
-const rest = Astro.url.pathname.replace(/^\/[^/]+\//u, "");
+// The same page in the other language: Astro builds both prefixes, so only the locale changes.
+const home = getRelativeLocaleUrl(lang);
+const rest = Astro.url.pathname.startsWith(home) ? Astro.url.pathname.slice(home.length) : "";
 ---
 
 <nav class="lang" aria-label={translate(lang, "lang.label")} data-lang-switch>
 	{
 		locales.map((code) => (
 			<a
-				href={`/${code}/${rest}`}
+				href={getRelativeLocaleUrl(code, rest)}
 				hreflang={code}
 				lang={code}
 				aria-label={localeNames[code]}

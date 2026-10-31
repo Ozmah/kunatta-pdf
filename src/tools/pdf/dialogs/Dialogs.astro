@@ -1,12 +1,7 @@
 ---
-import type { Locale } from "../../../i18n/locales.ts";
-import { translator } from "../../../i18n/translate.ts";
+import { routeLocale, translator } from "../../../i18n/translate.ts";
 
-interface Props {
-	lang: Locale;
-}
-
-const { lang } = Astro.props;
+const lang = routeLocale(Astro.currentLocale);
 const t = translator(lang);
 const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z";
 ---
