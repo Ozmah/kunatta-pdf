@@ -7,6 +7,7 @@ import LanguageSwitch from "../components/LanguageSwitch.astro";
 import Logo from "../components/Logo.astro";
 import { defaultLocale, locales } from "../i18n/locales.ts";
 import { routeLocale, translate } from "../i18n/translate.ts";
+import { localeHome, siteOrigin } from "../lib/crawlers.ts";
 import "../styles/tokens.css";
 import "../styles/base.css";
 import "../styles/buttons.css";
@@ -17,6 +18,7 @@ import "../styles/surfaces.css";
 import "../styles/dialogs.css";
 
 const lang = routeLocale(Astro.currentLocale);
+const site = siteOrigin(Astro.site);
 ---
 
 <!doctype html>
@@ -28,8 +30,9 @@ const lang = routeLocale(Astro.currentLocale);
 		<meta name="theme-color" content="#002233" />
 		<title>{translate(lang, "meta.title")}</title>
 		<meta name="description" content={translate(lang, "meta.description")} />
-		{locales.map((code) => <link rel="alternate" hreflang={code} href={getRelativeLocaleUrl(code)} />)}
-		<link rel="alternate" hreflang="x-default" href={getRelativeLocaleUrl(defaultLocale)} />
+		<link rel="canonical" href={new URL(Astro.url.pathname, site).href} />
+		{locales.map((code) => <link rel="alternate" hreflang={code} href={localeHome(site, code)} />)}
+		<link rel="alternate" hreflang="x-default" href={localeHome(site, defaultLocale)} />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<Font cssVariable="--font-inter" preload />
 		<Font cssVariable="--font-paper-mono" preload />

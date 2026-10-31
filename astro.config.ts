@@ -9,6 +9,7 @@ const latin =
 
 export default defineConfig({
 	output: "static",
+	site: "https://pdf.kunatta.tools",
 	vite: {
 		// ES module workers can split: reamkit and @libpdf/core load only when a file needs them.
 		worker: { format: "es" },

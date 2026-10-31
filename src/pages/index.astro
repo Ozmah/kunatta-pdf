@@ -1,8 +1,10 @@
 ---
 import { defaultLocale } from "../i18n/locales.ts";
+import { localeHome, siteOrigin } from "../lib/crawlers.ts";
 
 // Static hosts cannot negotiate languages, so the root sends visitors to the default locale.
 const target = `/${defaultLocale}/`;
+const canonical = localeHome(siteOrigin(Astro.site), defaultLocale);
 ---
 
 <!doctype html>
@@ -12,7 +14,7 @@ const target = `/${defaultLocale}/`;
 		<title>Kunatta</title>
 		<meta name="robots" content="noindex" />
 		<meta http-equiv="refresh" content={`0; url=${target}`} />
-		<link rel="canonical" href={target} />
+		<link rel="canonical" href={canonical} />
 	</head>
 	<body>
 		<a href={target}>Kunatta</a>

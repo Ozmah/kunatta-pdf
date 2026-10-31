@@ -14,7 +14,7 @@ test("the root sends visitors to the Spanish page, which links its English twin"
 	await expect(page).toHaveURL(/\/es\/$/u);
 	await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute(
 		"href",
-		"/en/",
+		"https://pdf.kunatta.tools/en/",
 	);
 	await expect(page.locator(switchTo("es"))).toHaveAttribute("aria-current", "page");
 });
