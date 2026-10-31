@@ -11,23 +11,48 @@ const home = getRelativeLocaleUrl(lang);
 const rest = Astro.url.pathname.startsWith(home) ? Astro.url.pathname.slice(home.length) : "";
 ---
 
-<nav class="lang" aria-label={translate(lang, "lang.label")} data-lang-switch>
-	{
-		locales.map((code) => (
-			<a
-				href={getRelativeLocaleUrl(code, rest)}
-				hreflang={code}
-				lang={code}
-				aria-label={localeNames[code]}
-				aria-current={code === lang ? "page" : undefined}
-			>
-				{code.toUpperCase()}
-			</a>
-		))
-	}
-</nav>
+<kn-language-switch>
+	<nav class="lang" aria-label={translate(lang, "lang.label")} data-lang-switch>
+		{
+			locales.map((code) => (
+				<a
+					href={getRelativeLocaleUrl(code, rest)}
+					hreflang={code}
+					lang={code}
+					aria-label={localeNames[code]}
+					aria-current={code === lang ? "page" : undefined}
+				>
+					{code.toUpperCase()}
+				</a>
+			))
+		}
+	</nav>
+
+	<dialog class="dlg" role="alertdialog" aria-labelledby="language-title" data-dialog="language">
+		<form method="dialog">
+			<h2 class="display" id="language-title" data-title></h2>
+			<p class="question">{translate(lang, "language.body")}</p>
+			<div class="actions">
+				<button class="btn btn-secondary" type="button" data-back autofocus>{translate(lang, "language.stay")}</button>
+				<button class="btn btn-primary" value="confirm" data-switch></button>
+			</div>
+		</form>
+	</dialog>
+</kn-language-switch>
+
+<script>
+	import { defineOnce } from "../lib/dom.ts";
+	import { LanguageSwitchElement } from "./language-switch.ts";
+
+	defineOnce("kn-language-switch", LanguageSwitchElement);
+</script>
 
 <style>
+	/* The element only carries behavior; its children lay out as if it were not there. */
+	kn-language-switch {
+		display: contents;
+	}
+
 	/* The active language is a lime riso tile, tilted, with a grape layer. */
 	.lang {
 		display: flex;

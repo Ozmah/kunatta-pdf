@@ -40,8 +40,8 @@ export interface LanguageGuardOptions {
 }
 
 /** The language switch is a pair of plain links; this only steps in when work would be lost. */
-export function connectLanguageGuard(root: Document, options: LanguageGuardOptions): void {
-	const nav = required(root, "[data-lang-switch]");
+export function connectLanguageGuard(host: HTMLElement, options: LanguageGuardOptions): void {
+	const nav = required(host, "[data-lang-switch]");
 
 	nav.addEventListener("click", (event) => {
 		const link = event.target instanceof Element ? event.target.closest("a") : null;
@@ -58,7 +58,7 @@ export function connectLanguageGuard(root: Document, options: LanguageGuardOptio
 		if (action === "stay" || !isLocale(link.hreflang)) return;
 
 		void options.confirm(link.hreflang).then((confirmed) => {
-			if (confirmed) root.location.assign(link.href);
+			if (confirmed) host.ownerDocument.location.assign(link.href);
 		});
 	});
 }

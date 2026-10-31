@@ -1,8 +1,8 @@
 import { interpolate } from "../../i18n/format.ts";
-import { defaultLocale, isLocale, type Locale } from "../../i18n/locales.ts";
+import { documentLocale } from "../../i18n/locales.ts";
 import { translate } from "../../i18n/translate.ts";
 import { upgraded } from "../../lib/dom.ts";
-import { connectLanguageGuard } from "../../lib/language-guard.ts";
+import { LanguageSwitchElement } from "../../components/language-switch.ts";
 import { AssemblyElement } from "./assembly/element.ts";
 import { createAssembly } from "./assembly/run.ts";
 import { createConverter, spawnPdfWorker } from "./conversion/converter.ts";
@@ -21,12 +21,6 @@ import { backedOut } from "./shared/outcome.ts";
 import { SingleElement } from "./single/element.ts";
 import { isMoreFiles, runFast, runSinglePdf, type Outcome } from "./single/run.ts";
 
-function pageLocale(root: Document): Locale {
-	const lang = root.documentElement.lang;
-
-	return isLocale(lang) ? lang : defaultLocale;
-}
-
 type Run = typeof runFast;
 
 /** What fills the tool: the empty drop zone, one file's card, or the list. */
@@ -34,7 +28,7 @@ type Stage = "idle" | "single" | "assembly";
 
 /** Wires the PDF tool's elements: drop zone → path → worker → download. */
 export function startPdfTool(root: Document): void {
-	const locale = pageLocale(root);
+	const locale = documentLocale(root);
 	const converter = createConverter(spawnPdfWorker);
 	const downloads = createDownloader(root);
 	let busy = false;
@@ -234,8 +228,8 @@ export function startPdfTool(root: Document): void {
 		}
 	}
 
-	connectLanguageGuard(root, {
-		hasWork: () => busy || assembly.items().length > 0,
-		confirm: (target) => prompts.confirmLanguage(target),
-	});
+	// Switching language reloads the page; with files in the list or a conversion running, ask first.
+	upgraded(root, "kn-language-switch", LanguageSwitchElement).guard(
+		() => busy || assembly.items().length > 0,
+	);
 }

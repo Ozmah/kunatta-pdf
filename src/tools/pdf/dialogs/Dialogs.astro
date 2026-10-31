@@ -49,17 +49,6 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 		<li><span class="tile tile-sm" aria-hidden="true"></span><span><b></b><span class="meta"></span></span></li>
 	</template>
 
-	<dialog class="dlg" role="alertdialog" aria-labelledby="language-title" data-dialog="language">
-		<form method="dialog">
-			<h2 class="display" id="language-title" data-title></h2>
-			<p class="question">{t("language.body")}</p>
-			<div class="actions">
-				<button class="btn btn-secondary" type="button" data-back autofocus>{t("language.stay")}</button>
-				<button class="btn btn-primary" value="confirm" data-switch></button>
-			</div>
-		</form>
-	</dialog>
-
 	<dialog class="dlg" aria-labelledby="incoming-title" data-dialog="incoming">
 		<form method="dialog">
 			<h2 class="display" id="incoming-title" data-title></h2>
@@ -143,50 +132,6 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 		display: contents;
 	}
 
-	/* Read by dialogs.ts: only the bottom sheet closes when its veil is tapped. */
-	.dlg {
-		--closed-by: closerequest;
-
-		width: min(540px, calc(100% - 32px));
-		max-height: calc(100dvh - 32px);
-		margin: auto;
-		padding: 0;
-		border: var(--border-strong) solid var(--line);
-		background: var(--surface);
-		box-shadow: -10px 10px 0 var(--color-grape);
-		color: var(--ink);
-		overflow: auto;
-	}
-
-	.dlg::backdrop {
-		background: rgb(0 34 51 / 86%);
-	}
-
-	.dlg[open] {
-		animation: pop var(--duration-pop-in) var(--ease-pop);
-	}
-
-	@keyframes pop {
-		from {
-			opacity: 0;
-			transform: translateY(12px) scale(0.97);
-		}
-	}
-
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 18px;
-		padding: 28px;
-	}
-
-	/* Differs from the display tracking (-0.045em). */
-	h2 {
-		font-size: 26px;
-		letter-spacing: -0.03em;
-		line-height: 1.1;
-	}
-
 	.file {
 		display: flex;
 		align-items: center;
@@ -219,10 +164,6 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 	small {
 		font-size: 13px;
 		color: var(--ink-muted);
-	}
-
-	.question {
-		font-size: 15px;
 	}
 
 	.fails {
@@ -271,50 +212,10 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 		display: none;
 	}
 
-	.actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 12px 16px;
-		align-items: center;
-		justify-content: flex-end;
-	}
-
-	/* Phones: a sheet on the bottom edge, actions stacked with the primary on top. */
 	@media (max-width: 520px) {
-		.dlg {
-			--closed-by: any;
-
-			width: 100%;
-			max-width: none;
-			margin: auto 0 0;
-			border-width: var(--border-strong) 0 0;
-			box-shadow: 0 -6px 0 var(--color-grape);
-		}
-
-		form {
-			padding: 26px 20px 30px;
-		}
-
 		dl {
 			grid-template-columns: 96px 1fr;
 			font-size: 14px;
-		}
-
-		.actions {
-			flex-direction: column-reverse;
-			align-items: stretch;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.dlg[open] {
-			animation-name: fade;
-		}
-
-		@keyframes fade {
-			from {
-				opacity: 0;
-			}
 		}
 	}
 </style>

@@ -10,3 +10,10 @@ export const localeNames: Readonly<Record<Locale, string>> = { es: "Español", e
 export function isLocale(value: string): value is Locale {
 	return locales.some((locale) => locale === value);
 }
+
+/** The locale a page was rendered in, read from <html lang> on the client. */
+export function documentLocale(page: Document): Locale {
+	const lang = page.documentElement.lang;
+
+	return isLocale(lang) ? lang : defaultLocale;
+}

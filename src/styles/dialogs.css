@@ -1,0 +1,93 @@
+/*
+ * Dialog: a modal <dialog class="dlg"> with a <form method="dialog">, a title, an optional
+ * question and a row of actions. Centered over a midnight veil; on phones, a sheet on the bottom
+ * edge. lib/dialog.ts reads --closed-by: only the sheet closes when its veil is tapped.
+ */
+.dlg {
+	--closed-by: closerequest;
+
+	width: min(540px, calc(100% - 32px));
+	max-height: calc(100dvh - 32px);
+	margin: auto;
+	padding: 0;
+	border: var(--border-strong) solid var(--line);
+	background: var(--surface);
+	box-shadow: -10px 10px 0 var(--color-grape);
+	color: var(--ink);
+	overflow: auto;
+}
+
+.dlg::backdrop {
+	background: rgb(0 34 51 / 86%);
+}
+
+.dlg[open] {
+	animation: dialog-pop var(--duration-pop-in) var(--ease-pop);
+}
+
+@keyframes dialog-pop {
+	from {
+		opacity: 0;
+		transform: translateY(12px) scale(0.97);
+	}
+}
+
+.dlg > form {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	padding: 28px;
+}
+
+/* Differs from the display tracking (-0.045em). */
+.dlg h2 {
+	font-size: 26px;
+	letter-spacing: -0.03em;
+	line-height: 1.1;
+}
+
+.dlg .question {
+	font-size: 15px;
+}
+
+.dlg .actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 16px;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+/* Phones: a sheet on the bottom edge, actions stacked with the primary on top. */
+@media (max-width: 520px) {
+	.dlg {
+		--closed-by: any;
+
+		width: 100%;
+		max-width: none;
+		margin: auto 0 0;
+		border-width: var(--border-strong) 0 0;
+		box-shadow: 0 -6px 0 var(--color-grape);
+	}
+
+	.dlg > form {
+		padding: 26px 20px 30px;
+	}
+
+	.dlg .actions {
+		flex-direction: column-reverse;
+		align-items: stretch;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.dlg[open] {
+		animation-name: dialog-fade;
+	}
+
+	@keyframes dialog-fade {
+		from {
+			opacity: 0;
+		}
+	}
+}
