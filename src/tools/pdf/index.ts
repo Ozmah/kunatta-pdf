@@ -7,20 +7,15 @@ import { createConverter, spawnPdfWorker } from "./conversion/converter.ts";
 import { connectDialogs } from "./dialogs/dialogs.ts";
 import { createDownloader } from "./shared/download.ts";
 import { connectDropzone } from "./intake/dropzone.ts";
-import {
-	backedOut,
-	degradedNotice,
-	failureReason,
-	isMoreFiles,
-	runFast,
-	runSinglePdf,
-	type Outcome,
-} from "./single/run.ts";
+import { backedOut } from "./shared/outcome.ts";
+import { degradedNotice, failureReason } from "./shared/labels.ts";
+import { isMoreFiles, runFast, runSinglePdf, type Outcome } from "./single/run.ts";
 import { connectFastView, rejectionMessage, type NoticeLine } from "./single/view.ts";
 import { connectSettings } from "./settings/panel.ts";
 import { connectLanguageGuard } from "../../lib/language-guard.ts";
 import { choosePath, type Origin } from "./intake/paths.ts";
-import { admit, type PileEntry } from "./intake/pile.ts";
+import { admit } from "./intake/pile.ts";
+import type { PileEntry } from "./shared/entry.ts";
 import { browserStore } from "./settings/remembered.ts";
 
 function pageLocale(root: Document): Locale {

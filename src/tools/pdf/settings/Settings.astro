@@ -1,7 +1,8 @@
 ---
 import type { Locale } from "../../../i18n/locales.ts";
 import { translate } from "../../../i18n/translate.ts";
-import { defaultSettings, pageSizes, passwordModes, qualities } from "./settings.ts";
+import { defaultSettings, passwordModes } from "../shared/settings.ts";
+import { pageSizes, qualities } from "../contract/options.ts";
 
 interface Props {
 	lang: Locale;

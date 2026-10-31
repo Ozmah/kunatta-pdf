@@ -1,7 +1,8 @@
 import { Result } from "better-result";
 import * as v from "valibot";
 
-import { defaultSettings, pageSizes, passwordModes, qualities, type Settings } from "./settings.ts";
+import { defaultSettings, passwordModes, type Settings } from "../shared/settings.ts";
+import { pageSizes, qualities } from "../contract/options.ts";
 
 /** The part of Storage this needs, so tests can hand in a plain map. */
 export interface PreferenceStore {

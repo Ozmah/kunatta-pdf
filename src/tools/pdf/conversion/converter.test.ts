@@ -1,15 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import { isPanic } from "better-result";
+import { isPanic, Result } from "better-result";
 
 import { ConversionCancelled, WorkerCrashed } from "../contract/errors.ts";
-import {
-	composeJob,
-	convertJob,
-	createConverter,
-	type ConvertJob,
-	type WorkerPort,
-} from "./converter.ts";
+import { createConverter, type ConvertJob, type WorkerPort } from "./converter.ts";
 import {
 	encodeComposed,
 	encodeConverted,
@@ -18,7 +12,6 @@ import {
 	type Fatal,
 	type WorkerRequest,
 } from "../contract/protocol.ts";
-import { Result } from "better-result";
 
 interface InvalidReply {
 	readonly nonsense: true;
@@ -93,35 +86,6 @@ function harness(...behaviors: Array<Behavior>) {
 
 	return { converter, spawned };
 }
-
-describe("jobs", () => {
-	const entry = {
-		id: "1",
-		name: "foto.jpg",
-		kind: "jpeg",
-		size: 3,
-		source: new Blob(["abc"]),
-	} as const;
-
-	const settings = { size: "a4", quality: "max", password: "on", name: "tarea" } as const;
-
-	test("a conversion carries only the settings that shape it, and a password only when given", () => {
-		expect(convertJob(entry, settings, undefined)).toEqual({
-			fileName: "foto.jpg",
-			kind: "jpeg",
-			file: entry.source,
-			settings: { size: "a4", quality: "max" },
-		});
-		expect(convertJob(entry, settings, "pass").password).toBe("pass");
-	});
-
-	test("a composition adds the password only when given", () => {
-		const parts = [new Blob(["%PDF"])];
-
-		expect("password" in composeJob("tarea.pdf", parts, "letter", undefined)).toBe(false);
-		expect(composeJob("tarea.pdf", parts, "letter", "pass").password).toBe("pass");
-	});
-});
 
 describe("createConverter", () => {
 	test("runs jobs one at a time on a single worker, in order", async () => {

@@ -11,8 +11,8 @@ import {
 	togglePin,
 	type Items,
 } from "./model.ts";
-import type { PileEntry } from "../intake/pile.ts";
-import { imageKinds } from "../intake/sniff.ts";
+import type { PileEntry } from "../shared/entry.ts";
+import { imageKinds } from "../contract/kinds.ts";
 
 function entry(name: string): PileEntry {
 	return { id: name, name, kind: "jpeg", size: 1, source: new Blob(["x"]) };

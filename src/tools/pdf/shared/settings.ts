@@ -1,25 +1,9 @@
-import { typedName } from "../shared/file-name.ts";
+import { pageSizes, qualities, type PageSize, type Quality } from "../contract/options.ts";
+import { typedName } from "./file-name.ts";
 
-export const pageSizes = ["letter", "a4", "original"] as const;
-export const qualities = ["light", "normal", "max"] as const;
 export const passwordModes = ["off", "on"] as const;
 
-export type PageSize = (typeof pageSizes)[number];
-
-export type Quality = (typeof qualities)[number];
-
 export type PasswordMode = (typeof passwordModes)[number];
-
-/** The settings a conversion depends on. Only these reach the worker; the name and the password setting stay here. */
-export interface ConvertSettings {
-	readonly size: PageSize;
-	readonly quality: Quality;
-}
-
-/** Picks the conversion settings out of a larger object: the worker's schema refuses extra fields. */
-export function convertSettings(settings: ConvertSettings): ConvertSettings {
-	return { size: settings.size, quality: settings.quality };
-}
 
 export interface Settings {
 	readonly size: PageSize;

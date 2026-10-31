@@ -1,44 +1,16 @@
 import type { Result as ResultType } from "better-result";
 
-import type { MessageKey } from "../../../i18n/es.ts";
-import { composeJob, convertJob, type Converter } from "../conversion/converter.ts";
-import {
-	CompositionFailed,
-	ConversionFailed,
-	EngineUnavailable,
-	PasswordRequired,
-	type ComposeJobError,
-	type JobError,
-} from "../contract/errors.ts";
-import { resultName } from "../shared/file-name.ts";
-import type { PileEntry } from "../intake/pile.ts";
+import { PasswordRequired, type ComposeJobError, type JobError } from "../contract/errors.ts";
 import type { FilePdf } from "../contract/protocol.ts";
-import type { Settings } from "../settings/settings.ts";
-import type { InputKind } from "../intake/sniff.ts";
-
-export interface FastPdf {
-	readonly name: string;
-	readonly pdf: Blob;
-	readonly pages: number;
-	readonly degraded: boolean;
-}
+import type { Converter } from "../conversion/converter.ts";
+import { composeJob, convertJob } from "../conversion/jobs.ts";
+import type { PileEntry } from "../shared/entry.ts";
+import { resultName } from "../shared/file-name.ts";
+import { backedOut, type MadePdf } from "../shared/outcome.ts";
+import type { Prompts } from "../shared/prompts.ts";
+import type { Settings } from "../shared/settings.ts";
 
 export type FastError = JobError | ComposeJobError;
-
-/** What the user can be asked along the way. Each prompt resolves to undefined when they back out. */
-export interface Prompts {
-	/** A protected file needs its password; `retry` is true after a wrong one. */
-	incomingPassword(entry: PileEntry, retry: boolean): Promise<string | undefined>;
-	/** The password for the result, typed twice; only asked when the setting is on. */
-	resultPassword(name: string, pages: number | undefined): Promise<string | undefined>;
-	/** The single-PDF dialog: make the PDF, go back, or add more files around it. */
-	confirmSinglePdf(entry: PileEntry, name: string, pages: number): Promise<SingleChoice>;
-}
-
-export type SingleChoice = "make" | "back" | "more";
-
-/** The user backed out of a dialog; nothing failed. */
-export const backedOut = "backed-out";
 
 /** "Add more files" from the single-PDF dialog: the opened PDF moves to an assembly. */
 export interface MoreFiles {
@@ -46,7 +18,7 @@ export interface MoreFiles {
 	readonly file: FilePdf;
 }
 
-export type Outcome = ResultType<FastPdf, FastError> | typeof backedOut | MoreFiles;
+export type Outcome = ResultType<MadePdf, FastError> | typeof backedOut | MoreFiles;
 
 export function isMoreFiles(outcome: Outcome): outcome is MoreFiles {
 	return outcome !== backedOut && "file" in outcome;
@@ -81,7 +53,7 @@ async function compose(
 	name: string,
 	settings: Settings,
 	password: string | undefined,
-): Promise<ResultType<FastPdf, FastError>> {
+): Promise<ResultType<MadePdf, FastError>> {
 	const composed = await converter.compose(composeJob(name, [file.pdf], settings.size, password));
 
 	return composed.map(({ pdf, pages }) => ({ name, pdf, pages, degraded: file.degraded }));
@@ -143,32 +115,4 @@ export async function runSinglePdf(
 	}
 
 	return compose(converter, opened.value, name, settings, password);
-}
-
-/** The notice shown after a degraded conversion, chosen by what usually goes wrong for that kind. */
-export function degradedNotice(kind: InputKind): MessageKey {
-	switch (kind) {
-		case "doc":
-		case "xls":
-		case "ppt":
-			return `degraded.${kind}`;
-		case "text":
-			return "degraded.text";
-		default:
-			return "degraded.other";
-	}
-}
-
-/** What the failed card says about why. */
-export function failureReason(error: FastError): MessageKey {
-	if (PasswordRequired.is(error)) return "reason.password";
-
-	if (EngineUnavailable.is(error)) return "reason.engine";
-
-	if (CompositionFailed.is(error)) return "reason.composition";
-
-	if (ConversionFailed.is(error)) return "reason.damaged";
-
-	// WorkerCrashed, or a cancellation the fast path never asks for.
-	return "reason.crashed";
 }

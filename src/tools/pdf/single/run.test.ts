@@ -3,20 +3,12 @@ import { describe, expect, test } from "bun:test";
 import { Result } from "better-result";
 
 import type { ComposeJob, Converter, ConvertJob } from "../conversion/converter.ts";
-import { ConversionFailed, PasswordRequired, WorkerCrashed } from "../contract/errors.ts";
-import {
-	backedOut,
-	degradedNotice,
-	failureReason,
-	runFast,
-	isMoreFiles,
-	runSinglePdf,
-	type Outcome,
-	type Prompts,
-	type SingleChoice,
-} from "./run.ts";
-import type { PileEntry } from "../intake/pile.ts";
-import type { Settings } from "../settings/settings.ts";
+import { ConversionFailed, PasswordRequired } from "../contract/errors.ts";
+import { backedOut } from "../shared/outcome.ts";
+import { runFast, isMoreFiles, runSinglePdf, type Outcome } from "./run.ts";
+import type { Prompts, SingleChoice } from "../shared/prompts.ts";
+import type { PileEntry } from "../shared/entry.ts";
+import type { Settings } from "../shared/settings.ts";
 
 const word: PileEntry = {
 	id: "1",
@@ -214,20 +206,5 @@ describe("add more files", () => {
 
 		expect(isMoreFiles(outcome) && outcome.entry).toBe(pdf);
 		expect(fake.calls.some((call) => call.startsWith("compose"))).toBe(false);
-	});
-});
-
-describe("messages", () => {
-	test("legacy Office and text get their own notice, everything else the generic one", () => {
-		expect(degradedNotice("ppt")).toBe("degraded.ppt");
-		expect(degradedNotice("text")).toBe("degraded.text");
-		expect(degradedNotice("docx")).toBe("degraded.other");
-	});
-
-	test("each failure maps to a reason the user can act on", () => {
-		const fileName = "a.docx";
-
-		expect(failureReason(new PasswordRequired({ fileName, message: "x" }))).toBe("reason.password");
-		expect(failureReason(new WorkerCrashed({ fileName, message: "x" }))).toBe("reason.crashed");
 	});
 });

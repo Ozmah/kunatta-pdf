@@ -2,13 +2,14 @@ import { describe, expect, test } from "bun:test";
 
 import { Result } from "better-result";
 
-import { createAssembly, type AssemblyPrompts } from "./run.ts";
+import { createAssembly } from "./run.ts";
+import type { AssemblyPrompts } from "../shared/prompts.ts";
 import type { ComposeJob, Converter, ConvertJob, JobResult } from "../conversion/converter.ts";
 import { ConversionCancelled, ConversionFailed, PasswordRequired } from "../contract/errors.ts";
-import { backedOut } from "../single/run.ts";
-import type { PileEntry } from "../intake/pile.ts";
-import type { Settings } from "../settings/settings.ts";
-import type { InputKind } from "../intake/sniff.ts";
+import { backedOut } from "../shared/outcome.ts";
+import type { PileEntry } from "../shared/entry.ts";
+import type { Settings } from "../shared/settings.ts";
+import type { InputKind } from "../contract/kinds.ts";
 
 function entry(name: string, kind: InputKind = "jpeg"): PileEntry {
 	return { id: name, name, kind, size: 1, source: new Blob([name]) };

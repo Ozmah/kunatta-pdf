@@ -2,7 +2,7 @@ import { PDF, type PDFEmbeddedPage } from "@libpdf/core";
 import { Result, type Result as ResultType } from "better-result";
 
 import { compositionFailed, type CompositionFailed } from "../contract/errors.ts";
-import type { PageSize } from "../settings/settings.ts";
+import type { PageSize } from "../contract/options.ts";
 
 export interface ComposeOptions {
 	/** Name of the resulting PDF, for error messages. */

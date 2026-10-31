@@ -1,17 +1,4 @@
-import { officeFormats, type OfficeFormat } from "./office-sniff.ts";
-
-export const imageKinds = ["jpeg", "png", "webp"] as const;
-
-export type ImageKind = (typeof imageKinds)[number];
-
-export function isImageKind(kind: InputKind): kind is ImageKind {
-	return imageKinds.some((known) => known === kind);
-}
-
-/** File kinds the PDF tool can turn into pages. */
-export const inputKinds = [...imageKinds, "pdf", "text", ...officeFormats] as const;
-
-export type InputKind = (typeof inputKinds)[number];
+import type { InputKind, OfficeFormat } from "../contract/kinds.ts";
 
 /** Archives that may hold an Office document; their entries decide the exact format. */
 export type Container = "zip" | "cfb";

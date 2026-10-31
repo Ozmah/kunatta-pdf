@@ -2,8 +2,8 @@ import { PDF } from "@libpdf/core";
 import { Result, type Result as ResultType } from "better-result";
 
 import { conversionFailed, type Converted, type ConvertError } from "../../contract/errors.ts";
-import type { Quality } from "../../settings/settings.ts";
-import type { ImageKind } from "../../intake/sniff.ts";
+import type { Quality } from "../../contract/options.ts";
+import type { ImageKind } from "../../contract/kinds.ts";
 
 type Encoding = "image/jpeg" | "image/png";
 

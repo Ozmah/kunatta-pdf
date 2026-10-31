@@ -1,9 +1,6 @@
 import { Panic, Result, type Result as ResultType } from "better-result";
 import * as v from "valibot";
 
-import type { PileEntry } from "../intake/pile.ts";
-import { convertSettings, type ConvertSettings, type PageSize } from "../settings/settings.ts";
-
 import {
 	ConversionCancelled,
 	WorkerCrashed,
@@ -36,34 +33,6 @@ export type SpawnWorker = () => WorkerPort;
 export type ConvertJob = Omit<ConvertRequest, "type" | "jobId">;
 
 export type ComposeJob = Omit<ComposeRequest, "type" | "jobId">;
-
-/** Converting one entry: its file, the settings that shape it and, once asked for, its password. */
-export function convertJob(
-	entry: PileEntry,
-	settings: ConvertSettings,
-	password: string | undefined,
-): ConvertJob {
-	const job = {
-		fileName: entry.name,
-		kind: entry.kind,
-		file: entry.source,
-		settings: convertSettings(settings),
-	};
-
-	return password === undefined ? job : { ...job, password };
-}
-
-/** Joining converted parts into the PDF the user downloads, protected when a password is given. */
-export function composeJob(
-	fileName: string,
-	parts: Array<Blob>,
-	size: PageSize,
-	password: string | undefined,
-): ComposeJob {
-	const job = { fileName, parts, size };
-
-	return password === undefined ? job : { ...job, password };
-}
 
 export type JobResult = ResultType<FilePdf, JobError>;
 

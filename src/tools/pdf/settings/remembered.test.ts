@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import { recall, remember, rememberedKey, type PreferenceStore } from "./remembered.ts";
-import { defaultSettings } from "./settings.ts";
+import { defaultSettings } from "../shared/settings.ts";
 
 function mapStore(initial: ReadonlyArray<[string, string]> = []): PreferenceStore & {
 	readonly values: Map<string, string>;

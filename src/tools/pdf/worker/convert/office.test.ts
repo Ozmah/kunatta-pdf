@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import type { OfficeFormat } from "../../intake/office-sniff.ts";
+import type { OfficeFormat } from "../../contract/kinds.ts";
 import { fixtureFontFetch, requestedFontPaths } from "../../../../../tests/support/pdf-fixtures.ts";
 import { WrongPasswordError } from "reamkit";
 

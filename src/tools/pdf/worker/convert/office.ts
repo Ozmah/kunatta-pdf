@@ -10,7 +10,7 @@ import {
 	type ConvertError,
 } from "../../contract/errors.ts";
 import { bundledFontPath, type FontFetch } from "../office-fonts.ts";
-import { officeFormats, type OfficeFormat } from "../../intake/office-sniff.ts";
+import { officeFormats, type OfficeFormat } from "../../contract/kinds.ts";
 
 export interface OfficePdf extends Converted {
 	readonly format: OfficeFormat;

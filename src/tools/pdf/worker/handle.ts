@@ -12,7 +12,7 @@ import {
 	type ConvertError,
 } from "../contract/errors.ts";
 import type { FontFetch } from "./office-fonts.ts";
-import { officeFormats } from "../intake/office-sniff.ts";
+import { isImageKind, officeFormats } from "../contract/kinds.ts";
 import {
 	encodeComposed,
 	encodeConverted,
@@ -27,7 +27,6 @@ import {
 	type Fatal,
 	type FilePdf,
 } from "../contract/protocol.ts";
-import { isImageKind } from "../intake/sniff.ts";
 
 export type Reply = ConvertResponse | ComposeResponse | Fatal;
 

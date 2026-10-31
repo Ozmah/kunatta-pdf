@@ -8,22 +8,20 @@ import {
 	togglePin,
 	updateState,
 	isStale,
+	problemOf,
 	type Items,
 } from "./model.ts";
-import { composeJob, convertJob, type Converter } from "../conversion/converter.ts";
 import { ConversionCancelled, PasswordRequired, type ComposeJobError } from "../contract/errors.ts";
-import { backedOut, type FastPdf } from "../single/run.ts";
-import type { PileEntry } from "../intake/pile.ts";
+import { convertSettings } from "../contract/options.ts";
 import type { FilePdf } from "../contract/protocol.ts";
-import { convertSettings, type Settings } from "../settings/settings.ts";
+import type { Converter } from "../conversion/converter.ts";
+import { composeJob, convertJob } from "../conversion/jobs.ts";
+import type { PileEntry } from "../shared/entry.ts";
+import { backedOut, type MadePdf } from "../shared/outcome.ts";
+import type { AssemblyPrompts } from "../shared/prompts.ts";
+import type { Settings } from "../shared/settings.ts";
 
-export interface AssemblyPrompts {
-	/** "No pudimos convertir N de M": back to the list, or make the PDF without them. */
-	summary(problems: Items, total: number): Promise<"back" | "without">;
-	resultPassword(name: string, pages: number): Promise<string | undefined>;
-}
-
-export type GenerateOutcome = ResultType<FastPdf, ComposeJobError> | typeof backedOut;
+export type GenerateOutcome = ResultType<MadePdf, ComposeJobError> | typeof backedOut;
 
 export interface Assembly {
 	items(): Items;
@@ -188,7 +186,7 @@ export function createAssembly(options: AssemblyOptions): Assembly {
 			const problems = items.filter((item) => item.state.kind !== "ready");
 
 			if (problems.length > 0) {
-				const choice = await prompts.summary(problems, items.length);
+				const choice = await prompts.summary(problems.map(problemOf), items.length);
 
 				if (choice === "back" || cancelled()) return backedOut;
 

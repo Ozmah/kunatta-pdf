@@ -3,7 +3,8 @@ import type { MessageKey } from "../../../i18n/es.ts";
 import type { Locale } from "../../../i18n/locales.ts";
 import { translate } from "../../../i18n/translate.ts";
 import { required } from "../../../lib/dom.ts";
-import type { InputKind } from "../intake/sniff.ts";
+import type { InputKind } from "../contract/kinds.ts";
+import { kindLabel } from "../shared/labels.ts";
 
 /** "assembly" hides every fast-path view: the list takes the space. */
 type View = "idle" | "converting" | "done" | "failed" | "assembly";
@@ -21,15 +22,6 @@ export interface FastView {
 	failed(fileName: string, kind: InputKind, reason: MessageKey): void;
 	/** Shows every line, one under the other; no lines hide the notice. */
 	notice(lines: ReadonlyArray<NoticeLine>): void;
-}
-
-/** The label on the file's card: JPG instead of jpeg, TXT for plain text. */
-export function kindLabel(kind: InputKind): string {
-	if (kind === "jpeg") return "JPG";
-
-	if (kind === "text") return "TXT";
-
-	return kind.toUpperCase();
 }
 
 /** Every user-provided string goes through textContent; nothing here builds HTML. */

@@ -1,10 +1,11 @@
 import { Panic } from "better-result";
 
 import type { JobError } from "../contract/errors.ts";
-import type { PileEntry } from "../intake/pile.ts";
+import { isImageKind, type InputKind } from "../contract/kinds.ts";
+import type { ConvertSettings } from "../contract/options.ts";
 import type { FilePdf } from "../contract/protocol.ts";
-import type { ConvertSettings } from "../settings/settings.ts";
-import { isImageKind, type InputKind } from "../intake/sniff.ts";
+import type { PileEntry } from "../shared/entry.ts";
+import type { Problem } from "../shared/prompts.ts";
 
 /** Where each file in the list stands. */
 export type ItemState =
@@ -119,6 +120,15 @@ export function canMove(items: Items, id: string, delta: -1 | 1): boolean {
 }
 
 /** Images depend on quality and plain text on the page size; PDFs and Office depend on neither. */
+/** What the summary shows for a file that keeps the list from being composed. */
+export function problemOf(item: Item): Problem {
+	return {
+		name: item.entry.name,
+		kind: item.entry.kind,
+		error: item.state.kind === "failed" ? item.state.error : undefined,
+	};
+}
+
 export function isStale(kind: InputKind, used: ConvertSettings, current: ConvertSettings): boolean {
 	if (isImageKind(kind)) return used.quality !== current.quality;
 

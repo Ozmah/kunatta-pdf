@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
 import { choosePath } from "./paths.ts";
-import type { PileEntry } from "./pile.ts";
-import type { InputKind } from "./sniff.ts";
+import type { PileEntry } from "../shared/entry.ts";
+import type { InputKind } from "../contract/kinds.ts";
 
 function entry(name: string, kind: InputKind): PileEntry {
 	return { id: name, name, kind, size: 10, source: new Blob(["x"]) };

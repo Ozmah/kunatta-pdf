@@ -1,4 +1,4 @@
-import type { PileEntry } from "./pile.ts";
+import type { PileEntry } from "../shared/entry.ts";
 
 /** How files arrived: dropping and picking can take the fast path, pasting always assembles. */
 export type Origin = "drop" | "pick" | "paste";

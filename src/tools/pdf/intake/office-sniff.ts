@@ -5,9 +5,7 @@
  * directory of the archive and never its contents.
  */
 
-export const officeFormats = ["docx", "xlsx", "pptx", "doc", "xls", "ppt"] as const;
-
-export type OfficeFormat = (typeof officeFormats)[number];
+import type { OfficeFormat } from "../contract/kinds.ts";
 
 /** Reads bytes `[start, end)` of a file; `end` past the size is clamped by the reader. */
 export type ByteReader = (start: number, end: number) => Promise<Uint8Array>;

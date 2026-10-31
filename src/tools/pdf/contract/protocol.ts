@@ -11,8 +11,8 @@ import {
 	type ComposeError,
 	type ConvertError,
 } from "./errors.ts";
-import { pageSizes, qualities } from "../settings/settings.ts";
-import { inputKinds } from "../intake/sniff.ts";
+import { pageSizes, qualities } from "./options.ts";
+import { inputKinds } from "./kinds.ts";
 
 /**
  * Messages between the main thread and the conversion worker. Both sides validate what

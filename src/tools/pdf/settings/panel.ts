@@ -1,6 +1,6 @@
 import { required } from "../../../lib/dom.ts";
 import { recall, remember, type PreferenceStore, type Remembered } from "./remembered.ts";
-import { readSettings, type Settings } from "./settings.ts";
+import { readSettings, type Settings } from "../shared/settings.ts";
 
 /** Keyboard activation reports no pointer clicks; those toggles skip the animation. */
 export function isKeyboardActivation(detail: number): boolean {

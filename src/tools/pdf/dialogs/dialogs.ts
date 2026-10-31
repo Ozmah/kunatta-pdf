@@ -3,12 +3,10 @@ import { Panic } from "better-result";
 import { fileCount, fileSize, fitNote, interpolate, pageCount } from "../../../i18n/format.ts";
 import { localeNames, type Locale } from "../../../i18n/locales.ts";
 import { translate, translator } from "../../../i18n/translate.ts";
-import type { AssemblyPrompts } from "../assembly/run.ts";
-import type { Items } from "../assembly/model.ts";
-import { failureReason, type Prompts } from "../single/run.ts";
-import { kindLabel } from "../single/view.ts";
 import { required } from "../../../lib/dom.ts";
-import type { Settings } from "../settings/settings.ts";
+import { failureReason, kindLabel } from "../shared/labels.ts";
+import type { AssemblyPrompts, Problem, Prompts } from "../shared/prompts.ts";
+import type { Settings } from "../shared/settings.ts";
 
 function inputs(dialog: HTMLDialogElement): ReadonlyArray<HTMLInputElement> {
 	return Array.from(dialog.querySelectorAll("input"));
@@ -122,19 +120,18 @@ export function connectDialogs(
 
 	for (const dialog of [single, summary, incoming, result, language]) connectBack(dialog);
 
-	const failRow = (problems: Items[number]): Node => {
+	const failRow = (problem: Problem): Node => {
 		const row = failTemplate.content.cloneNode(true);
 
 		if (!(row instanceof DocumentFragment)) {
 			throw new Panic({ message: "The failure template did not clone into a fragment" });
 		}
 
-		const { entry, state } = problems;
-		const reason = state.kind === "failed" ? t(failureReason(state.error)) : t("reason.password");
+		const reason = problem.error === undefined ? "reason.password" : failureReason(problem.error);
 
-		required(row, ".tile").textContent = kindLabel(entry.kind);
-		required(row, "b").textContent = entry.name;
-		required(row, ".meta").textContent = reason;
+		required(row, ".tile").textContent = kindLabel(problem.kind);
+		required(row, "b").textContent = problem.name;
+		required(row, ".meta").textContent = t(reason);
 
 		return row;
 	};

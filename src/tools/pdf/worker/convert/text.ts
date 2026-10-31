@@ -2,7 +2,7 @@ import { PDF, type EmbeddedFont } from "@libpdf/core";
 import { Result, type Result as ResultType } from "better-result";
 
 import { conversionFailed, type Converted, type ConvertError } from "../../contract/errors.ts";
-import type { PageSize } from "../../settings/settings.ts";
+import type { PageSize } from "../../contract/options.ts";
 
 /** Page sizes in points. Original has no meaning for plain text, so it uses Letter. */
 const pagePoints: Readonly<Record<PageSize, { width: number; height: number }>> = {

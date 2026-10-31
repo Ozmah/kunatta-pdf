@@ -2,15 +2,7 @@ import { TaggedError } from "better-result";
 
 import { classify, limits, type RejectedFile } from "./classify.ts";
 import type { ByteReader } from "./office-sniff.ts";
-import type { InputKind } from "./sniff.ts";
-
-export interface PileEntry {
-	readonly id: string;
-	readonly name: string;
-	readonly kind: InputKind;
-	readonly size: number;
-	readonly source: Blob;
-}
+import type { PileEntry } from "../shared/entry.ts";
 
 export type Pile = ReadonlyArray<PileEntry>;
 

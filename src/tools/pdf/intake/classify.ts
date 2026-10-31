@@ -6,15 +6,9 @@ import {
 	ooxmlFromEntries,
 	zipEntryNames,
 	type ByteReader,
-	type OfficeFormat,
 } from "./office-sniff.ts";
-import {
-	looksLikeText,
-	sniffBinary,
-	sniffContainer,
-	sniffLength,
-	type InputKind,
-} from "./sniff.ts";
+import type { InputKind, OfficeFormat } from "../contract/kinds.ts";
+import { looksLikeText, sniffBinary, sniffContainer, sniffLength } from "./sniff.ts";
 
 const mebibyte = 1024 * 1024;
 
