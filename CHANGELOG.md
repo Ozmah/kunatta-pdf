@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.6.0 · 2026-10-31
+
 - The footer sits closer together, "made by Ozmah" opens ozmah.dev, and a GitHub button next to it opens the Kunatta repository.
 - Search engines get absolute canonical and language links, a robots.txt and a sitemap listing both languages.
 - Fixed: an Office file whose fonts cannot download now says to check the connection instead of calling the file damaged.
