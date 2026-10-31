@@ -1,6 +1,6 @@
 # Kunatta
 
-Kunatta ("knowledge" in Old Norse) is a set of tools that run entirely in your browser.
+Kunatta, from the Old Norse word _kunnátta_ ("knowledge"), is a set of tools that run entirely in your browser.
 No accounts, no ads, no tracking. Your files never leave your device.
 
 ## Tools
