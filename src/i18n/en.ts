@@ -117,4 +117,5 @@ export const en = {
 	"settings.name.placeholder": "same as the file",
 	"footer.notice": "Your files never leave your browser.",
 	"footer.author": "made by Ozmah",
+	"footer.repo": "Kunatta on GitHub",
 } as const satisfies Messages;

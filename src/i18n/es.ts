@@ -115,6 +115,7 @@ export const es = {
 	"settings.name.placeholder": "igual que el archivo",
 	"footer.notice": "Tus archivos nunca salen de tu navegador.",
 	"footer.author": "hecho por Ozmah",
+	"footer.repo": "Kunatta en GitHub",
 } as const;
 
 export type MessageKey = keyof typeof es;

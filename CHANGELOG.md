@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The footer sits closer together, "made by Ozmah" opens ozmah.dev, and a GitHub button next to it opens the Kunatta repository.
 - Search engines get absolute canonical and language links, a robots.txt and a sitemap listing both languages.
 - Fixed: an Office file whose fonts cannot download now says to check the connection instead of calling the file damaged.
 - Photos in the list show a small upright thumbnail, so similar names like IMG_4021 and IMG_4022 can be told apart; it is made from the same decoding as the page and freed when the row leaves.
