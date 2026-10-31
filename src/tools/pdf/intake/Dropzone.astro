@@ -1,23 +1,8 @@
 ---
 import { routeLocale, translate } from "../../../i18n/translate.ts";
+import { pickerAccept } from "../shared/file-kinds.ts";
 
 const lang = routeLocale(Astro.currentLocale);
-
-// What the picker offers. Content is still verified by signature after selection.
-const accept = [
-	"image/jpeg",
-	"image/png",
-	"image/webp",
-	"application/pdf",
-	"text/plain",
-	".txt",
-	".doc",
-	".docx",
-	".xls",
-	".xlsx",
-	".ppt",
-	".pptx",
-].join(",");
 
 const cards = [
 	{ label: "JPG", tone: "grape", place: "translate(-118px, 12px) rotate(-16deg)" },
@@ -45,7 +30,7 @@ const cards = [
 </div>
 
 <label class="riso-card drop" data-dropzone data-empty-drop>
-	<input class="sr-only" type="file" multiple accept={accept} data-picker />
+	<input class="sr-only" type="file" multiple accept={pickerAccept} data-picker />
 	<span class="fan" aria-hidden="true">
 		{
 			cards.map((card, index) => (

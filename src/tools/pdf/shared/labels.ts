@@ -8,14 +8,11 @@ import {
 	type JobError,
 } from "../contract/errors.ts";
 import type { InputKind } from "../contract/kinds.ts";
+import { fileKinds } from "./file-kinds.ts";
 
 /** The label on the file's card: JPG instead of jpeg, TXT for plain text. */
 export function kindLabel(kind: InputKind): string {
-	if (kind === "jpeg") return "JPG";
-
-	if (kind === "text") return "TXT";
-
-	return kind.toUpperCase();
+	return fileKinds[kind].label;
 }
 
 /** The notice shown after a degraded conversion, chosen by what usually goes wrong for that kind. */
