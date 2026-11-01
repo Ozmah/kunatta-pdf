@@ -7,7 +7,7 @@ import Footer from "../components/Footer.astro";
 import LanguageSwitch from "../components/LanguageSwitch.astro";
 import Logo from "../components/Logo.astro";
 import type { MessageKey } from "../i18n/es.ts";
-import { defaultLocale, locales } from "../i18n/locales.ts";
+import { defaultLocale, locales, ogLocales } from "../i18n/locales.ts";
 import { routeLocale, translate } from "../i18n/translate.ts";
 import type { Page } from "../lib/analytics/events.ts";
 import { localePage, siteOrigin } from "../lib/crawlers.ts";
@@ -63,6 +63,23 @@ const rest = Astro.url.pathname.startsWith(home) ? Astro.url.pathname.slice(home
 						<link rel="alternate" hreflang={code} href={localePage(site, code, rest)} />
 					))}
 					<link rel="alternate" hreflang="x-default" href={localePage(site, defaultLocale, rest)} />
+					<meta property="og:type" content="website" />
+					<meta property="og:site_name" content="Kunatta" />
+					<meta property="og:title" content={translate(lang, title)} />
+					<meta property="og:description" content={translate(lang, description)} />
+					<meta property="og:url" content={new URL(Astro.url.pathname, site).href} />
+					<meta property="og:locale" content={ogLocales[lang]} />
+					{locales
+						.filter((code) => code !== lang)
+						.map((code) => (
+							<meta property="og:locale:alternate" content={ogLocales[code]} />
+						))}
+					<meta property="og:image" content={new URL(`/og/${lang}.png`, site).href} />
+					<meta property="og:image:type" content="image/png" />
+					<meta property="og:image:width" content="1200" />
+					<meta property="og:image:height" content="630" />
+					<meta property="og:image:alt" content={translate(lang, "og.alt")} />
+					<meta name="twitter:card" content="summary_large_image" />
 				</>
 			)
 		}
