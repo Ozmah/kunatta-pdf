@@ -1,0 +1,238 @@
+---
+import type { MessageKey } from "../../i18n/es.ts";
+import { locales } from "../../i18n/locales.ts";
+import { routeLocale, translate } from "../../i18n/translate.ts";
+import Base from "../../layouts/Base.astro";
+
+export function getStaticPaths() {
+	return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = routeLocale(Astro.currentLocale);
+const t = (key: MessageKey): string => translate(lang, key);
+
+/** A message cut around its `{slot}`s, so each slot can be marked up on its own. */
+function parts(key: MessageKey): ReadonlyArray<string> {
+	return t(key).split(/(\{[a-z]+\})/u);
+}
+
+// Every line here matches what src/lib/analytics and src/tools/pdf/telemetry.ts actually send.
+const sent: ReadonlyArray<readonly [MessageKey, MessageKey | undefined]> = [
+	["privacy.sent.visit", "privacy.sent.visit.note"],
+	["privacy.sent.files", "privacy.sent.files.note"],
+	["privacy.sent.pdf", "privacy.sent.pdf.note"],
+	["privacy.sent.error", "privacy.sent.error.note"],
+	["privacy.sent.device", undefined],
+	["privacy.sent.speed", "privacy.sent.speed.note"],
+];
+
+const never: ReadonlyArray<MessageKey> = [
+	"privacy.never.files",
+	"privacy.never.names",
+	"privacy.never.typed",
+	"privacy.never.address",
+	"privacy.never.device",
+];
+---
+
+<Base title="privacy.meta" description="privacy.description" page="privacy">
+	<article class="report">
+		<h1 class="display">{t("privacy.title")}</h1>
+		<p class="lead">
+			{parts("privacy.lead").map((part) => (part === "{never}" ? <em>{t("privacy.lead.never")}</em> : part))}
+		</p>
+
+		<div class="lists">
+			<section class="riso-card list" aria-labelledby="sent-title">
+				<h2 class="label" id="sent-title">{t("privacy.sent")}</h2>
+				<ul>
+					{
+						sent.map(([item, note]) => (
+							<li>
+								{t(item)}
+								{note !== undefined && <small>{t(note)}</small>}
+							</li>
+						))
+					}
+				</ul>
+			</section>
+
+			<section class="riso-card list never" aria-labelledby="never-title">
+				<h2 class="label" id="never-title">{t("privacy.never")}</h2>
+				<ul>{never.map((item) => <li>{t(item)}</li>)}</ul>
+			</section>
+		</div>
+
+		<div class="notes">
+			<section>
+				<h2 class="display">{t("privacy.stored.title")}</h2>
+				<p>{t("privacy.stored.body")}</p>
+			</section>
+			<section>
+				<h2 class="display">{t("privacy.off.title")}</h2>
+				<p>
+					{
+						parts("privacy.off.body").map((part) =>
+							part === "{dnt}" ? (
+								<kbd>{t("privacy.off.dnt")}</kbd>
+							) : part === "{gpc}" ? (
+								<kbd>{t("privacy.off.gpc")}</kbd>
+							) : (
+								part
+							),
+						)
+					}
+				</p>
+			</section>
+		</div>
+
+		<p class="receiver">{t("privacy.receiver")}</p>
+	</article>
+</Base>
+
+<style>
+	.report {
+		display: flex;
+		flex-direction: column;
+		gap: 26px;
+		width: min(820px, 100%);
+		align-self: start;
+		padding-top: 24px;
+	}
+
+	h1 {
+		font-size: 48px;
+		line-height: 1;
+	}
+
+	.lead {
+		max-width: 640px;
+		font-size: 17px;
+		line-height: 1.5;
+	}
+
+	em {
+		font-style: normal;
+		color: var(--accent);
+	}
+
+	.lists {
+		display: grid;
+		grid-template-columns: 1.25fr 1fr;
+		gap: 28px;
+	}
+
+	.list {
+		padding: 22px 22px 24px;
+	}
+
+	/* Filled with the page color, so the neptune layer only shows as the offset behind. */
+	.list::after {
+		background: var(--bg);
+	}
+
+	.never::after {
+		border-color: var(--accent);
+	}
+
+	.list h2 {
+		margin-bottom: 14px;
+		letter-spacing: 0.12em;
+	}
+
+	.never h2 {
+		color: var(--accent);
+	}
+
+	ul {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 0;
+		list-style: none;
+	}
+
+	li {
+		position: relative;
+		padding-left: 22px;
+		font-size: 15px;
+		line-height: 1.45;
+	}
+
+	/* Square bullets for what is sent, a lime × for what never leaves. */
+	li::before {
+		content: "";
+		position: absolute;
+		top: 7px;
+		left: 0;
+		width: 8px;
+		height: 8px;
+		background: var(--ink-muted);
+	}
+
+	.never li::before {
+		content: "×";
+		top: -1px;
+		width: auto;
+		height: auto;
+		background: none;
+		color: var(--accent);
+		font: 800 17px var(--font-sans);
+	}
+
+	small {
+		display: block;
+		margin-top: 3px;
+		color: var(--ink-muted);
+		font: 500 12px var(--font-mono);
+	}
+
+	.notes {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 28px;
+		padding-top: 22px;
+		border-top: var(--border) solid var(--surface);
+	}
+
+	.notes h2 {
+		margin-bottom: 8px;
+		font-size: 19px;
+		letter-spacing: -0.03em;
+	}
+
+	.notes p {
+		color: var(--ink-muted);
+		font-size: 14.5px;
+		line-height: 1.5;
+	}
+
+	kbd {
+		padding: 1px 6px;
+		border: 1.5px solid var(--line);
+		background: var(--bg);
+		color: var(--ink);
+		font: 500 12px var(--font-mono);
+	}
+
+	.receiver {
+		color: var(--ink-muted);
+		font: 500 12px var(--font-mono);
+	}
+
+	@media (max-width: 720px) {
+		h1 {
+			font-size: 36px;
+		}
+
+		.lead {
+			font-size: 16px;
+		}
+
+		.lists,
+		.notes {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 26px;
+		}
+	}
+</style>

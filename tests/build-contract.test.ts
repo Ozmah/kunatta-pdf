@@ -4,6 +4,7 @@ import { Glob } from "bun";
 
 import config from "../astro.config.ts";
 import { defaultLocale, locales } from "../src/i18n/locales.ts";
+import { indexedPages } from "../src/lib/crawlers.ts";
 
 /**
  * What the built site promises to browsers and crawlers, checked on `dist/` itself.
@@ -35,7 +36,11 @@ async function built(path: string): Promise<string> {
 	return file.text();
 }
 
-const homes = locales.map((lang) => `${lang}/index.html`);
+/** Every indexable page with the path after its locale prefix ("" is the home). */
+const indexed = indexedPages.flatMap((rest) =>
+	locales.map((lang) => [`${lang}/${rest}index.html`, lang, rest] as const),
+);
+
 const notFound = locales.map((lang) => `${lang}/404/index.html`);
 
 describe("build contract", () => {
@@ -75,23 +80,26 @@ describe("build contract", () => {
 		}
 	});
 
-	test.each(homes)("%s has an absolute canonical and every language alternate", async (page) => {
-		const html = await built(page);
-		const lang = page.split("/")[0];
+	test.each(indexed)(
+		"%s has an absolute canonical and points to itself in every language",
+		async (page, lang, rest) => {
+			const html = await built(page);
 
-		expect(attributes(html, 'link[rel="canonical"]', "href")).toEqual([
-			new URL(`/${lang}/`, site).href,
-		]);
-		expect(attributes(html, 'link[rel="alternate"]', "hreflang").toSorted()).toEqual(
-			[...locales, "x-default"].toSorted(),
-		);
+			expect(attributes(html, 'link[rel="canonical"]', "href")).toEqual([
+				new URL(`/${lang}/${rest}`, site).href,
+			]);
+			expect(attributes(html, 'link[rel="alternate"]', "hreflang").toSorted()).toEqual(
+				[...locales, "x-default"].toSorted(),
+			);
+			expect(attributes(html, 'link[rel="alternate"]', "href").toSorted()).toEqual(
+				[...locales, defaultLocale]
+					.map((code) => new URL(`/${code}/${rest}`, site).href)
+					.toSorted(),
+			);
 
-		for (const href of attributes(html, 'link[rel="alternate"]', "href")) {
-			expect(new URL(href).origin).toBe(site.origin);
-		}
-
-		expect(attributes(html, 'meta[name="robots"]', "content")).toEqual([]);
-	});
+			expect(attributes(html, 'meta[name="robots"]', "content")).toEqual([]);
+		},
+	);
 
 	test.each(notFound)("%s stays out of search results", async (page) => {
 		const html = await built(page);
@@ -110,13 +118,13 @@ describe("build contract", () => {
 		]);
 	});
 
-	test("robots.txt points to the absolute sitemap, which lists every home", async () => {
+	test("robots.txt points to the absolute sitemap, which lists every indexed page", async () => {
 		expect(await built("robots.txt")).toContain(`Sitemap: ${new URL("/sitemap.xml", site).href}`);
 
 		const sitemap = await built("sitemap.xml");
 
-		for (const lang of locales) {
-			expect(sitemap).toContain(`<loc>${new URL(`/${lang}/`, site).href}</loc>`);
+		for (const [, lang, rest] of indexed) {
+			expect(sitemap).toContain(`<loc>${new URL(`/${lang}/${rest}`, site).href}</loc>`);
 		}
 
 		expect(sitemap).not.toContain("/404/");

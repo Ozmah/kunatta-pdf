@@ -31,6 +31,10 @@ Several files, or anything pasted, go into a list. You can reorder the rows by d
 
 You can choose the page size (Letter, A4 or original), the quality (light, normal or max), the PDF name and a password for the result. The device remembers the size, the quality and whether to protect the PDF. It never stores the name or any password.
 
+## Privacy
+
+Production builds send anonymous usage stats to PostHog: page views, how many files were added and of what kind, whether the PDF was made or failed and with which settings, Web Vitals, browser, device type and the referring domain. Counts, sizes and times go out as ranges, and every event is rebuilt from an allowlist in `src/lib/analytics/` before it leaves. File names, file contents, the PDF name and passwords are never sent, nothing is stored on the device, and Do Not Track or Global Privacy Control turns it off. The `/privacy/` page lists the same in both languages. Preview builds ship no analytics at all.
+
 ## Stack
 
 - Static [Astro](https://astro.build) site with no UI framework. Each part of the tool is a custom element that owns its markup.
