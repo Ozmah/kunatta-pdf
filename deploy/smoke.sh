@@ -16,7 +16,8 @@ trap cleanup EXIT INT TERM
 docker run -d --name "$name" -p "$port:$port" -e APP_ENV="$app_env" -e PORT="$port" "$image" >/dev/null
 
 attempt=0
-until curl --fail --silent "http://127.0.0.1:$port/health" >/dev/null 2>&1; do
+# --max-time bounds each attempt, so 50 attempts bound the wait.
+until curl --fail --silent --max-time 2 "http://127.0.0.1:$port/health" >/dev/null 2>&1; do
 	attempt=$((attempt + 1))
 
 	if [ "$attempt" -ge 50 ]; then

@@ -128,7 +128,7 @@ export const en = {
 	"privacy.lead.never": "never uploaded",
 	"privacy.sent": "What is sent",
 	"privacy.sent.visit": "That you opened a page, in which language and which site you came from",
-	"privacy.sent.visit.note": "only the domain: google.com, reddit.com",
+	"privacy.sent.visit.note": "only the domain and campaign tags: google.com, utm_source=reddit",
 	"privacy.sent.files": "When you add files: how many, what kind and their total size",
 	"privacy.sent.files.note": "as ranges: 2-5 files, 1-10 MB",
 	"privacy.sent.pdf":
@@ -137,6 +137,8 @@ export const en = {
 	"privacy.sent.error": "If something failed, the kind of error",
 	"privacy.sent.error.note": "ConversionFailed, never the message",
 	"privacy.sent.device": "Browser and system without version, phone or computer, and the country",
+	"privacy.sent.time": "How long you stayed on the page",
+	"privacy.sent.time.note": "in seconds, when you leave",
 	"privacy.sent.speed": "How fast the page loaded",
 	"privacy.sent.speed.note": "Web Vitals",
 	"privacy.never": "What never leaves",
