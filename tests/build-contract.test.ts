@@ -4,6 +4,7 @@ import { Glob } from "bun";
 
 import config from "../astro.config.ts";
 import { defaultLocale, locales } from "../src/i18n/locales.ts";
+import { isProjectKey } from "../src/lib/analytics/events.ts";
 import { indexedPages } from "../src/lib/crawlers.ts";
 
 /**
@@ -65,9 +66,9 @@ describe("build contract", () => {
 	});
 
 	test("only a production build with a project key loads analytics", async () => {
+		// The same predicate Analytics.astro uses, so a malformed key expects no script either.
 		const expected =
-			process.env["APP_ENV"] === "production" &&
-			(process.env["PUBLIC_POSTHOG_KEY"] ?? "").startsWith("phc_");
+			process.env["APP_ENV"] === "production" && isProjectKey(process.env["PUBLIC_POSTHOG_KEY"]);
 
 		const pages = await Array.fromAsync(new Glob("**/*.html").scan({ cwd: "dist" }));
 
