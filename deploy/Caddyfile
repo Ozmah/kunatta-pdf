@@ -1,0 +1,83 @@
+{
+	admin off
+	auto_https off
+	persist_config off
+}
+
+# The Content-Security-Policy is what makes "nothing leaves your browser" a browser guarantee:
+# scripts and connections only reach this origin, plus PostHog for the anonymous stats.
+# It is set on every response, because the PDF worker takes the policy of its own script.
+# blob: images are the list thumbnails; inline styles are Astro's scoped <style> and style="".
+(security_headers) {
+	header {
+		-Server
+		Content-Security-Policy "default-src 'self'; script-src 'self'; worker-src 'self'; connect-src 'self' https://us.i.posthog.com; img-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Resource-Policy "same-origin"
+		Permissions-Policy "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+	}
+}
+
+:{$PORT:3000} {
+	root * /srv
+
+	import security_headers
+
+	# Hashed build assets never change; the Office fonts keep their names, so they may.
+	@immutable path /_astro/*
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+	@fonts path /fonts/*
+	header @fonts Cache-Control "public, max-age=604800"
+
+	@documents not path /_astro/* /fonts/*
+	header @documents Cache-Control "public, max-age=0, must-revalidate"
+
+	import /etc/caddy/environments/{$APP_ENV:preview}.caddy
+
+	# Static hosts cannot negotiate a language, so the root sends visitors to the default one.
+	# dist/index.html does the same with a meta refresh for any other host.
+	@root path /
+	redir @root /es/ 302
+
+	handle /health {
+		header Cache-Control "no-store"
+		header Content-Type "application/json; charset=utf-8"
+		header X-Robots-Tag "noindex, nofollow"
+		respond `{"status":"healthy"}` 200
+	}
+
+	# Routes end in a slash; file_server redirects /es/privacy to /es/privacy/ on its own.
+	handle {
+		file_server {
+			precompressed zstd br gzip
+		}
+	}
+
+	# A missing page answers in the language of its path, Spanish otherwise.
+	handle_errors 404 {
+		import security_headers
+		import /etc/caddy/environments/{$APP_ENV:preview}-error.caddy
+
+		@english path /en /en/*
+		handle @english {
+			rewrite * /en/404/index.html
+			file_server
+		}
+
+		handle {
+			rewrite * /es/404/index.html
+			file_server
+		}
+	}
+
+	handle_errors {
+		import security_headers
+		header Cache-Control "no-store"
+		respond "{err.status_code} {err.status_text}"
+	}
+}
