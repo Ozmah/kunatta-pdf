@@ -1,0 +1,26 @@
+---
+import { PUBLIC_POSTHOG_KEY } from "astro:env/client";
+import { APP_ENV } from "astro:env/server";
+
+import { isProjectKey } from "../lib/analytics/events.ts";
+
+// Only production builds with a valid project key ship the analytics script at all.
+const enabled = APP_ENV === "production" && isProjectKey(PUBLIC_POSTHOG_KEY);
+---
+
+{
+	enabled && (
+		<script>
+			import { PUBLIC_POSTHOG_KEY } from "astro:env/client";
+
+			import { isProjectKey } from "../lib/analytics/events.ts";
+			import { startAnalytics } from "../lib/analytics/runtime.ts";
+			import { pdfEvents } from "../tools/pdf/telemetry.ts";
+
+			// Events name the canonical site, whatever host served the page.
+			if (isProjectKey(PUBLIC_POSTHOG_KEY)) {
+				startAnalytics(PUBLIC_POSTHOG_KEY, new URL(import.meta.env.SITE), pdfEvents);
+			}
+		</script>
+	)
+}

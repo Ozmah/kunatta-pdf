@@ -58,6 +58,26 @@ describe("privacy", () => {
 		}
 	});
 
+	test("the analytics host is named in one module, which the worker never reaches", async () => {
+		const naming: Array<string> = [];
+		const workerImports: Array<string> = [];
+
+		for await (const path of scanned.scan({ dot: false })) {
+			if (path.endsWith(".test.ts")) continue;
+
+			const source = await Bun.file(path).text();
+
+			if (source.includes("posthog.com")) naming.push(path);
+
+			if (path.startsWith("src/tools/pdf/worker/") && /lib\/analytics|posthog/u.test(source)) {
+				workerImports.push(path);
+			}
+		}
+
+		expect(naming).toEqual(["src/lib/analytics/runtime.ts"]);
+		expect(workerImports).toEqual([]);
+	});
+
 	test("the guard catches a third-party stylesheet", () => {
 		const sample = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter">';
 

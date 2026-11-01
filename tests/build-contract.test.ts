@@ -59,6 +59,22 @@ describe("build contract", () => {
 		}
 	});
 
+	test("only a production build with a project key loads analytics", async () => {
+		const expected =
+			process.env["APP_ENV"] === "production" &&
+			(process.env["PUBLIC_POSTHOG_KEY"] ?? "").startsWith("phc_");
+
+		const pages = await Array.fromAsync(new Glob("**/*.html").scan({ cwd: "dist" }));
+
+		for (const page of pages.filter((path) => path !== "index.html")) {
+			const loads = attributes(await built(page), "script[src]", "src").some((src) =>
+				src.includes("/Analytics."),
+			);
+
+			expect({ page, loads }).toEqual({ page, loads: expected });
+		}
+	});
+
 	test.each(homes)("%s has an absolute canonical and every language alternate", async (page) => {
 		const html = await built(page);
 		const lang = page.split("/")[0];

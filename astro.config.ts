@@ -1,4 +1,4 @@
-import { defineConfig, fontProviders } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 
 import { defaultLocale, locales } from "./src/i18n/locales.ts";
 
@@ -10,6 +10,19 @@ const latin =
 export default defineConfig({
 	output: "static",
 	site: "https://pdf.kunatta.tools",
+	env: {
+		schema: {
+			// Fails closed: anything but an explicit production build is a preview without analytics.
+			APP_ENV: envField.enum({
+				context: "server",
+				access: "public",
+				values: ["preview", "production"],
+				default: "preview",
+			}),
+			// Public by design: a PostHog project key only lets browsers send events.
+			PUBLIC_POSTHOG_KEY: envField.string({ context: "client", access: "public", optional: true }),
+		},
+	},
 	vite: {
 		// ES module workers can split: reamkit and @libpdf/core load only when a file needs them.
 		worker: { format: "es" },

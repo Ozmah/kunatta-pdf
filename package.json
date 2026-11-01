@@ -31,8 +31,10 @@
 		"@libpdf/core": "0.5.3",
 		"astro": "7.4.2",
 		"better-result": "3.0.1",
+		"posthog-js": "1.444.0",
 		"reamkit": "1.33.1",
-		"valibot": "1.5.0"
+		"valibot": "1.5.0",
+		"web-vitals": "6.2.3"
 	},
 	"devDependencies": {
 		"@astrojs/check": "0.9.12",
