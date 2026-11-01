@@ -6,6 +6,7 @@
 		"tests/**/*",
 		"e2e/**/*",
 		"deploy/**/*",
+		"og/**/*",
 		"astro.config.ts",
 		"oxlint.config.ts",
 		"playwright.config.ts"

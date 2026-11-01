@@ -3,6 +3,11 @@ export const es = {
 	"meta.title": "Kunatta · Todo a PDF",
 	"meta.description":
 		"Suelta o pega fotos, documentos y PDFs y obtén un solo PDF. Todo ocurre en tu navegador.",
+	"og.title": "Todo a {pdf}",
+	"og.title.rest": "en tu navegador",
+	"og.note": "Nada se sube. Sin cuentas.",
+	"og.note.rest": "Tus archivos nunca salen de tu navegador.",
+	"og.alt": "Kunatta: fotos y documentos que se convierten en un PDF, todo en tu navegador",
 	"flow.label": "Cualquier archivo se convierte en PDF",
 	"drop.title": "Suéltalo aquí",
 	"drop.paste": "o pega con",

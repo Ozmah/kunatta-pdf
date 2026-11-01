@@ -4,6 +4,11 @@ export const en = {
 	"meta.title": "Kunatta · Anything to PDF",
 	"meta.description":
 		"Drop or paste photos, documents and PDFs and get a single PDF back. Everything happens in your browser.",
+	"og.title": "Anything to {pdf}",
+	"og.title.rest": "in your browser",
+	"og.note": "Nothing is uploaded. No accounts.",
+	"og.note.rest": "Your files never leave your browser.",
+	"og.alt": "Kunatta: photos and documents turning into one PDF, all in your browser",
 	"flow.label": "Any file becomes a PDF",
 	"drop.title": "Drop it here",
 	"drop.paste": "or paste with",
