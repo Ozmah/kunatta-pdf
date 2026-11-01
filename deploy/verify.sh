@@ -14,12 +14,18 @@ fail() {
 	failures=$((failures + 1))
 }
 
+# Every request has a deadline: a server that accepts the connection and never answers fails
+# the check instead of holding it until the CI job times out.
+fetch() {
+	curl --silent --connect-timeout 5 --max-time 20 "$@"
+}
+
 status() {
-	curl --silent --output /dev/null --write-out "%{http_code}" "$base$1"
+	fetch --output /dev/null --write-out "%{http_code}" "$base$1"
 }
 
 headers() {
-	curl --silent --dump-header - --output /dev/null "$@"
+	fetch --dump-header - --output /dev/null "$@"
 }
 
 expect_status() {
@@ -52,7 +58,7 @@ for case in "/en/missing en" "/es/no-existe es" "/no-existe es"; do
 	route=${case% *}
 	lang=${case#* }
 	expect_status "$route" 404
-	curl --silent "$base$route" | grep -q "<html lang=\"$lang\"" || fail "$route is not the $lang not-found page"
+	fetch "$base$route" | grep -q "<html lang=\"$lang\"" || fail "$route is not the $lang not-found page"
 done
 
 for route in /es/ /en/missing; do
@@ -66,10 +72,10 @@ for route in /es/ /en/missing; do
 	refuse_header "$route" "$page" "Server:"
 done
 
-health=$(curl --silent "$base/health")
+health=$(fetch "$base/health")
 [ "$health" = '{"status":"healthy"}' ] || fail "/health answered $health"
 
-home=$(curl --silent "$base/es/")
+home=$(fetch "$base/es/")
 
 # Pages and scripts come precompressed, not compressed on every request.
 compressed=$(headers -H "Accept-Encoding: zstd, br, gzip" "$base/es/")
@@ -80,7 +86,7 @@ script=$(printf "%s" "$home" | grep -o '/_astro/[^"]*\.js' | head -n 1)
 asset=$(headers "$base$script")
 
 font=$(headers "$base/fonts/office/Arimo_400Regular.ttf")
-robots=$(curl --silent "$base/robots.txt")
+robots=$(fetch "$base/robots.txt")
 
 if [ "$app_env" = production ]; then
 	expect_header "$script" "$asset" "Cache-Control: public, max-age=31536000, immutable"
