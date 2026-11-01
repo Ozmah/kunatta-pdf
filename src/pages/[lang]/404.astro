@@ -1,0 +1,176 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+
+import { locales } from "../../i18n/locales.ts";
+import { routeLocale, translate } from "../../i18n/translate.ts";
+import Base from "../../layouts/Base.astro";
+
+export function getStaticPaths() {
+	return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = routeLocale(Astro.currentLocale);
+---
+
+<Base title="notFound.meta" page="not_found" noindex>
+	<section class="riso-card missing">
+		<div class="art" aria-hidden="true">
+			<span class="sheet"><span class="tag">PDF</span></span>
+			<!-- A PDF viewer's page field, stuck on a page that does not exist. Decoration only. -->
+			<span class="pager">
+				<span class="step">
+					<svg width="16" height="16" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg>
+				</span>
+				<span>{translate(lang, "notFound.page")}</span>
+				<span class="number">404<span class="caret"></span></span>
+				<span>{translate(lang, "notFound.of")} 2</span>
+				<span class="step off">
+					<svg width="16" height="16" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+				</span>
+			</span>
+		</div>
+		<h1 class="display">{translate(lang, "notFound.title")}</h1>
+		<a class="btn btn-primary" href={getRelativeLocaleUrl(lang)} data-home>
+			{translate(lang, "notFound.home")}
+			<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+		</a>
+	</section>
+</Base>
+
+<style>
+	.missing {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 14px;
+		width: min(640px, 100%);
+		min-height: 400px;
+		padding: 32px 24px;
+		text-align: center;
+	}
+
+	.art {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 22px;
+	}
+
+	/* A blank page: cheviot sheet, dashed margins and a folded corner. */
+	.sheet {
+		position: relative;
+		width: 96px;
+		height: 124px;
+		border: var(--border) solid var(--color-midnight);
+		background: var(--color-cheviot);
+		box-shadow: -5px 5px 0 var(--color-midnight);
+		transform: rotate(-3deg);
+	}
+
+	.sheet::before {
+		content: "";
+		position: absolute;
+		inset: 14px 12px;
+		border: var(--border) dashed var(--color-grape);
+	}
+
+	.sheet::after {
+		content: "";
+		position: absolute;
+		top: -2px;
+		right: -2px;
+		width: 22px;
+		height: 22px;
+		border-bottom: var(--border) solid var(--color-midnight);
+		border-left: var(--border) solid var(--color-midnight);
+		background: linear-gradient(225deg, var(--surface) 0 50%, var(--color-grape) 50%);
+	}
+
+	.tag {
+		position: absolute;
+		top: -12px;
+		left: -10px;
+		z-index: 1;
+		padding: 2px 6px;
+		border: var(--border) solid var(--color-midnight);
+		background: var(--accent);
+		color: var(--on-accent);
+		font: 700 10px var(--font-mono);
+		letter-spacing: 0.04em;
+	}
+
+	.pager {
+		display: flex;
+		gap: 10px;
+		align-items: center;
+		padding: 6px;
+		border: var(--border) solid var(--line);
+		background: var(--bg);
+		box-shadow: -4px 4px 0 var(--surface);
+		color: var(--ink-muted);
+		font: 600 13px var(--font-mono);
+	}
+
+	.step {
+		display: grid;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		border: var(--border) solid var(--surface);
+	}
+
+	.step svg {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2.6;
+		stroke-linecap: square;
+	}
+
+	.step.off {
+		opacity: 0.3;
+	}
+
+	/* Looks focused and typed into; it is not a control. */
+	.number {
+		display: flex;
+		align-items: center;
+		height: 32px;
+		padding: 0 10px;
+		border: var(--border) solid var(--ink);
+		outline: 3px solid var(--focus);
+		outline-offset: 2px;
+		color: var(--ink);
+		font-size: 15px;
+		font-weight: 700;
+	}
+
+	.caret {
+		width: 2px;
+		height: 18px;
+		margin-left: 2px;
+		background: var(--accent);
+	}
+
+	h1 {
+		margin-top: 10px;
+		font-size: 40px;
+		line-height: 1.05;
+		text-wrap: balance;
+	}
+
+	.btn {
+		margin-top: 14px;
+		text-decoration: none;
+	}
+
+	@media (max-width: 520px) {
+		h1 {
+			font-size: 30px;
+		}
+
+		.btn {
+			align-self: stretch;
+		}
+	}
+</style>

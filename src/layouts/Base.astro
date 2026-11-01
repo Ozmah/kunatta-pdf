@@ -2,12 +2,15 @@
 import { Font } from "astro:assets";
 import { getRelativeLocaleUrl } from "astro:i18n";
 
+import Analytics from "../components/Analytics.astro";
 import Footer from "../components/Footer.astro";
 import LanguageSwitch from "../components/LanguageSwitch.astro";
 import Logo from "../components/Logo.astro";
+import type { MessageKey } from "../i18n/es.ts";
 import { defaultLocale, locales } from "../i18n/locales.ts";
 import { routeLocale, translate } from "../i18n/translate.ts";
-import { localeHome, siteOrigin } from "../lib/crawlers.ts";
+import type { Page } from "../lib/analytics/events.ts";
+import { localePage, siteOrigin } from "../lib/crawlers.ts";
 import "../styles/tokens.css";
 import "../styles/base.css";
 import "../styles/buttons.css";
@@ -17,8 +20,28 @@ import "../styles/notices.css";
 import "../styles/surfaces.css";
 import "../styles/dialogs.css";
 
+interface Props {
+	/** Pages that must stay out of search results: no canonical, no language alternates. */
+	readonly noindex?: boolean;
+	readonly title?: MessageKey;
+	readonly description?: MessageKey;
+	/** Which page analytics reports; it never sees the address itself. */
+	readonly page?: Page;
+}
+
+const {
+	noindex = false,
+	title = "meta.title",
+	description = "meta.description",
+	page = "tool",
+} = Astro.props;
+
 const lang = routeLocale(Astro.currentLocale);
 const site = siteOrigin(Astro.site);
+
+// The same page in every language: only the locale prefix changes.
+const home = getRelativeLocaleUrl(lang);
+const rest = Astro.url.pathname.startsWith(home) ? Astro.url.pathname.slice(home.length) : "";
 ---
 
 <!doctype html>
@@ -28,16 +51,26 @@ const site = siteOrigin(Astro.site);
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="dark" />
 		<meta name="theme-color" content="#002233" />
-		<title>{translate(lang, "meta.title")}</title>
-		<meta name="description" content={translate(lang, "meta.description")} />
-		<link rel="canonical" href={new URL(Astro.url.pathname, site).href} />
-		{locales.map((code) => <link rel="alternate" hreflang={code} href={localeHome(site, code)} />)}
-		<link rel="alternate" hreflang="x-default" href={localeHome(site, defaultLocale)} />
+		<title>{translate(lang, title)}</title>
+		<meta name="description" content={translate(lang, description)} />
+		{
+			noindex ? (
+				<meta name="robots" content="noindex" />
+			) : (
+				<>
+					<link rel="canonical" href={new URL(Astro.url.pathname, site).href} />
+					{locales.map((code) => (
+						<link rel="alternate" hreflang={code} href={localePage(site, code, rest)} />
+					))}
+					<link rel="alternate" hreflang="x-default" href={localePage(site, defaultLocale, rest)} />
+				</>
+			)
+		}
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<Font cssVariable="--font-inter" preload />
 		<Font cssVariable="--font-paper-mono" preload />
 	</head>
-	<body>
+	<body data-page={page}>
 		<header>
 			<Logo href={getRelativeLocaleUrl(lang)} />
 			<LanguageSwitch />
@@ -46,6 +79,7 @@ const site = siteOrigin(Astro.site);
 			<slot />
 		</main>
 		<Footer />
+		<Analytics />
 	</body>
 </html>
 

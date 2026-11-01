@@ -1,11 +1,22 @@
 ---
+import { getRelativeLocaleUrl } from "astro:i18n";
+
 import { routeLocale, translate } from "../i18n/translate.ts";
 
 const lang = routeLocale(Astro.currentLocale);
+const measure = getRelativeLocaleUrl(lang, "privacy/");
 ---
 
 <footer class="footer">
-	<span>{translate(lang, "footer.notice")}</span>
+	<span>
+		{translate(lang, "footer.notice")}
+		<a
+			class="measure"
+			href={measure}
+			aria-current={Astro.url.pathname === measure ? "page" : undefined}
+			>{translate(lang, "footer.measure")}</a
+		>
+	</span>
 	<span class="links">
 		<a class="author" href="https://ozmah.dev" target="_blank" rel="noopener noreferrer"
 			>{translate(lang, "footer.author")}</a
@@ -55,7 +66,8 @@ const lang = routeLocale(Astro.currentLocale);
 		outline-offset: 3px;
 	}
 
-	.author {
+	.author,
+	.measure {
 		color: var(--ink);
 		text-decoration: underline;
 		text-decoration-color: var(--accent);
@@ -73,8 +85,17 @@ const lang = routeLocale(Astro.currentLocale);
 		color: var(--ink-muted);
 	}
 
+	.measure {
+		margin-left: 6px;
+	}
+
+	.measure[aria-current="page"] {
+		color: var(--accent);
+	}
+
 	@media (hover: hover) and (pointer: fine) {
-		.author:hover {
+		.author:hover,
+		.measure:hover {
 			color: var(--accent);
 		}
 

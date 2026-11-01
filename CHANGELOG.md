@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Fixed: What we measure now also lists the campaign tags a link may carry and how long you stayed on the page, which the usage stats already sent.
+
+## 0.7.0 · 2026-11-01
+
+- A "What we measure" page, linked from the footer next to the privacy note, lists in both languages what the usage stats send, what never leaves the browser and how to turn them off; each page now points search engines to its own version in the other language.
+- Production sends anonymous usage stats: page views, files added, PDFs made and failed (as counts, kinds, ranges and settings, never names, contents or passwords), Web Vitals, browser, device type, referring site and short campaign tags. Nothing is stored on the device, no visitor profile is built, and nothing is sent with Do Not Track or Global Privacy Control on.
+- A missing address shows a not-found page in the language of its path, with a PDF stuck on page 404 of 2 and a button back to the tool; search engines are told not to index it.
+
 ## 0.6.0 · 2026-10-31
 
 - The footer sits closer together, "made by Ozmah" opens ozmah.dev, and a GitHub button next to it opens the Kunatta repository.
