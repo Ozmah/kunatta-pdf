@@ -1,6 +1,6 @@
 {
 	"name": "kunatta",
-	"version": "0.6.0",
+	"version": "0.7.0",
 	"private": true,
 	"description": "Browser-only tools. Drop anything, get a PDF. Nothing leaves your device.",
 	"license": "MIT",
