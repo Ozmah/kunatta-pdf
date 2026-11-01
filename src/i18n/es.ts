@@ -126,7 +126,8 @@ export const es = {
 	"privacy.lead.never": "nunca se suben",
 	"privacy.sent": "Lo que se manda",
 	"privacy.sent.visit": "Que abriste una página, en qué idioma y de qué sitio llegaste",
-	"privacy.sent.visit.note": "solo el dominio: google.com, reddit.com",
+	"privacy.sent.visit.note":
+		"solo el dominio y etiquetas de campaña: google.com, utm_source=reddit",
 	"privacy.sent.files": "Al agregar archivos: cuántos, de qué tipo y su tamaño total",
 	"privacy.sent.files.note": "en rangos: 2-5 archivos, 1-10 MB",
 	"privacy.sent.pdf": "Al hacer el PDF: páginas, tamaño, cuánto tardó y los ajustes que elegiste",
@@ -134,6 +135,8 @@ export const es = {
 	"privacy.sent.error": "Si algo falló, el tipo de error",
 	"privacy.sent.error.note": "ConversionFailed, nunca el mensaje",
 	"privacy.sent.device": "Navegador y sistema sin versión, teléfono o computadora, y el país",
+	"privacy.sent.time": "Cuánto tiempo estuviste en la página",
+	"privacy.sent.time.note": "en segundos, al salir",
 	"privacy.sent.speed": "Qué tan rápido cargó la página",
 	"privacy.sent.speed.note": "Web Vitals",
 	"privacy.never": "Lo que nunca sale",

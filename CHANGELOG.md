@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed: What we measure now also lists the campaign tags a link may carry and how long you stayed on the page, which the usage stats already sent.
+
 ## 0.7.0 · 2026-11-01
 
 - A "What we measure" page, linked from the footer next to the privacy note, lists in both languages what the usage stats send, what never leaves the browser and how to turn them off; each page now points search engines to its own version in the other language.
