@@ -41,7 +41,7 @@ refuse_header() {
 	if printf "%s" "$2" | grep -qi "^$3"; then fail "$1 must not send $3"; fi
 }
 
-for route in /es/ /en/ /es/privacy/ /en/privacy/ /robots.txt /sitemap.xml /health /favicon.svg; do
+for route in /es/ /en/ /es/privacy/ /en/privacy/ /robots.txt /sitemap.xml /health /favicon.svg /og/es.png /og/en.png; do
 	expect_status "$route" 200
 done
 

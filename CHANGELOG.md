@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Links shared on social networks and chats show a preview card in the language of the page: the drop zone turning files into a PDF and the promise that nothing is uploaded.
 - Fixed: What we measure now also lists the campaign tags a link may carry and how long you stayed on the page, which the usage stats already sent.
 
 ## 0.7.0 · 2026-11-01

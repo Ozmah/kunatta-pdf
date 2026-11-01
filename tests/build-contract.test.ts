@@ -102,6 +102,28 @@ describe("build contract", () => {
 		},
 	);
 
+	test.each(indexed)(
+		"%s shares its own page with its language's 1200×630 image",
+		async (page, lang, rest) => {
+			const html = await built(page);
+			const image = new URL(`/og/${lang}.png`, site);
+			const png = new Uint8Array(await Bun.file(`dist${image.pathname}`).arrayBuffer());
+			const header = new DataView(png.buffer);
+
+			expect(attributes(html, 'meta[property="og:url"]', "content")).toEqual([
+				new URL(`/${lang}/${rest}`, site).href,
+			]);
+			expect(attributes(html, 'meta[property="og:image"]', "content")).toEqual([image.href]);
+			// PNG width and height sit at bytes 16 and 20 of the IHDR chunk.
+			expect([header.getUint32(16), header.getUint32(20)]).toEqual([1200, 630]);
+			expect(attributes(html, 'meta[property="og:image:width"]', "content")).toEqual(["1200"]);
+			expect(attributes(html, 'meta[property="og:image:height"]', "content")).toEqual(["630"]);
+			expect(attributes(html, 'meta[name="twitter:card"]', "content")).toEqual([
+				"summary_large_image",
+			]);
+		},
+	);
+
 	test.each(notFound)("%s stays out of search results", async (page) => {
 		const html = await built(page);
 
