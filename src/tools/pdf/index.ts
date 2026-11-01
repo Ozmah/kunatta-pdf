@@ -20,6 +20,7 @@ import { degradedNotice, failureReason, rejectionMessage } from "./shared/labels
 import { backedOut } from "./shared/outcome.ts";
 import { SingleElement } from "./single/element.ts";
 import { isMoreFiles, runFast, runSinglePdf, type Outcome } from "./single/run.ts";
+import { filesAdded, pdfFailed, pdfMade, report } from "./telemetry.ts";
 
 type Run = typeof runFast;
 
@@ -116,6 +117,8 @@ export function startPdfTool(root: Document): void {
 		list.working(true);
 
 		const name = list.name();
+		const chosen = settings.read();
+		const started = performance.now();
 		const result = await assembly.generate(name);
 
 		list.working(false);
@@ -124,6 +127,7 @@ export function startPdfTool(root: Document): void {
 		if (result === backedOut) return;
 
 		if (result.isErr()) {
+			report("pdf_failed", pdfFailed("assembly", result.error));
 			dropzone.notice([
 				{ entries: [name], message: translate(locale, failureReason(result.error)) },
 			]);
@@ -138,6 +142,16 @@ export function startPdfTool(root: Document): void {
 			.filter((item) => item.state.kind === "ready" && item.state.file.degraded)
 			.map((item) => item.entry.name);
 
+		report(
+			"pdf_made",
+			pdfMade(
+				"assembly",
+				assembly.items().length,
+				result.value,
+				chosen,
+				performance.now() - started,
+			),
+		);
 		downloads.save(pdf, name);
 		list.done(name, pages, pdf.size);
 		dropzone.notice(
@@ -163,7 +177,10 @@ export function startPdfTool(root: Document): void {
 		show("single");
 		single.converting(entry.name, entry.kind);
 
-		const result: Outcome = await run(entry, converter, settings.read(), prompts);
+		const path = entry.kind === "pdf" ? "single_pdf" : "fast";
+		const chosen = settings.read();
+		const started = performance.now();
+		const result: Outcome = await run(entry, converter, chosen, prompts);
 
 		busy = false;
 
@@ -182,6 +199,7 @@ export function startPdfTool(root: Document): void {
 		}
 
 		if (result.isErr()) {
+			report("pdf_failed", pdfFailed(path, result.error, entry.kind));
 			single.failed(entry.name, entry.kind, failureReason(result.error));
 
 			return;
@@ -189,6 +207,7 @@ export function startPdfTool(root: Document): void {
 
 		const { name, pdf, pages, degraded } = result.value;
 
+		report("pdf_made", pdfMade(path, 1, result.value, chosen, performance.now() - started));
 		downloads.save(pdf, name);
 		// Files turned away on the way in stay listed next to what the conversion reported.
 		dropzone.notice([
@@ -211,12 +230,15 @@ export function startPdfTool(root: Document): void {
 		dropzone.notice(rejections);
 
 		if (assembling) {
+			report("files_added", filesAdded(accepted, rejected.length, origin, "list"));
 			assembly.add(accepted);
 
 			return;
 		}
 
 		const path = choosePath(accepted, origin);
+
+		report("files_added", filesAdded(accepted, rejected.length, origin, path.kind));
 
 		if (path.kind === "assembly") {
 			assembly.add(accepted);

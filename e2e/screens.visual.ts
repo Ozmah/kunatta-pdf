@@ -41,6 +41,16 @@ test("not found in English", async ({ page }) => {
 	await shot(page, "not-found-en");
 });
 
+test("what we measure", async ({ page }) => {
+	await page.goto("/es/privacy/");
+	await shot(page, "privacy");
+});
+
+test("what we measure in English", async ({ page }) => {
+	await page.goto("/en/privacy/");
+	await shot(page, "privacy-en");
+});
+
 test("settings open with a name", async ({ page }) => {
 	await page.locator("[data-gear]").click();
 	await page.locator("[data-settings] input[data-pdf-name]").fill("Entrega final");

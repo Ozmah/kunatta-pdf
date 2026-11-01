@@ -31,6 +31,10 @@ Several files, or anything pasted, go into a list. You can reorder the rows by d
 
 You can choose the page size (Letter, A4 or original), the quality (light, normal or max), the PDF name and a password for the result. The device remembers the size, the quality and whether to protect the PDF. It never stores the name or any password.
 
+## Privacy
+
+Production builds send anonymous usage stats to PostHog: page views, how many files were added and of what kind, whether the PDF was made or failed and with which settings, Web Vitals, browser, device type and the referring domain. Counts, sizes and times go out as ranges, and every event is rebuilt from an allowlist in `src/lib/analytics/` before it leaves. File names, file contents, the PDF name and passwords are never sent, nothing is stored on the device, and Do Not Track or Global Privacy Control turns it off. The `/privacy/` page lists the same in both languages. Preview builds ship no analytics at all.
+
 ## Stack
 
 - Static [Astro](https://astro.build) site with no UI framework. Each part of the tool is a custom element that owns its markup.
@@ -51,6 +55,20 @@ bun run visual        # screenshot comparison inside the Playwright Docker image
 ```
 
 The pre-commit hook runs `bun run check`. The project rules are in [AGENTS.md](AGENTS.md).
+
+## Deployment
+
+The `Dockerfile` builds the site with Bun and serves it with Caddy as an unprivileged user; the final image has no Node, Bun or source. Railway builds it from `railway.toml` and checks `/health`.
+
+`APP_ENV` decides two things. At build time, only `production` with a `PUBLIC_POSTHOG_KEY` ships analytics. At run time, it picks the Caddy rules in `deploy/caddy/`: preview answers with `noindex`, `no-store` and a robots.txt that disallows everything. Anything but `production` is a preview.
+
+`deploy/Caddyfile` sets the Content-Security-Policy, which only lets scripts and connections reach the site itself and PostHog. It also serves the not-found page in the language of the path and precompressed files.
+
+```sh
+docker build --build-arg APP_ENV=preview -t kunatta:preview .
+sh deploy/smoke.sh kunatta:preview preview         # runs the image and checks it
+sh deploy/verify.sh https://pdf.kunatta.tools production   # checks a live deployment
+```
 
 ## License
 
