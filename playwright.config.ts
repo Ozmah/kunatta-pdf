@@ -6,6 +6,10 @@ const ci = process.env["CI"] !== undefined;
 // Screenshots only match pixel for pixel inside the Playwright image (`bun run visual`).
 const visual = process.env["VISUAL"] === "1";
 
+// A running server to test instead of the build, such as the production image with its
+// Content-Security-Policy and headers (`deploy/e2e-image.sh`).
+const target = process.env["E2E_BASE_URL"];
+
 const behavior = [
 	{ name: "chromium", testMatch: "**/*.e2e.ts", use: { ...devices["Desktop Chrome"] } },
 	{ name: "firefox", testMatch: "**/*.e2e.ts", use: { ...devices["Desktop Firefox"] } },
@@ -31,16 +35,18 @@ export default defineConfig({
 		toHaveScreenshot: { animations: "disabled", caret: "hide", scale: "css" },
 	},
 	use: {
-		baseURL: `http://localhost:${port}`,
+		baseURL: target ?? `http://localhost:${port}`,
 		acceptDownloads: true,
 		trace: "retain-on-failure",
 	},
-	webServer: {
-		// Plain Node, so the same command runs on the host and inside the Playwright image.
-		command: "node e2e/support/serve.ts",
-		env: { PORT: String(port) },
-		url: `http://localhost:${port}/es/`,
-		reuseExistingServer: !ci,
-	},
+	// Plain Node, so the same command runs on the host and inside the Playwright image.
+	...(target === undefined && {
+		webServer: {
+			command: "node e2e/support/serve.ts",
+			env: { PORT: String(port) },
+			url: `http://localhost:${port}/es/`,
+			reuseExistingServer: !ci,
+		},
+	}),
 	projects: visual ? screens : behavior,
 });
