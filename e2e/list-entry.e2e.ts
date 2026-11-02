@@ -93,6 +93,33 @@ test("Atrás from an empty list goes straight back to the drop zone", async ({ p
 	await expect(compose(page)).toBeFocused();
 });
 
+test("files still being read when Atrás leaves the empty list are dropped with it", async ({
+	page,
+}) => {
+	await compose(page).click();
+
+	// The drop and Atrás in the same tick: the files are still being read when the list closes.
+	await page.evaluate(() => {
+		const transfer = new DataTransfer();
+
+		transfer.items.add(new File(["a"], "a.txt", { type: "text/plain" }));
+		transfer.items.add(new File(["b"], "b.txt", { type: "text/plain" }));
+		document
+			.querySelector("[data-add]")
+			?.dispatchEvent(
+				new DragEvent("drop", { dataTransfer: transfer, bubbles: true, cancelable: true }),
+			);
+		document.querySelector<HTMLButtonElement>("[data-leave]")?.click();
+	});
+
+	// A file dropped next is read after them: by the time it converts, they had their chance.
+	const result = await downloadOf(page, () => drop(page, [text("despues.txt", "después")]));
+
+	expect(result.name).toBe("despues.pdf");
+	await expect(page.locator("[data-assembly]")).toBeHidden();
+	await expect(rows(page)).toHaveCount(0);
+});
+
 test("Atrás with files asks first: Quedarme keeps them, leaving empties the list", async ({
 	page,
 }) => {

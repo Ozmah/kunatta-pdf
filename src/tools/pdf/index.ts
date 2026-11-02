@@ -34,6 +34,8 @@ export function startPdfTool(root: Document): void {
 	const downloads = createDownloader(root);
 	let busy = false;
 	let assembling = false;
+	// Bumped when Atrás empties the list: files still being read were meant for it.
+	let intake = 0;
 	let last: PileEntry | undefined;
 	// The latest "could not convert" line, kept until the user moves on to other files.
 	let rejections: ReadonlyArray<NoticeLine> = [];
@@ -124,6 +126,7 @@ export function startPdfTool(root: Document): void {
 
 		if (total > 0 && !(await prompts.leaveList(total))) return;
 
+		intake += 1;
 		assembly.clear();
 		assembling = false;
 		list.show(false);
@@ -243,9 +246,14 @@ export function startPdfTool(root: Document): void {
 	}
 
 	async function receive(files: ReadonlyArray<File>, origin: Origin): Promise<void> {
-		const current = assembly.items().map((item) => item.entry);
-		const { pile, rejected } = await admit(assembling ? current : [], files);
-		const accepted = assembling ? pile.slice(current.length) : pile;
+		const ticket = intake;
+		const current = assembling ? assembly.items().map((item) => item.entry) : [];
+		const { pile, rejected } = await admit(current, files);
+
+		// Reading files takes a while; if Atrás left the list meanwhile, they go with it.
+		if (ticket !== intake) return;
+
+		const accepted = pile.slice(current.length);
 		const names = rejected.map((rejection) => rejection.fileName);
 
 		rejections =
