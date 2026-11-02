@@ -39,6 +39,8 @@ export interface Assembly {
 	generate(name: string): Promise<GenerateOutcome>;
 	/** Stops a generation in progress; checks resume on their own. */
 	cancel(): void;
+	/** Empties the list and stops the check in progress: its result would only be thrown away. */
+	clear(): void;
 }
 
 export interface AssemblyOptions {
@@ -228,6 +230,14 @@ export function createAssembly(options: AssemblyOptions): Assembly {
 			generation += 1;
 			stopWaiting?.();
 			converter.cancel();
+		},
+
+		clear() {
+			passwords.clear();
+			set([]);
+
+			// Stopping an idle worker would only make the next file wait for a new one.
+			if (running) converter.cancel();
 		},
 	};
 }

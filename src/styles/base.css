@@ -71,6 +71,16 @@ button {
 	color: var(--ink-muted);
 }
 
+/* A key to press, as in "o pega con Ctrl V". */
+.keycap {
+	padding: 2px 7px;
+	border: 1.5px solid var(--line);
+	background: var(--bg);
+	box-shadow: -2px 2px 0 var(--bg);
+	font: 500 12px var(--font-mono);
+	color: var(--ink);
+}
+
 /* Secondary line under a file name: kind, pages, size or a reason. */
 .meta {
 	font: 500 12px var(--font-mono);

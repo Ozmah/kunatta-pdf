@@ -6,7 +6,7 @@ import { translate, translator } from "../../../i18n/translate.ts";
 import { ask, connectBack, inputs } from "../../../lib/dialog.ts";
 import { required } from "../../../lib/dom.ts";
 import { failureReason, kindLabel } from "../shared/labels.ts";
-import type { AssemblyPrompts, Problem, Prompts } from "../shared/prompts.ts";
+import type { AssemblyPrompts, ListPrompts, Problem, Prompts } from "../shared/prompts.ts";
 import type { Settings } from "../shared/settings.ts";
 
 function connectReveal(dialog: HTMLDialogElement, locale: Locale): void {
@@ -33,15 +33,16 @@ export function connectDialogs(
 	host: HTMLElement,
 	locale: Locale,
 	settings: () => Settings,
-): Prompts & AssemblyPrompts {
+): Prompts & AssemblyPrompts & ListPrompts {
 	const single = required<HTMLDialogElement>(host, '[data-dialog="single"]');
 	const summary = required<HTMLDialogElement>(host, '[data-dialog="summary"]');
 	const failTemplate = required<HTMLTemplateElement>(host, "[data-fail-template]");
 	const incoming = required<HTMLDialogElement>(host, '[data-dialog="incoming"]');
 	const result = required<HTMLDialogElement>(host, '[data-dialog="result"]');
+	const leave = required<HTMLDialogElement>(host, '[data-dialog="leave"]');
 	const t = translator(locale);
 
-	for (const dialog of [single, summary, incoming, result]) connectBack(dialog);
+	for (const dialog of [single, summary, incoming, result, leave]) connectBack(dialog);
 
 	const failRow = (problem: Problem): Node => {
 		const row = failTemplate.content.cloneNode(true);
@@ -128,6 +129,14 @@ export function connectDialogs(
 			});
 
 			return (await ask(summary)).choice === "confirm" ? "without" : "back";
+		},
+
+		async leaveList(total) {
+			required(leave, "[data-body]").textContent = interpolate(t("leave.body"), {
+				files: fileCount(locale, total),
+			});
+
+			return (await ask(leave)).choice === "confirm";
 		},
 	};
 }

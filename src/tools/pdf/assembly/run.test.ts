@@ -184,6 +184,85 @@ describe("createAssembly", () => {
 		expect(await pending).toBe(backedOut);
 	});
 
+	test("clearing stops the check in flight, and the list starts over clean", async () => {
+		type Waiting = (result: JobResult) => void;
+
+		const waiting: Array<Waiting> = [];
+		const converted: Array<string> = [];
+		let cancels = 0;
+
+		const hanging: Converter = {
+			convert: (job) => {
+				converted.push(`${job.fileName}${job.password === undefined ? "" : ` ${job.password}`}`);
+
+				return new Promise<JobResult>((resolve) => waiting.push(resolve));
+			},
+			compose: () => Promise.reject(new Error("must not compose")),
+			cancel: () => {
+				cancels += 1;
+
+				for (const resolve of waiting.splice(0)) {
+					resolve(Result.err(new ConversionCancelled({ fileName: "x", message: "x" })));
+				}
+			},
+		};
+
+		const assembly = createAssembly({
+			converter: hanging,
+			settings: () => ({ size: "letter", quality: "normal", password: "off", name: "" }),
+			prompts: {
+				summary: () => Promise.resolve("back"),
+				resultPassword: () => Promise.resolve(undefined),
+			},
+			locale: "es",
+		});
+
+		const seen: Array<number> = [];
+
+		assembly.subscribe((items) => seen.push(items.length));
+		assembly.add([entry("a.pdf", "pdf"), entry("b.jpg")]);
+		assembly.unlock("a.pdf", "abre");
+		await flush();
+		assembly.clear();
+		await flush();
+
+		expect(cancels).toBe(1);
+		expect(assembly.items()).toEqual([]);
+		expect(seen.at(-1)).toBe(0);
+
+		// The same file again: no password is remembered from before.
+		assembly.add([entry("a.pdf", "pdf")]);
+		await flush();
+
+		expect(converted).toEqual(["a.pdf", "a.pdf"]);
+	});
+
+	test("clearing an idle list leaves the worker alone", async () => {
+		let cancels = 0;
+
+		const assembly = createAssembly({
+			converter: {
+				...converter({ converted: [], composed: [] }),
+				cancel: () => {
+					cancels += 1;
+				},
+			},
+			settings: () => ({ size: "letter", quality: "normal", password: "off", name: "" }),
+			prompts: {
+				summary: () => Promise.resolve("back"),
+				resultPassword: () => Promise.resolve(undefined),
+			},
+			locale: "es",
+		});
+
+		assembly.add([entry("a.jpg")]);
+		await flush();
+		assembly.clear();
+
+		expect(cancels).toBe(0);
+		expect(assembly.items()).toEqual([]);
+	});
+
 	test("cancelling a generation backs out without composing", async () => {
 		const { assembly, log } = setup();
 

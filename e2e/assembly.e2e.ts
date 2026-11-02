@@ -106,16 +106,6 @@ test("a pinned file keeps its slot while ↑ ↓ move the rest around it", async
 	]);
 });
 
-test("removing every file returns to the empty drop zone", async ({ page }) => {
-	await drop(page, [text("a.txt", "a"), text("b.txt", "b")]);
-
-	for (const name of ["a.txt", "b.txt"])
-		await row(page, name).getByRole("button", { name: es["row.remove"] }).click();
-
-	await expect(page.locator("[data-assembly]")).toBeHidden();
-	await expect(page.locator("[data-empty-drop]")).toBeVisible();
-});
-
 test("a failed file stops for a summary: back keeps it, without it pinned files shift up", async ({
 	page,
 }) => {

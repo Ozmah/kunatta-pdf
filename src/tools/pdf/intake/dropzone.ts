@@ -1,10 +1,6 @@
 import { required } from "../../../lib/dom.ts";
 import { acceptDrops, type ReceiveFiles } from "../shared/files.ts";
-
-/** Apple keyboards paste with ⌘ instead of Ctrl. */
-export function isApplePlatform(platform: string): boolean {
-	return /mac|iphone|ipad|ipod/i.test(platform);
-}
+import { pasteModifier } from "../shared/paste-key.ts";
 
 /** One line of the dotted notice: file names in code style and what happened to them. */
 export interface NoticeLine {
@@ -17,21 +13,30 @@ export interface DropzoneControl {
 	pick(): void;
 	/** The empty drop zone shows only while nothing else takes its place. */
 	show(idle: boolean): void;
+	/** Back from the list: the keyboard lands where the user left. */
+	focusCompose(): void;
 	/** Shows every line, one under the other; no lines hide the notice. */
 	notice(lines: ReadonlyArray<NoticeLine>): void;
 }
 
 /**
  * The way in: the empty drop zone, the file picker and pasting anywhere on the page, plus the
- * notice above them. Every user-provided string goes through textContent.
+ * notice above them. "Juntar varios en un PDF" sits outside the zone's <label>, where a click would
+ * also open the picker, and opens the list empty. Every user-provided string goes through
+ * textContent.
  */
-export function connectDropzone(host: HTMLElement, receive: ReceiveFiles): DropzoneControl {
+export function connectDropzone(
+	host: HTMLElement,
+	receive: ReceiveFiles,
+	compose: () => void,
+): DropzoneControl {
 	const page = host.ownerDocument;
 	const flow = required(host, "[data-flow]");
 	const drop = required(host, "[data-empty-drop]");
 	const picker = required<HTMLInputElement>(host, "[data-picker]");
 	const notice = required(host, "[data-notice]");
 	const noticeText = required(host, "[data-notice-text]");
+	const composeButton = required<HTMLButtonElement>(host, "[data-compose]");
 
 	// A file dropped anywhere else would make the browser navigate away from the page.
 	page.defaultView?.addEventListener("dragover", (event) => event.preventDefault());
@@ -57,18 +62,19 @@ export function connectDropzone(host: HTMLElement, receive: ReceiveFiles): Dropz
 		receive(files, "paste");
 	});
 
-	const platform =
-		page.defaultView?.navigator.platform || page.defaultView?.navigator.userAgent || "";
-
-	if (isApplePlatform(platform)) required(host, "[data-modifier]").textContent = "⌘";
+	composeButton.addEventListener("click", compose);
+	required(host, "[data-modifier]").textContent = pasteModifier(page);
 
 	return {
 		pick: () => picker.click(),
 
 		show(idle) {
 			drop.hidden = !idle;
+			composeButton.hidden = !idle;
 			flow.hidden = !idle || !notice.hidden;
 		},
+
+		focusCompose: () => composeButton.focus(),
 
 		notice(lines) {
 			noticeText.replaceChildren();

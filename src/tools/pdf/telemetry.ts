@@ -49,6 +49,8 @@ export const pdfEvents = {
 		kinds: v.pipe(v.array(v.picklist(inputKinds)), v.maxLength(inputKinds.length)),
 		total_size: v.picklist(sizes),
 	}),
+	/** "Juntar varios en un PDF" opened the empty list; it carries no properties of its own. */
+	list_opened: v.object({}),
 	pdf_made: v.object({
 		path: v.picklist(madePaths),
 		files: v.picklist(counts),

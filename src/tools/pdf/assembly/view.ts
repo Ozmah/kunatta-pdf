@@ -10,6 +10,7 @@ import { required } from "../../../lib/dom.ts";
 import { browserUrls, createThumbnails } from "./thumbnails.ts";
 import { pdfName, typedName } from "../shared/file-name.ts";
 import { acceptDrops } from "../shared/files.ts";
+import { pasteModifier } from "../shared/paste-key.ts";
 import { connectReorder } from "./reorder.ts";
 
 export interface AssemblyHandlers {
@@ -27,6 +28,8 @@ export interface AssemblyHandlers {
 	drop(files: ReadonlyArray<File>): void;
 	/** The name typed next to the button, as it changes. */
 	typed(value: string): void;
+	/** Atrás: leave the list. */
+	leave(): void;
 }
 
 export interface AssemblyView {
@@ -74,6 +77,9 @@ export function connectAssemblyView(
 	const cancel = required<HTMLButtonElement>(section, "[data-cancel]");
 	const progress = required(section, "[data-progress]");
 	const doneBanner = required(section, "[data-assembly-done]");
+	const leave = required<HTMLButtonElement>(section, "[data-leave]");
+	const hint = required(section, "[data-hint]");
+	const needs = required(section, "[data-needs]");
 	const rows = new Map<string, HTMLLIElement>();
 	const thumbnails = createThumbnails(browserUrls);
 	let thumbnailUrls: ReadonlyMap<string, string> = new Map();
@@ -190,7 +196,22 @@ export function connectAssemblyView(
 			if (!ids.has(id)) rows.delete(id);
 		}
 
-		nameInput.placeholder = defaultName(items);
+		const empty = items.length === 0;
+
+		// Empty, the list waits for files: nothing to make, nothing to reorder yet.
+		section.toggleAttribute("data-empty", empty);
+		hint.textContent = t(empty ? "assembly.empty.hint" : "assembly.hint");
+		nameInput.placeholder = empty ? t("assembly.name.first") : defaultName(items);
+		make.setAttribute("aria-disabled", String(generating || empty));
+		needs.hidden = !empty;
+
+		// Its files are gone, so is the line about the PDF made from them.
+		if (empty) doneBanner.hidden = true;
+
+		if (empty) make.setAttribute("aria-describedby", needs.id);
+		else make.removeAttribute("aria-describedby");
+
+		leave.setAttribute("aria-disabled", String(generating));
 		thumbnailUrls = thumbnails.sync(items);
 
 		const ordered = items.map((item, index) => {
@@ -255,6 +276,10 @@ export function connectAssemblyView(
 	make.addEventListener("click", () => {
 		if (make.getAttribute("aria-disabled") !== "true") handlers.make();
 	});
+	leave.addEventListener("click", () => {
+		if (leave.getAttribute("aria-disabled") !== "true") handlers.leave();
+	});
+	required(section, "[data-modifier]").textContent = pasteModifier(page);
 	cancel.addEventListener("click", () => handlers.cancel());
 	required(section, "[data-assembly-again]").addEventListener("click", () => handlers.again());
 
@@ -287,7 +312,6 @@ export function connectAssemblyView(
 			if (active) reorder.stop();
 
 			generating = active;
-			make.setAttribute("aria-disabled", String(active));
 			make.textContent = t(active ? "assembly.making" : "assembly.make");
 			cancel.hidden = !active;
 			progress.hidden = !active;
