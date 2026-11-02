@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { isApplePlatform } from "./dropzone.ts";
+import { isApplePlatform } from "./paste-key.ts";
 
 describe("isApplePlatform", () => {
 	test("detects Apple platforms for the ⌘ hint", () => {

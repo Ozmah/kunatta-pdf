@@ -113,6 +113,20 @@ test("result password dialog with a mismatch", async ({ page }) => {
 	await shot(page, "result-dialog", false);
 });
 
+test("empty list, opened by hand", async ({ page }) => {
+	await page.getByRole("button", { name: es["drop.compose"] }).click();
+	await expect(page.locator("[data-assembly]")).toBeVisible();
+	await shot(page, "list-empty");
+});
+
+test("leaving a list with files", async ({ page }) => {
+	await drop(page, [text("a.txt", "a"), text("b.txt", "b"), text("c.txt", "c")]);
+	await checked(page);
+	await page.locator("[data-leave]").click();
+	await expect(dialog(page, "leave")).toBeVisible();
+	await shot(page, "leave-dialog", false);
+});
+
 test("list with every row state", async ({ page }) => {
 	await holdOfficeEngine(page);
 	await drop(page, [

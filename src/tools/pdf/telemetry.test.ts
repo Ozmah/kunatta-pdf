@@ -128,4 +128,13 @@ describe("pdfEvents", () => {
 
 		expect(v.is(pdfEvents.files_added, added)).toBe(true);
 	});
+
+	test("opening the empty list passes with the SDK's properties and keeps none of its own", () => {
+		const parsed = v.safeParse(pdfEvents.list_opened, {
+			distinct_id: "019a3b2c",
+			name: "tesis-final.docx",
+		});
+
+		expect(parsed.success && parsed.output).toEqual({});
+	});
 });
