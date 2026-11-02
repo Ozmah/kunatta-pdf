@@ -35,6 +35,19 @@ const cards = [
 		transform: translateY(-6px) scale(1.04);
 	}
 
+	/* The cards spread about 310 px; a narrow drop space (its container) shrinks them to fit. */
+	@container (max-width: 270px) {
+		.fan {
+			scale: 0.8;
+		}
+	}
+
+	@container (max-width: 230px) {
+		.fan {
+			scale: 0.68;
+		}
+	}
+
 	/* Differs from the shared large tile: 600 11px instead of 700 12px. */
 	.card {
 		position: absolute;
