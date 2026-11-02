@@ -45,6 +45,18 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 		</form>
 	</dialog>
 
+	<dialog class="dlg" role="alertdialog" aria-labelledby="leave-title" aria-describedby="leave-body" data-dialog="leave">
+		<form method="dialog">
+			<h2 class="display" id="leave-title">{t("leave.title")}</h2>
+			<p class="question" id="leave-body" data-body></p>
+			<p class="note">{t("leave.note")}</p>
+			<div class="actions">
+				<button class="btn-ghost" value="confirm">{t("leave.confirm")}</button>
+				<button class="btn btn-primary" type="button" data-back autofocus>{t("leave.stay")}</button>
+			</div>
+		</form>
+	</dialog>
+
 	<template data-fail-template>
 		<li><span class="tile tile-sm" aria-hidden="true"></span><span><b></b><span class="meta"></span></span></li>
 	</template>
@@ -201,6 +213,12 @@ const eye = "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-
 
 	.eye[aria-pressed="true"] {
 		color: var(--accent);
+	}
+
+	.note {
+		margin-top: -8px;
+		font: 500 12px var(--font-mono);
+		color: var(--ink-muted);
 	}
 
 	.error {

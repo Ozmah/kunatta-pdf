@@ -34,6 +34,8 @@ export function startPdfTool(root: Document): void {
 	const downloads = createDownloader(root);
 	let busy = false;
 	let assembling = false;
+	// Bumped when Atrás empties the list: files still being read were meant for it.
+	let intake = 0;
 	let last: PileEntry | undefined;
 	// The latest "could not convert" line, kept until the user moves on to other files.
 	let rejections: ReadonlyArray<NoticeLine> = [];
@@ -50,13 +52,26 @@ export function startPdfTool(root: Document): void {
 	const assembly = createAssembly({ converter, settings: () => settings.read(), prompts, locale });
 
 	// Files that arrive while a conversion or generation runs are ignored (decided in 10).
-	const dropzone = upgraded(root, "kn-dropzone", DropzoneElement).connect((files, origin) => {
-		if (!busy) void receive(files, origin);
-	});
+	const dropzone = upgraded(root, "kn-dropzone", DropzoneElement).connect(
+		(files, origin) => {
+			if (!busy) void receive(files, origin);
+		},
+		() => {
+			if (busy) return;
 
-	const backToIdle = (): void => {
+			report("list_opened", {});
+			clearNotice();
+			enterAssembly();
+		},
+	);
+
+	const clearNotice = (): void => {
 		rejections = [];
 		dropzone.notice([]);
+	};
+
+	const backToIdle = (): void => {
+		clearNotice();
 		show("idle");
 	};
 
@@ -76,11 +91,8 @@ export function startPdfTool(root: Document): void {
 		pin: (id) => assembly.pin(id),
 		move: (id, delta) => assembly.moveBy(id, delta),
 		moveTo: (id, position) => assembly.moveTo(id, position),
-		remove: (id) => {
-			assembly.remove(id);
-
-			if (assembly.items().length === 0) leaveAssembly();
-		},
+		// Emptied, the list stays open for more files; only Atrás leaves it.
+		remove: (id) => assembly.remove(id),
 		unlock: (id, password) => assembly.unlock(id, password),
 		make: () => void makeAssembly(),
 		cancel: () => assembly.cancel(),
@@ -90,6 +102,7 @@ export function startPdfTool(root: Document): void {
 			if (!busy) void receive(files, "drop");
 		},
 		typed: (value) => settings.setName(value),
+		leave: () => void leaveList(),
 	});
 
 	/** The drop zone and the single-file cards share the space; the list shows on its own. */
@@ -105,10 +118,21 @@ export function startPdfTool(root: Document): void {
 		list.show(true);
 	};
 
-	const leaveAssembly = (): void => {
+	/** Atrás: with files in the list, asks first; leaving empties it and goes back to the drop zone. */
+	const leaveList = async (): Promise<void> => {
+		if (busy) return;
+
+		const total = assembly.items().length;
+
+		if (total > 0 && !(await prompts.leaveList(total))) return;
+
+		intake += 1;
+		assembly.clear();
 		assembling = false;
 		list.show(false);
+		clearNotice();
 		show("idle");
+		dropzone.focusCompose();
 	};
 
 	const makeAssembly = async (): Promise<void> => {
@@ -169,6 +193,8 @@ export function startPdfTool(root: Document): void {
 	};
 
 	assembly.subscribe((items) => list.render(items));
+	// The list can open empty, so its empty state is drawn before any file arrives.
+	list.render(assembly.items());
 
 	async function convertOne(entry: PileEntry, run: Run): Promise<void> {
 		busy = true;
@@ -220,9 +246,14 @@ export function startPdfTool(root: Document): void {
 	}
 
 	async function receive(files: ReadonlyArray<File>, origin: Origin): Promise<void> {
-		const current = assembly.items().map((item) => item.entry);
-		const { pile, rejected } = await admit(assembling ? current : [], files);
-		const accepted = assembling ? pile.slice(current.length) : pile;
+		const ticket = intake;
+		const current = assembling ? assembly.items().map((item) => item.entry) : [];
+		const { pile, rejected } = await admit(current, files);
+
+		// Reading files takes a while; if Atrás left the list meanwhile, they go with it.
+		if (ticket !== intake) return;
+
+		const accepted = pile.slice(current.length);
 		const names = rejected.map((rejection) => rejection.fileName);
 
 		rejections =

@@ -22,6 +22,12 @@ export interface Problem {
 	readonly error: JobError | undefined;
 }
 
+/** Asked by the list itself, outside a generation. */
+export interface ListPrompts {
+	/** Back with files in the list: true clears it and leaves, false stays. */
+	leaveList(total: number): Promise<boolean>;
+}
+
 export interface AssemblyPrompts {
 	/** "No pudimos convertir N de M": back to the list, or make the PDF without them. */
 	summary(problems: ReadonlyArray<Problem>, total: number): Promise<"back" | "without">;
