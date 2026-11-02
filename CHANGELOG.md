@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: on narrow phones (about 360 px wide), the PDF name field no longer runs past the screen and makes the page scroll sideways, and the fan of file cards stays inside the drop space.
 - "Combine several into one PDF", under the drop zone, opens an empty list that takes files by dropping, pasting or Choose files, so a PDF can be put together even from a single photo or document. Make my PDF waits for at least one file and says so; emptying the list keeps it open, and Back leaves it, asking first while it holds files. The usage stats count how often the list is opened this way, with nothing else attached, and What we measure lists it.
 - Links shared on social networks and chats show a preview card in the language of the page: the drop zone turning files into a PDF and the promise that nothing is uploaded.
 - Fixed: What we measure now also lists the campaign tags a link may carry and how long you stayed on the page, which the usage stats already sent.

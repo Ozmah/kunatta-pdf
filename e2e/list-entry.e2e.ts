@@ -196,6 +196,38 @@ test("opening the list clears the notice of files turned away before", async ({ 
 	await expect(notice(page)).toBeHidden();
 });
 
+test("on a 360 px phone nothing spills past the screen or out of the drop space", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 360, height: 800 });
+
+	/** The page does not scroll sideways and the visible fan stays inside its drop space. */
+	const fits = () =>
+		page.evaluate(() => {
+			const fan = [...document.querySelectorAll(".fan")].find((node) => node.checkVisibility());
+			const space = fan?.closest("[data-empty-drop], [data-add]")?.getBoundingClientRect();
+
+			const cards = [...(fan?.querySelectorAll(".card") ?? [])].map((card) =>
+				card.getBoundingClientRect(),
+			);
+
+			const inside =
+				space === undefined ||
+				cards.every((card) => card.left >= space.left && card.right <= space.right);
+
+			return document.documentElement.scrollWidth <= innerWidth && inside;
+		});
+
+	expect(await fits()).toBe(true);
+	await compose(page).click();
+	expect(await fits()).toBe(true);
+
+	// A long camera name as the default PDF name must not widen the name field.
+	await drop(page, [text("17936020235572374982498314067679.txt", "a")], "[data-add]");
+	await expect(rows(page)).toHaveCount(1);
+	expect(await fits()).toBe(true);
+});
+
 test("an empty list is not work: switching language does not ask", async ({ page }) => {
 	await compose(page).click();
 	await page.locator('[data-lang-switch] a[hreflang="en"]').click();
