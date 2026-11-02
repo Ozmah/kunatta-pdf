@@ -243,6 +243,7 @@ const t = translator(lang);
 
 	/* Empty list: the add strip grows into the whole drop space. */
 	.assembly[data-empty] .add {
+		container-type: inline-size;
 		height: 400px;
 		padding: 24px;
 		border-color: var(--line);
@@ -334,8 +335,10 @@ const t = translator(lang);
 		margin-top: 8px;
 	}
 
+	/* min-width: 0, or the input's own width keeps the field from shrinking on narrow phones. */
 	.name {
 		flex: 1 1 260px;
+		min-width: 0;
 	}
 
 	@media (max-width: 520px) {
